@@ -1,14 +1,14 @@
 /*
  * Component styles.
  *
- * Copy this file to `src/components/<your-component>/<name>.css` and rename every
- * occurrence of `example`.
+ * Copy this file into `src/components/<name>/` and rename every occurrence of
+ * `example`.
  *
  * Folders starting with `_` are excluded from the build and from the stylesheet
  * bundle, so this template is never published. It is still linted by
  * `npm run lint:css`, which is what keeps it honest as the conventions change.
  *
- * Conventions, all enforced:
+ * Conventions, all enforced by `npm run lint:css`:
  * - Rules live in `@layer uireload.components`, so a consumer can join the layer
  *   stack and win without specificity games.
  * - Logical properties only: `margin-inline-start`, not `margin-left`.

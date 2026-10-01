@@ -98,7 +98,8 @@ scripts/
   build-exports.mjs        pure export-map construction (unit tested)
   sync-exports.mjs         regenerates package.json exports from src/components
   bundle-css.mjs           assembles the published stylesheet
-  check-css-logical.mjs    fails the build on physical direction properties
+  check-css.mjs            build gate: namespaced classes, logical properties
+  css-rules.mjs            the rules themselves (unit tested)
   report-sizes.mjs         bundle size report and budget gate
 ```
 

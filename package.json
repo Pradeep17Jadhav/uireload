@@ -65,7 +65,7 @@
   },
   "scripts": {
     "clean": "rimraf dist coverage storybook-static .consumer-test",
-    "build": "npm run clean:dist && tsup && node scripts/bundle-css.mjs",
+    "build": "npm run clean:dist && npm run lint:css && tsup && node scripts/bundle-css.mjs",
     "clean:dist": "rimraf dist",
     "build:js": "tsup",
     "build:css": "node scripts/bundle-css.mjs",
@@ -73,7 +73,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "lint:css": "node scripts/check-css-logical.mjs",
+    "lint:css": "node scripts/check-css.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",

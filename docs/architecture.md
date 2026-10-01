@@ -89,6 +89,11 @@ Windows during setup.
 `npm run verify` builds **before** running tests, because some tests resolve the real
 published artefacts. Running tests first would let them observe a stale `dist/`.
 
+The CSS lint runs _inside_ `npm run build`, not only in `verify`. That was found the
+hard way: with the lint only in `verify`, a bare `npm run build` cheerfully assembled a
+stylesheet containing an unprefixed class. A gate nobody invokes on the path that
+produces the artefact is not a gate.
+
 ---
 
 ## 2. Styling
@@ -157,10 +162,50 @@ Two rules follow from this and are enforced:
   `sideEffects: false` untrue and duplicate the rules in every consumer bundle.
   `tests/conventions.test.ts` asserts it.
 
+### Why not CSS Modules
+
+Considered and rejected. This was tested against our actual build, not reasoned about
+abstractly, and the result was decisive.
+
+**tsup has no CSS Modules support.** A `.module.css` entry builds to an empty
+namespace:
+
+```js
+// probe.module.css
+var probe_default = {}; // no class names
+var x = probe_default.root; // undefined
+```
+
+Forcing `loader: { ".module.css": "local-css" }` produces identical output: the option
+is accepted and ignored. Vitest _does_ resolve the same file correctly
+(`{ root: "_root_5fc83c" }`), so the failure mode is green tests and a broken package,
+with no error anywhere. Supporting it would mean a new build dependency, which
+`tests/package-structure.test.ts` exists to forbid.
+
+**Beyond the build, hashed names break the published theming contract.** The whole
+escape hatch is that a consumer can write `.uir-dialog__title { … }` or
+`[data-state="open"]`. Under CSS Modules the first string does not exist in our shipped
+CSS, and only `data-*` survives — that is, the isolation is redundant with what we
+already have.
+
+**What we get instead**, all machine-checked by `scripts/check-css.mjs` at build time:
+
+| Guarantee                     | Mechanism                         |
+| ----------------------------- | --------------------------------- |
+| No collision with host styles | `uir-` prefix on every class      |
+| Predictable override order    | `@layer`                          |
+| A stable styling surface      | `data-*` state attributes         |
+| No direction-dependent CSS    | Logical properties, lint-enforced |
+
+The one variant that would work is hashed internals plus exported stable part names
+(`data-uir-part="root"`). It needs the same new build dependency, moves the override
+story from CSS to markup, and makes the published stylesheet un-inspectable. Rejected.
+
 ### CSS isolation mechanics
 
-1. **Namespace.** Every class is `uir-<component>__<part>`. Unnamespaced
-   selectors are a test failure.
+1. **Namespace.** Every class is `uir-<component>__<part>`. Enforced at build time by
+   `scripts/check-css.mjs`, not only in tests: `verify` builds before it tests, so a
+   test-only check would let a leak reach `dist/index.css` first.
 2. **Layers.** Library rules live in `@layer uireload.*` with an explicitly
    declared order. Consumers can join the layer stack and win without specificity
    games.
@@ -267,8 +312,8 @@ const direction = useDirection(rootRef); // resolves in a layout effect
 ```
 
 Library CSS uses **logical properties only**. `npm run lint:css` fails the build
-on `margin-left`, `left: 0`, `text-align: right`, and asymmetric `box-shadow`
-offsets.
+on `margin-left`, `left: 0`, `text-align: right`, and `box-shadow` declarations whose
+net x-offset is non-zero.
 
 ### Why DOM-based direction
 
@@ -285,10 +330,17 @@ A lint rule is the only enforcement that actually holds.
 
 ### The `box-shadow` case
 
-A negative x-offset means "cast to the left", which mirrors in RTL. The lint flags
-it and asks for a symmetric shadow. This is a real limitation: it is a heuristic,
-and it will produce occasional false positives on `0 -4px` shadows. That is the
-correct trade, because the alternative is silent breakage.
+A non-zero x-offset means "cast to one side", and that side flips in RTL. The lint
+flags it and asks for a symmetric shadow.
+
+It sums the x-offsets across a whole comma-separated list rather than looking only at
+the first layer, because cancelling layers (`2px 0 …, -2px 0 …`) are the idiomatic way
+to write a two-sided glow and would otherwise be a false positive.
+
+Remaining limitation: it is a heuristic. A deliberately asymmetric shadow that is
+correct in both directions needs `/* uir-css-disable */` and a comment explaining
+why. That is the correct trade — occasional justified suppressions beat silent
+breakage, because a suppression is a reviewable line and a bug is not.
 
 ---
 
@@ -413,7 +465,8 @@ Stated rather than hidden:
   who imports one component still downloads all component CSS. Per-file CSS is a
   build change away if bundle data justifies it, and it would need the export map
   to gain per-component stylesheet entries.
-- **`box-shadow` linting is heuristic** and may produce false positives.
+- **`box-shadow` linting is heuristic** and may need an inline `uir-css-disable` for
+  a deliberately asymmetric shadow.
 - **`useDirection` does not observe a `dir` attribute added to an ancestor that
   previously had none.** We cannot watch an ancestor we do not yet know about.
   Setting `dir` on `<html>` or on an element that already has it, which is what

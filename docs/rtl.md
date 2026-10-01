@@ -43,24 +43,51 @@ Use logical properties. This is the whole rule.
 npm run lint:css
 ```
 
-An intentional exception is marked inline with `uir-logical-disable` and a comment
+An intentional exception is marked inline with `uir-css-disable` and a comment
 explaining why.
 
 ## The `box-shadow` caveat
 
-A shadow with a negative x-offset means "cast to the left", which mirrors in RTL
-and produces a shadow on the wrong side. The lint flags this pattern.
+A shadow with a non-zero x-offset means "cast to one side", and that side flips in
+RTL. The lint flags any declaration whose net x-offset is non-zero.
 
-Prefer a symmetric shadow, or an explicit per-direction override:
+Prefer a symmetric shadow. Cancelling layers are accepted, since they are symmetric in
+both directions:
 
 ```css
 .uir-example {
-  box-shadow: 0 1px 2px rgb(0 0 0 / 20%);
+  box-shadow:
+    2px 0 4px rgb(0 0 0 / 20%),
+    -2px 0 4px rgb(0 0 0 / 20%);
+}
+```
+
+For a genuinely directional shadow, set it per direction and suppress the lint with a
+comment saying why:
+
+```css
+.uir-example {
+  /* uir-css-disable: deliberately casts toward the inline start */
+  box-shadow: -2px 0 4px rgb(0 0 0 / 20%);
 }
 
 [dir="rtl"] .uir-example {
-  box-shadow: 0 1px 2px rgb(0 0 0 / 20%); /* symmetric, nothing to mirror */
+  box-shadow: 2px 0 4px rgb(0 0 0 / 20%);
 }
+```
+
+## Naming
+
+The same build gate enforces that every class selector starts with `uir-`, because a
+namespace leak is the other class of mistake that only appears once the library is
+inside someone else's application.
+
+```css
+.uir-dialog__title {
+  /* correct */
+}
+
+/* .dialog__title — fails `npm run lint:css` */
 ```
 
 ## Icons that imply direction

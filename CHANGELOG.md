@@ -22,8 +22,8 @@ Nothing released yet.
 - Internal primitives: `useControllableState`, `useRovingFocus`, `useFocusTrap`,
   `composeHandlers`, `composeRefs`, `useDirection`, `useMediaQuery`,
   `useIsomorphicLayoutEffect`.
-- RTL enforcement: `scripts/check-css-logical.mjs` fails the build on physical
-  direction properties.
+- RTL enforcement: `scripts/check-css.mjs` fails the build on unnamespaced class
+  selectors, physical direction properties, and asymmetric `box-shadow` x-offsets.
 - Bundle size budgets via `scripts/report-sizes.mjs`.
 - Storybook with RTL, color-scheme and density toolbars, and the a11y addon
   configured to fail on violations.

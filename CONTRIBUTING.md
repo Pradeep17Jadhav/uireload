@@ -29,26 +29,28 @@ Forgetting it fails `npm run check:pkg` and
 
 These are checked in CI, not left to review:
 
-| Rule                                             | Enforced by                        |
-| ------------------------------------------------ | ---------------------------------- |
-| No runtime dependencies                          | `tests/package-structure.test.ts`  |
-| `sideEffects: false`                             | `tests/package-structure.test.ts`  |
-| One export entry per component                   | `scripts/sync-exports.mjs --check` |
-| `types` before `default`, separate ESM/CJS types | `publint`, `attw`                  |
-| CSS class names prefixed `uir-`                  | `tests/conventions.test.ts`        |
-| Logical CSS properties only                      | `npm run lint:css`                 |
-| No `!important` (one documented exception)       | `tests/conventions.test.ts`        |
-| Every token in `TOKENS` defined in CSS           | `tests/conventions.test.ts`        |
-| No runtime style injection                       | `tests/conventions.test.ts`        |
-| No CSS imported from JavaScript                  | `tests/conventions.test.ts`        |
-| Component CSS in `@layer uireload.components`    | `scripts/bundle-css.mjs`           |
-| No cross-component imports                       | `tests/package-structure.test.ts`  |
-| `src/internal` not exported publicly             | `tests/package-structure.test.ts`  |
-| No DOM access during render                      | `tests/ssr.test.tsx`               |
-| Subpaths resolve from ESM, CJS, node16, bundler  | `tests/published-package.test.ts`  |
-| Export map generator is correct                  | `scripts/build-exports.test.ts`    |
-| Bundle size budget                               | `npm run size`                     |
-| Every message key namespaced and documented      | `src/i18n/catalog.test.ts`         |
+| Rule                                             | Enforced by                          |
+| ------------------------------------------------ | ------------------------------------ |
+| No runtime dependencies                          | `tests/package-structure.test.ts`    |
+| `sideEffects: false`                             | `tests/package-structure.test.ts`    |
+| One export entry per component                   | `scripts/sync-exports.mjs --check`   |
+| `types` before `default`, separate ESM/CJS types | `publint`, `attw`                    |
+| CSS class names prefixed `uir-`                  | `npm run lint:css` (runs in `build`) |
+| Logical CSS properties only                      | `npm run lint:css` (runs in `build`) |
+| No asymmetric `box-shadow` x-offsets             | `npm run lint:css` (runs in `build`) |
+| No `!important` (one documented exception)       | `tests/conventions.test.ts`          |
+| Every token in `TOKENS` defined in CSS           | `tests/conventions.test.ts`          |
+| No runtime style injection                       | `tests/conventions.test.ts`          |
+| No CSS imported from JavaScript                  | `tests/conventions.test.ts`          |
+| Component CSS in `@layer uireload.components`    | `scripts/bundle-css.mjs`             |
+| No cross-component imports                       | `tests/package-structure.test.ts`    |
+| `src/internal` not exported publicly             | `tests/package-structure.test.ts`    |
+| No DOM access during render                      | `tests/ssr.test.tsx`                 |
+| Subpaths resolve from ESM, CJS, node16, bundler  | `tests/published-package.test.ts`    |
+| Export map generator is correct                  | `scripts/build-exports.test.ts`      |
+| CSS lint rules are correct                       | `scripts/css-rules.test.ts`          |
+| Bundle size budget                               | `npm run size`                       |
+| Every message key namespaced and documented      | `src/i18n/catalog.test.ts`           |
 
 ## Adding a runtime dependency
 
@@ -62,7 +64,7 @@ Dev dependencies are fine when they buy real leverage. Two precedents worth
 copying:
 
 - `publint` and `attw` because packaging correctness is invisible until it is not.
-- `scripts/check-css-logical.mjs` because RTL regressions are invisible in review.
+- `scripts/check-css.mjs` because RTL regressions are invisible in review.
 
 ## Storybook
 

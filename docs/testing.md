@@ -50,6 +50,10 @@ rules that are easy to violate and expensive to notice late:
 These are not meta-tests to be pruned. Each corresponds to a requirement in the
 project brief, and several caught real defects during setup.
 
+The CSS rules are additionally enforced by `scripts/check-css.mjs`, which runs inside
+`npm run build` rather than only in `verify`. A test-only check would let an `uir-`-prefix leak reach `dist/index.css` first. `scripts/css-rules.test.ts` tests the rules themselves,
+since the build gate is only as trustworthy as they are.
+
 ### 3. Published-package tests
 
 `tests/published-package.test.ts` creates a scratch consumer project whose
