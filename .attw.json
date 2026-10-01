@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json.schemastore.org/attw.json",
+  "profile": "strict",
+  "excludeEntrypoints": ["./styles.css", "./tokens.css", "./package.json"]
+}

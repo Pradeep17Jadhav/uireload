@@ -1,0 +1,102 @@
+/*
+ * UIReload base layer.
+ *
+ * This file is assembled into `dist/index.css` by `scripts/bundle-css.mjs`. It
+ * contains no `@import`: the bundle owns ordering, so that the published stylesheet
+ * is a single self-contained file with no runtime resolution.
+ *
+ * Layers are declared explicitly. Consumer stylesheets can then participate in the
+ * cascade predictably instead of relying on import order:
+ *
+ *   @layer uireload.reset, uireload.tokens, uireload.base, uireload.utilities, uireload.components;
+ *
+ * The bundle emits that declaration first, so a consumer only needs:
+ *
+ *   @layer uireload.tokens, uireload.base, uireload.utilities, uireload.components, mine;
+ *
+ * and their `mine` layer wins against every library layer regardless of specificity.
+ */
+
+@layer uireload.base {
+  /*
+   * Global defaults are scoped with :where() so they carry zero specificity and can
+   * always be overridden by a consumer's own rules.
+   */
+  :where(:root) {
+    --uir-focus-ring-width: 2px;
+    --uir-focus-ring-offset: 2px;
+    --uir-focus-ring-color: var(--uir-accent);
+    --uir-outline-color: var(--uir-accent);
+    --uir-outline-width: 2px;
+    --uir-outline-offset: 2px;
+
+    /*
+     * Components opt into this so a single `color-scheme` change makes native form
+     * controls, scrollbars and focus rings match the library palette.
+     */
+    color-scheme: light;
+  }
+
+  [data-uir-scheme="dark"],
+  [data-uir-scheme="high-contrast"] {
+    color-scheme: dark;
+  }
+
+  /*
+   * Keyboard focus is visible, mouse focus is not. `:focus-visible` is the correct
+   * tool here; removing focus outlines is an accessibility failure and explicitly out
+   * of scope for this library's styling.
+   */
+  :where([data-uir-focusable], a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: var(--uir-outline-width) solid var(--uir-outline-color);
+    outline-offset: var(--uir-outline-offset);
+  }
+
+  /*
+   * The single sanctioned `!important` in the library. Many CSS resets strip the
+   * UA's `[hidden]` rule, and a component that sets `display` would then render
+   * content the author explicitly hid. Restoring native behaviour has to win, and
+   * the `:where()` keeps the declaration at zero specificity for everything else.
+   */
+  :where([hidden]) {
+    display: none !important;
+  }
+}
+
+@layer uireload.utilities {
+  /*
+   * Visually hidden but available to assistive technology.
+   *
+   * `clip-path` is used alongside the legacy `clip` so the element creates no
+   * scrollable overflow region in modern engines. Content is never `display: none`,
+   * because that removes it from the accessibility tree.
+   */
+  .uir-visually-hidden:not(:focus):not(:active) {
+    block-size: 1px;
+    border: 0;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    inline-size: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+  }
+
+  /*
+   * Escaped text for assistive technology that is also visible when focused.
+   * Used by skip links and by components that render a visually hidden live region.
+   */
+  .uir-visually-hidden-focusable:focus,
+  .uir-visually-hidden-focusable:focus-visible {
+    block-size: auto;
+    clip: auto;
+    clip-path: none;
+    inline-size: auto;
+    margin: 0;
+    overflow: visible;
+    position: static;
+    white-space: normal;
+  }
+}

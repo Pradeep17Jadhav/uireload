@@ -1,0 +1,206 @@
+/*
+ * UIReload design tokens.
+ *
+ * This file is the single source of truth for theming. It is intentionally
+ * plain CSS custom properties: no preprocessor, no build step, no runtime.
+ *
+ * Consumers override by re-declaring the same properties at any scope:
+ *
+ *   [data-theme="acme"] { --uir-accent: #0b6; --uir-radius: 2px; }
+ *
+ * Do not use `!important` in the library. Consumers must always be able to win
+ * without fighting specificity, which is why these declarations stay at zero
+ * specificity and component rules live inside @layer uireload.
+ *
+ * This file is also published on its own as `uireload/tokens.css` for consumers who
+ * want the token contract without any component styles.
+ */
+
+:root {
+  /* ---- Color primitives ---------------------------------------------- */
+  --uir-accent: #2563eb;
+  --uir-accent-contrast: #ffffff;
+
+  --uir-background: #ffffff;
+  --uir-surface: #f8fafc;
+  --uir-surface-raised: #ffffff;
+
+  --uir-border: #e2e8f0;
+  --uir-border-strong: #94a3b8;
+
+  --uir-text: #0f172a;
+  --uir-text-muted: #475569;
+  --uir-text-disabled: #94a3b8;
+
+  --uir-danger: #dc2626;
+  --uir-danger-contrast: #ffffff;
+  --uir-success: #16a34a;
+  --uir-warning: #d97706;
+
+  /* ---- Typography ------------------------------------------------------ */
+  --uir-font-family: system-ui, -apple-system, "Segoe UI", roboto, helvetica, arial, sans-serif;
+  --uir-font-family-mono: ui-monospace, sfmono-regular, "SF Mono", menlo, consolas, monospace;
+  --uir-font-size: 1rem;
+  --uir-line-height: 1.5;
+  --uir-font-weight: 400;
+
+  /* ---- Space & shape --------------------------------------------------- */
+  --uir-space: 0.5rem;
+  --uir-radius: 0.375rem;
+  --uir-radius-small: 0.25rem;
+  --uir-radius-large: 0.75rem;
+  --uir-border-width: 1px;
+  --uir-shadow: 0 1px 2px rgb(15 23 42 / 8%);
+  --uir-shadow-large: 0 12px 32px rgb(15 23 42 / 12%);
+
+  /* ---- Motion ---------------------------------------------------------- */
+  --uir-duration: 150ms;
+  --uir-duration-fast: 100ms;
+  --uir-easing: cubic-bezier(0.2, 0, 0.2, 1);
+
+  /* ---- Layers ---------------------------------------------------------- */
+  --uir-z-index-overlay: 1000;
+}
+
+/*
+ * Dark scheme.
+ *
+ * Applied by attribute rather than `prefers-color-scheme` so the consumer stays in
+ * control. Auto-apply is opt-in via the media query further down, which respects the
+ * documented "no surprise UI" rule.
+ */
+[data-uir-scheme="dark"] {
+  --uir-accent: #60a5fa;
+  --uir-accent-contrast: #0b1120;
+
+  --uir-background: #0b1120;
+  --uir-surface: #111c33;
+  --uir-surface-raised: #17233d;
+
+  --uir-border: #1e2c47;
+  --uir-border-strong: #475569;
+
+  --uir-text: #e2e8f0;
+  --uir-text-muted: #94a3b8;
+  --uir-text-disabled: #64748b;
+
+  --uir-danger: #f87171;
+  --uir-danger-contrast: #1f0d0d;
+  --uir-success: #4ade80;
+  --uir-warning: #fbbf24;
+
+  --uir-shadow: 0 1px 2px rgb(0 0 0 / 40%);
+  --uir-shadow-large: 0 12px 32px rgb(0 0 0 / 55%);
+}
+
+/*
+ * High contrast.
+ *
+ * Built for WCAG 1.4.6 / 1.4.11 users. Borders become explicit rather than relying on
+ * color alone, and focus rings are thickened globally.
+ */
+[data-uir-scheme="high-contrast"] {
+  --uir-accent: #0000ee;
+  --uir-accent-contrast: #ffffff;
+
+  --uir-background: #ffffff;
+  --uir-surface: #ffffff;
+  --uir-surface-raised: #ffffff;
+
+  --uir-border: #000000;
+  --uir-border-strong: #000000;
+
+  --uir-text: #000000;
+  --uir-text-muted: #1a1a1a;
+  --uir-text-disabled: #595959;
+
+  --uir-danger: #c00000;
+  --uir-danger-contrast: #ffffff;
+  --uir-success: #006400;
+  --uir-warning: #7a4b00;
+
+  --uir-shadow: none;
+  --uir-shadow-large: none;
+}
+
+/*
+ * Density.
+ *
+ * Components scale spacing from `--uir-space` scale steps rather than a single
+ * multiplier, so density changes do not distort component-internal rhythm.
+ */
+[data-uir-density="compact"] {
+  --uir-space: 0.375rem;
+  --uir-font-size: 0.9375rem;
+  --uir-line-height: 1.45;
+}
+
+[data-uir-density="comfortable"] {
+  --uir-space: 0.625rem;
+  --uir-font-size: 1rem;
+  --uir-line-height: 1.6;
+}
+
+/*
+ * Optional auto dark mode.
+ *
+ * Only applies when the consumer has not pinned a scheme. `:where()` keeps this at
+ * zero specificity so an explicit `[data-uir-scheme]` on any ancestor still wins,
+ * which is what makes the override predictable.
+ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-uir-scheme]) {
+    color-scheme: dark;
+
+    --uir-accent: #60a5fa;
+    --uir-accent-contrast: #0b1120;
+
+    --uir-background: #0b1120;
+    --uir-surface: #111c33;
+    --uir-surface-raised: #17233d;
+
+    --uir-border: #1e2c47;
+    --uir-border-strong: #475569;
+
+    --uir-text: #e2e8f0;
+    --uir-text-muted: #94a3b8;
+    --uir-text-disabled: #64748b;
+
+    --uir-danger: #f87171;
+    --uir-danger-contrast: #1f0d0d;
+    --uir-success: #4ade80;
+    --uir-warning: #fbbf24;
+
+    --uir-shadow: 0 1px 2px rgb(0 0 0 / 40%);
+    --uir-shadow-large: 0 12px 32px rgb(0 0 0 / 55%);
+  }
+}
+
+/*
+ * Reduced motion.
+ *
+ * Library animations must not move for users who opted out. Consumers can still opt
+ * back in per component by setting `--uir-duration: 0ms` on a subtree.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --uir-duration: 0.01ms;
+    --uir-duration-fast: 0.01ms;
+  }
+}
+
+/*
+ * Forced colors / Windows High Contrast.
+ *
+ * Replace decorative color with system colors and let the OS draw the borders.
+ */
+@media (forced-colors: active) {
+  :root {
+    --uir-border: CanvasText;
+    --uir-border-strong: CanvasText;
+    --uir-accent: LinkText;
+    --uir-accent-contrast: Canvas;
+    --uir-shadow: none;
+    --uir-shadow-large: none;
+  }
+}

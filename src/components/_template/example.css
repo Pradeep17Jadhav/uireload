@@ -1,0 +1,58 @@
+/*
+ * Component styles.
+ *
+ * Copy this file to `src/components/<your-component>/<name>.css` and rename every
+ * occurrence of `example`.
+ *
+ * Folders starting with `_` are excluded from the build and from the stylesheet
+ * bundle, so this template is never published. It is still linted by
+ * `npm run lint:css`, which is what keeps it honest as the conventions change.
+ *
+ * Conventions, all enforced:
+ * - Rules live in `@layer uireload.components`, so a consumer can join the layer
+ *   stack and win without specificity games.
+ * - Logical properties only: `margin-inline-start`, not `margin-left`.
+ * - Visual state from `data-*` attributes, never from modifier class names.
+ * - No `!important`. A consumer must always be able to win without fighting.
+ * - Every class prefixed `uir-`.
+ *
+ * The stylesheet is assembled into `uireload/styles.css` by
+ * `scripts/bundle-css.mjs`. It is never imported from JavaScript: importing CSS for
+ * its side effects would make the package non-tree-shakeable.
+ */
+
+@layer uireload.components {
+  .uir-example {
+    display: block;
+    background: var(--uir-surface);
+    color: var(--uir-text);
+    font-family: var(--uir-font-family);
+    font-size: var(--uir-font-size);
+    line-height: var(--uir-line-height);
+    padding: var(--uir-space);
+    border: var(--uir-border-width) solid var(--uir-border);
+    border-radius: var(--uir-radius);
+  }
+
+  .uir-example[data-state="open"] {
+    border-color: var(--uir-accent);
+  }
+
+  /*
+   * Style every state from `data-*` attributes rather than modifier classes, so a
+   * consumer can restyle any state from their own CSS without our knowing their
+   * selector strategy. See src/components/README.md.
+   */
+  .uir-example[data-size="sm"] {
+    padding: calc(var(--uir-space) * 0.5);
+  }
+
+  .uir-example[data-size="lg"] {
+    padding: calc(var(--uir-space) * 1.5);
+  }
+
+  .uir-example[aria-disabled="true"] {
+    color: var(--uir-text-disabled);
+    cursor: not-allowed;
+  }
+}

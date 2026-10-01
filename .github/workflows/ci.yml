@@ -1,0 +1,111 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Cancel superseded runs on the same ref. Saves the most CI time and is the
+# single highest-value setting in this file.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Node ${{ matrix.node }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Current LTS and the previous one. Testing only the newest hides breakage
+        # for consumers who have not upgraded yet.
+        node: [20, 22]
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Verify
+        # `verify` is the single source of truth: format, lint, CSS lint, typecheck,
+        # build, tests, size budget, package audit. It is the same command a
+        # contributor runs locally, so CI cannot drift from local checks.
+        #
+        # Build precedes tests deliberately: some tests resolve the real published
+        # artefacts, so they must see a fresh `dist/` rather than a stale one from the
+        # previous commit.
+        run: npm run verify
+
+      - name: Build Storybook
+        # Built, not served: a broken preview config should fail the pull request
+        # rather than the next person who runs `npm run storybook`.
+        run: npm run build-storybook
+
+      - name: Upload coverage
+        if: matrix.node == 22 && matrix.os == 'ubuntu-latest'
+        run: npm run test:coverage
+
+      - name: Upload Storybook build
+        if: matrix.node == 22 && matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: storybook-static
+          path: storybook-static
+          retention-days: 7
+
+  size-report:
+    name: Bundle size
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Report
+        run: npm run size
+
+  # A dependency with a known vulnerability in a published library is a supply
+  # chain problem for every consumer, not just for us.
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=high
+
+  publish-canary:
+    name: Publish dry run
+    # Runs only for the default branch, and only packs. Verifies the tarball that
+    # would ship without claiming the version number.
+    if: github.ref == 'refs/heads/main'
+    needs: [verify]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      - run: npm ci
+      - run: npm run release:check
+      - run: npm pack --dry-run

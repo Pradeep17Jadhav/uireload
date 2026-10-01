@@ -1,0 +1,8 @@
+dist
+coverage
+storybook-static
+.consumer-test
+node_modules
+package-lock.json
+*.tgz
+CHANGELOG.md

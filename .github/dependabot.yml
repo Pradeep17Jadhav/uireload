@@ -1,0 +1,37 @@
+version: 2
+
+updates:
+  # Grouped so lockfile churn lands in one reviewable commit.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      # React is peer-only for consumers, but our own dev/test/Storybook copies must
+      # move in lockstep or the test environment stops matching what users run.
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+      storybook:
+        patterns:
+          - "@storybook/*"
+          - "storybook"
+      typescript:
+        patterns:
+          - "typescript"
+          - "typescript-eslint"
+          - "@typescript-eslint/*"
+    labels:
+      - dependencies
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    labels:
+      - dependencies
+      - ci

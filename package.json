@@ -1,0 +1,137 @@
+{
+  "name": "uireload",
+  "version": "0.1.0",
+  "description": "Small, composable, accessible React primitives with zero-runtime styling, consumer-owned theming and first-class RTL/i18n support.",
+  "keywords": [
+    "react",
+    "components",
+    "design-system",
+    "headless",
+    "accessible",
+    "a11y",
+    "rtl",
+    "i18n",
+    "typescript",
+    "css-variables"
+  ],
+  "license": "MIT",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./styles.css": "./dist/index.css",
+    "./tokens.css": "./dist/theme/tokens.css",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/index.d.ts"
+      ],
+      "styles.css": [
+        "./dist/index.css"
+      ],
+      "tokens.css": [
+        "./dist/theme/tokens.css"
+      ]
+    }
+  },
+  "peerDependencies": {
+    "react": ">=18.2 <20",
+    "react-dom": ">=18.2 <20"
+  },
+  "peerDependenciesMeta": {
+    "react-dom": {
+      "optional": true
+    }
+  },
+  "scripts": {
+    "clean": "rimraf dist coverage storybook-static .consumer-test",
+    "build": "npm run clean:dist && tsup && node scripts/bundle-css.mjs",
+    "clean:dist": "rimraf dist",
+    "build:js": "tsup",
+    "build:css": "node scripts/bundle-css.mjs",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:css": "node scripts/check-css-logical.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "size": "node scripts/report-sizes.mjs",
+    "sync:exports": "node scripts/sync-exports.mjs",
+    "sync:exports:check": "node scripts/sync-exports.mjs --check",
+    "check:pkg": "npm run sync:exports:check && publint --strict && attw --pack .",
+    "pack:check": "npm pack --dry-run",
+    "verify": "npm run format:check && npm run lint && npm run lint:css && npm run typecheck && npm run build && npm run test && npm run size && npm run check:pkg && npm run pack:check",
+    "release:check": "npm run verify"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@eslint/js": "^9.18.0",
+    "@storybook/addon-a11y": "^8.5.0",
+    "@storybook/addon-essentials": "^8.5.0",
+    "@storybook/react-vite": "^8.5.0",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.3",
+    "@types/react-dom": "^19.0.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "^3.0.2",
+    "eslint": "^9.18.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "globals": "^15.14.0",
+    "jsdom": "^25.0.1",
+    "prettier": "^3.4.2",
+    "publint": "^0.3.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "rimraf": "^6.0.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.20.0",
+    "vite": "^6.0.7",
+    "vitest": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=20.11"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uireload/uireload.git"
+  },
+  "bugs": {
+    "url": "https://github.com/uireload/uireload/issues"
+  },
+  "homepage": "https://github.com/uireload/uireload#readme"
+}

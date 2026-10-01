@@ -1,0 +1,61 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+
+    /* Type safety */
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowUnreachableCode": false,
+
+    /* Emit & isolation */
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+
+    /* Interop & correctness */
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+
+    /*
+     * `allowJs` exists so the `scripts/*.test.ts` unit tests can import the plain-JS
+     * build utilities. `checkJs` stays off: the utilities are Node scripts, not
+     * library code, and type-checking them would add noise without adding safety.
+     */
+    "allowJs": true,
+    "checkJs": false,
+
+    /* Editor / lint ergonomics */
+    "noEmit": true,
+    "types": ["vitest/globals", "@testing-library/jest-dom", "node"],
+
+    /* Path aliases (build-time only, see scripts/sync-exports.mjs) */
+    "baseUrl": ".",
+    "paths": {
+      "uireload": ["./src/index.ts"],
+      "uireload/components/*": ["./src/components/*/index.ts"],
+      "uireload-test": ["./tests/helpers.tsx"]
+    }
+  },
+  /*
+   * `.storybook` needs an explicit recursive glob: TypeScript skips dot-directories
+   * in bare `include` entries, which silently left the Storybook config unchecked.
+   *
+   * `scripts` is included for its `*.test.ts` unit tests. The `.mjs` utilities
+   * themselves are parsed but not type-checked; see `allowJs` above.
+   */
+  "include": ["src", "tests", "scripts", ".storybook/**/*", "tsup.config.ts", "vitest.config.ts"],
+  "exclude": ["dist", "coverage", "storybook-static", "node_modules", ".consumer-test"]
+}
