@@ -59,7 +59,7 @@ Three schemes ship by default, selected with `data-uir-scheme` on any ancestor:
 </div>
 ```
 
-Auto dark mode is opt-in and only applies when no scheme is pinned:
+Auto dark mode only applies when no scheme is pinned:
 
 ```css
 @media (prefers-color-scheme: dark) {
@@ -70,8 +70,37 @@ Auto dark mode is opt-in and only applies when no scheme is pinned:
 }
 ```
 
-That `:not()` is the point: an explicit `data-uir-scheme` anywhere always wins, so
-the override is predictable rather than dependent on specificity luck.
+## Where the scheme attribute goes
+
+**Put it on `<html>` or `<body>`.** Not on an arbitrary ancestor.
+
+```html
+<html data-uir-scheme="dark"></html>
+```
+
+This is not a style preference; it follows from the rule above. Auto dark mode is
+declared on `:root:not([data-uir-scheme])`, which means it is decided at the document
+root. A `data-uir-scheme` set deeper in the tree arrives _after_ those values have
+already been inherited, and cannot undo them.
+
+The consequence, stated precisely:
+
+| Pin                               | Works on a subtree? | Why                                                                                                 |
+| --------------------------------- | ------------------- | --------------------------------------------------------------------------------------------------- |
+| `data-uir-scheme="dark"`          | Yes                 | It only adds overrides.                                                                             |
+| `data-uir-scheme="high-contrast"` | Yes                 | Same.                                                                                               |
+| `data-uir-scheme="light"`         | **No**              | Light is the base palette; a pin on a descendant cannot beat values already inherited from `:root`. |
+
+So a page that pins `light` must pin it on `<html>`, otherwise a user whose OS
+prefers dark sees a dark page. `:root:not([data-uir-scheme])` has specificity
+0,2,0, which is why a 0,1,0 `[data-uir-scheme="light"]` rule loses to it.
+
+`[data-uir-scheme="light"]` _is_ declared alongside `:root` so the pin is meaningful
+wherever it can be � see `tests/theme-tokens.test.ts`, which asserts both facts.
+
+If you need genuinely per-subtree light and dark simultaneously, set the tokens
+directly in a scoped rule. Plain CSS cannot express it, and a design system that
+pretends otherwise is worse than one that says so.
 
 ## Density
 

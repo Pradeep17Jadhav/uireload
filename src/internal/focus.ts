@@ -32,12 +32,19 @@ export function getTabbableElements(container: HTMLElement | null): HTMLElement[
   return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(isVisible);
 }
 
-/** All roving-group members within a container, in DOM order. */
-export function getRovingItems(container: HTMLElement | null): HTMLElement[] {
+/**
+ * All roving-group members within a container, in DOM order.
+ *
+ * `selector` defaults to the `[data-uir-roving-item]` marker, but a component whose
+ * members are already identifiable by role can pass its own rather than adding a
+ * marker attribute purely so this helper can find them.
+ */
+export function getRovingItems(
+  container: HTMLElement | null,
+  selector: string = `[${ROVING_ITEM_ATTRIBUTE}]`
+): HTMLElement[] {
   if (!container) return [];
-  return Array.from(container.querySelectorAll<HTMLElement>(`[${ROVING_ITEM_ATTRIBUTE}]`)).filter(
-    isVisible
-  );
+  return Array.from(container.querySelectorAll<HTMLElement>(selector)).filter(isVisible);
 }
 
 /** Move focus to a node without scrolling the page unless necessary. */
@@ -55,6 +62,24 @@ export interface RovingFocusOptions {
   orientation?: "horizontal" | "vertical" | "both";
   /** Loop from last to first and back. Default `true`, matching WAI-ARIA APG. */
   loop?: boolean;
+  /**
+   * How to find the group's members among the container's children.
+   *
+   * Defaults to the `[data-uir-roving-item]` marker written by `getItemProps`. A
+   * component whose members are already identifiable by role — a radiogroup's radios,
+   * for instance — passes a selector instead of adding a marker attribute purely so
+   * this hook can find them.
+   */
+  itemSelector?: string | undefined;
+  /**
+   * Called when an arrow key or Home/End moves focus to a different member.
+   *
+   * The APG radio-group pattern requires selection to follow focus, which is not
+   * something a focus-management helper can do on its own. The index is into the
+   * resolved member list, so a consumer must re-resolve it — hence `index` rather
+   * than the element.
+   */
+  onNavigate?: ((index: number) => void) | undefined;
 }
 
 /** Key codes for the four arrow keys, checked once. */
@@ -69,7 +94,12 @@ const ARROW_KEYS = new Set(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
  * Returns `getItemProps` and `handleKeyDown` rather than a component, so items stay
  * plain DOM elements owned by the consumer's markup.
  */
-export function useRovingFocus({ orientation = "vertical", loop = true }: RovingFocusOptions = {}) {
+export function useRovingFocus({
+  orientation = "vertical",
+  loop = true,
+  itemSelector = `[${ROVING_ITEM_ATTRIBUTE}]`,
+  onNavigate,
+}: RovingFocusOptions = {}) {
   const activeRef = useRef<HTMLElement | null>(null);
   /*
    * The group container is captured the first time a key is handled and then kept.
@@ -100,7 +130,7 @@ export function useRovingFocus({ orientation = "vertical", loop = true }: Roving
     const container = current.parentElement;
     if (container) containerRef.current = container;
 
-    const items = getRovingItems(container);
+    const items = getRovingItems(container, itemSelector);
 
     if (items.length === 0) return;
 
@@ -144,6 +174,10 @@ export function useRovingFocus({ orientation = "vertical", loop = true }: Roving
 
     activeRef.current = node;
     focusElement(node);
+
+    // Selection-follows-focus: the APG radio-group pattern requires it, and a helper
+    // that moves focus cannot assume the consumer wants it, so it is opt-in.
+    onNavigate?.(target);
   };
 
   /*
@@ -158,7 +192,7 @@ export function useRovingFocus({ orientation = "vertical", loop = true }: Roving
     const container = containerRef.current;
     if (!container?.isConnected) return;
 
-    const items = getRovingItems(container);
+    const items = getRovingItems(container, itemSelector);
     if (items.length === 0) return;
     if (items.some((item) => item.tabIndex === 0)) return;
 

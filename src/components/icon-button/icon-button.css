@@ -1,0 +1,99 @@
+/*
+ * IconButton styles.
+ *
+ * Extends the Button stylesheet rather than restating them. The only new decisions
+ * are the square box, the edge offset, and hiding the empty label slot.
+ */
+
+@layer uireload.components {
+  /*
+   * Square, and sized by the control height so it lines up with a `Button` of the
+   * same size. Fiori collapses a button's min-width and padding when it is
+   * icon-only: `:host([icon-only]:not([has-end-icon])) .ui5-button-root{min-width:auto;
+   * padding:0}`.
+   */
+  .uir-icon-button {
+    min-inline-size: var(--uir-control-height-md);
+    padding-inline: 0;
+  }
+
+  .uir-icon-button[data-size="sm"] {
+    min-inline-size: var(--uir-control-height-sm);
+  }
+
+  .uir-icon-button[data-size="md"] {
+    min-inline-size: var(--uir-control-height-md);
+  }
+
+  .uir-icon-button[data-size="lg"] {
+    min-inline-size: var(--uir-control-height-lg);
+  }
+
+  /*
+   * `Button` renders an always-present loading wrapper and a label slot. For an icon
+   * button the label is empty, so the button would still reserve a flex child for it.
+   * Collapsing it keeps the icon optically centred.
+   */
+  .uir-icon-button .uir-button__label:empty {
+    display: none;
+  }
+
+  .uir-icon-button__icon {
+    align-items: center;
+    display: inline-flex;
+    justify-content: center;
+  }
+
+  .uir-icon-button[data-size="sm"] .uir-icon-button__icon {
+    block-size: var(--uir-icon-size-sm);
+    inline-size: var(--uir-icon-size-sm);
+  }
+
+  .uir-icon-button[data-size="md"] .uir-icon-button__icon {
+    block-size: var(--uir-icon-size-md);
+    inline-size: var(--uir-icon-size-md);
+  }
+
+  .uir-icon-button[data-size="lg"] .uir-icon-button__icon {
+    block-size: var(--uir-icon-size-lg);
+    inline-size: var(--uir-icon-size-lg);
+  }
+
+  /*
+   * The icon inherits the control's colour so it follows every tone and state. A
+   * consumer-supplied SVG with a hardcoded `fill` will not; that is intentional
+   * (explicit beats inherited for brand assets) and documented.
+   */
+  .uir-icon-button__icon > svg {
+    block-size: 100%;
+    inline-size: 100%;
+  }
+
+  /* ---- Edge ---------------------------------------------------------- */
+
+  /*
+   * Logical `start` / `end`, so the offset mirrors in RTL. MUI calls this `edge` and
+   * implements it with a negative margin; the same mechanism, same name.
+   */
+  .uir-icon-button[data-edge="start"] {
+    margin-inline-start: calc(-1 * var(--uir-control-pad-inline-md));
+    padding-inline-start: 0;
+  }
+
+  .uir-icon-button[data-edge="end"] {
+    margin-inline-end: calc(-1 * var(--uir-control-pad-inline-md));
+    padding-inline-end: 0;
+  }
+
+  .uir-icon-button[data-edge="start"][data-size="sm"],
+  .uir-icon-button[data-edge="end"][data-size="sm"] {
+    margin-inline-start: calc(-1 * var(--uir-control-pad-inline-sm));
+    margin-inline-end: calc(-1 * var(--uir-control-pad-inline-sm));
+  }
+
+  .uir-icon-button[data-edge="start"][data-size="lg"],
+  .uir-icon-button[data-edge="end"][data-size="lg"] {
+    margin-inline-start: calc(-1 * var(--uir-control-pad-inline-lg));
+    margin-inline-end: calc(-1 * var(--uir-control-pad-inline-lg));
+  }
+}

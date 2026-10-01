@@ -52,6 +52,21 @@ These are checked in CI, not left to review:
 | Bundle size budget                               | `npm run size`                       |
 | Every message key namespaced and documented      | `src/i18n/catalog.test.ts`           |
 
+## Adding a component
+
+The four shipped components (`button`, `icon-button`, `toggle-button`,
+`toggle-button-group`) are the reference implementations. Read
+`docs/foundations.md` first — it is the consistency contract they all implement, and
+the token layer in `src/theme/tokens.css` is what makes it structural rather than
+aspirational.
+
+## Adding a component
+
+The four shipped components (`button`, `icon-button`, `toggle-button`,
+`toggle-button-group`) are the reference implementations. Read
+`docs/foundations.md` first: it is the consistency contract they all implement, and
+the `--uir-control-*` token layer is what makes it structural rather than aspirational.
+
 ## Adding a runtime dependency
 
 The answer is no. If a feature genuinely needs one, it needs an ADR in

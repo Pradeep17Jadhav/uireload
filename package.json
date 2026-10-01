@@ -39,12 +39,64 @@
     },
     "./styles.css": "./dist/index.css",
     "./tokens.css": "./dist/theme/tokens.css",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./components/button": {
+      "import": {
+        "types": "./dist/components/button/index.d.ts",
+        "default": "./dist/components/button/index.js"
+      },
+      "require": {
+        "types": "./dist/components/button/index.d.cts",
+        "default": "./dist/components/button/index.cjs"
+      }
+    },
+    "./components/icon-button": {
+      "import": {
+        "types": "./dist/components/icon-button/index.d.ts",
+        "default": "./dist/components/icon-button/index.js"
+      },
+      "require": {
+        "types": "./dist/components/icon-button/index.d.cts",
+        "default": "./dist/components/icon-button/index.cjs"
+      }
+    },
+    "./components/toggle-button": {
+      "import": {
+        "types": "./dist/components/toggle-button/index.d.ts",
+        "default": "./dist/components/toggle-button/index.js"
+      },
+      "require": {
+        "types": "./dist/components/toggle-button/index.d.cts",
+        "default": "./dist/components/toggle-button/index.cjs"
+      }
+    },
+    "./components/toggle-button-group": {
+      "import": {
+        "types": "./dist/components/toggle-button-group/index.d.ts",
+        "default": "./dist/components/toggle-button-group/index.js"
+      },
+      "require": {
+        "types": "./dist/components/toggle-button-group/index.d.cts",
+        "default": "./dist/components/toggle-button-group/index.cjs"
+      }
+    }
   },
   "typesVersions": {
     "*": {
       "*": [
         "./dist/index.d.ts"
+      ],
+      "components/button": [
+        "./dist/components/button/index.d.ts"
+      ],
+      "components/icon-button": [
+        "./dist/components/icon-button/index.d.ts"
+      ],
+      "components/toggle-button": [
+        "./dist/components/toggle-button/index.d.ts"
+      ],
+      "components/toggle-button-group": [
+        "./dist/components/toggle-button-group/index.d.ts"
       ],
       "styles.css": [
         "./dist/index.css"
@@ -67,8 +119,8 @@
     "clean": "rimraf dist coverage storybook-static .consumer-test",
     "build": "npm run clean:dist && npm run lint:css && tsup && node scripts/bundle-css.mjs",
     "clean:dist": "rimraf dist",
-    "build:js": "tsup",
     "build:css": "node scripts/bundle-css.mjs",
+    "build:js": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
@@ -79,8 +131,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
+    "storybook": "npm run build:css && storybook dev -p 6006",
+    "build-storybook": "npm run build:css && storybook build",
     "size": "node scripts/report-sizes.mjs",
     "sync:exports": "node scripts/sync-exports.mjs",
     "sync:exports:check": "node scripts/sync-exports.mjs --check",
@@ -104,6 +156,7 @@
     "@types/react-dom": "^19.0.2",
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/coverage-v8": "^3.0.2",
+    "axe-core": "^4.13.0",
     "eslint": "^9.18.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "globals": "^15.14.0",

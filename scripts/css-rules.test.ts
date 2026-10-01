@@ -8,16 +8,19 @@
 
 import { describe, expect, it } from "vitest";
 
-import { checkCss, checkLine, classSelectors, stripNonCode, DISABLE_MARKER } from "./css-rules.mjs";
+import {
+  checkCss,
+  checkLine,
+  classSelectors,
+  stripBlockComments,
+  stripNonCode,
+  DISABLE_MARKER,
+} from "./css-rules.mjs";
 
 const messages = (source: string) =>
   checkCss(source, "probe.css").map((violation) => violation.message);
 
 describe("stripNonCode", () => {
-  it("removes block comments", () => {
-    expect(stripNonCode("/* .leaked { margin-left: 1px } */ .uir-a {}")).toBe(" .uir-a {}");
-  });
-
   it("removes @import targets, which contain dots", () => {
     // `@import "./theme/tokens.css"` would otherwise parse `.css` as a class selector.
     expect(stripNonCode('@import "./theme/tokens.css";')).toBe("");
@@ -29,6 +32,45 @@ describe("stripNonCode", () => {
 
   it("removes quoted strings", () => {
     expect(stripNonCode('content: ".notAClass";')).toBe('content: "";');
+  });
+});
+
+describe("stripBlockComments", () => {
+  it("preserves line numbers", () => {
+    const source = ".uir-a {}\n/* one\n   two\n   three */\n.leaked {}\n";
+    const stripped = stripBlockComments(source);
+
+    expect(stripped.split("\n")).toHaveLength(source.split("\n").length);
+    expect(stripped.split("\n")[4]).toBe(".leaked {}");
+  });
+
+  it("removes prose that spans several lines", () => {
+    // Regression: per-line stripping cannot match a comment that opens on one line and
+    // closes on another, so its contents were parsed as code. This is exactly the shape
+    // of a component stylesheet quoting Fiori's generated CSS.
+    const source = [
+      "/*",
+      " * Fiori does:",
+      " *   :host([icon-only]) { padding: 0 }",
+      " */",
+      ".uir-a {}",
+      ".leaked {}",
+    ].join("\n");
+
+    expect(messages(source)).toHaveLength(1);
+    expect(messages(source)[0]).toMatch(/unnamespaced class selector `.leaked`/);
+  });
+
+  it("still reports the real violation on the correct line", () => {
+    const source = ["/*", " * .commented { margin-left: 0 }", " */", ".leaked {}"].join("\n");
+    const found = checkCss(source, "a.css");
+
+    expect(found).toHaveLength(1);
+    expect(found[0]?.line).toBe(4);
+  });
+
+  it("strips consecutive single-line comments", () => {
+    expect(stripBlockComments("/* .a */ /* .b */ .uir-c {}").trim()).toBe(".uir-c {}");
   });
 });
 

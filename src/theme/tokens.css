@@ -16,7 +16,19 @@
  * want the token contract without any component styles.
  */
 
-:root {
+/*
+ * `[data-uir-scheme="light"]` is declared alongside `:root` on purpose.
+ *
+ * Light is the *base* palette, not an override, so there is no `[data-uir-scheme="light"]`
+ * rule by default and pinning `light` on an element would do nothing at all. Listing it
+ * here makes the pin meaningful whenever it can be.
+ *
+ * It still cannot beat the auto-dark rule, which lives on
+ * `:root:not([data-uir-scheme])` at specificity 0,2,0 and is applied after this block.
+ * See "Where the scheme attribute goes" in `docs/theming.md`.
+ */
+:root,
+[data-uir-scheme="light"] {
   /* ---- Color primitives ---------------------------------------------- */
   --uir-accent: #2563eb;
   --uir-accent-contrast: #ffffff;
@@ -26,15 +38,37 @@
   --uir-surface-raised: #ffffff;
 
   --uir-border: #e2e8f0;
-  --uir-border-strong: #94a3b8;
+  /*
+   * The outline variant's border, and the neutral tone's fill border.
+   *
+   * This is a UI component boundary, so WCAG SC 1.4.11 applies and requires 3:1 against
+   * the adjacent background. A conventional slate-400 (#94a3b8) reaches only 2.56:1 on
+   * white, which is too faint to be the only thing marking a button as interactive.
+   * Slate-500 gives 4.76:1. Asserted in `tests/contrast.test.ts`.
+   */
+  --uir-border-strong: #64748b;
 
   --uir-text: #0f172a;
   --uir-text-muted: #475569;
   --uir-text-disabled: #94a3b8;
 
-  --uir-danger: #dc2626;
+  /*
+   * Darker than a stock red-600 (#dc2626) for the same reason as `--uir-success`:
+   * as a ghost or outline label on a paler wash it would fall below 4.5:1. Red-700
+   * clears every pair, and stays clearly red.
+   */
+  --uir-danger: #b91c1c;
   --uir-danger-contrast: #ffffff;
-  --uir-success: #16a34a;
+  /*
+   * The success ramp is one step darker than a stock palette scale.
+   *
+   * A conventional green-600 (#16a34a) reaches only 3.30:1 as a fill behind white text
+   * and 3.00:1 as text on the page, which fails WCAG SC 1.4.3 (4.5:1) for a 1rem
+   * button label. Green-700 gives 5.02:1 and 4.57:1 respectively, and remains
+   * unmistakably green. `tests/contrast.test.ts` measures every pair, so this cannot
+   * silently regress.
+   */
+  --uir-success: #15803d;
   --uir-warning: #d97706;
 
   /* ---- Typography ------------------------------------------------------ */
@@ -60,6 +94,143 @@
 
   /* ---- Layers ---------------------------------------------------------- */
   --uir-z-index-overlay: 1000;
+
+  /* ==================================================================== *
+   * Control tokens.
+   *
+   * The single source of truth for every interactive component's size, shape,
+   * typography and state. A component styles from these and nothing else, which is
+   * how components stay consistent without a review checklist.
+   *
+   * Values derived from SAP Fiori's `--_ui5_button_*`, read from
+   * `@ui5/webcomponents/dist/generated/themes/sap_horizon/parameters-bundle.css.js`,
+   * reconciled with MUI's three-tier size scale. Renamed to the `--uir-*` namespace.
+   * Full rationale in `docs/foundations.md`.
+   * ==================================================================== */
+
+  /* Height per size. `md` = Fiori cozy (2.25rem), `sm` = Fiori compact (1.5rem). */
+  --uir-control-height-sm: 1.5rem;
+  --uir-control-height-md: 2.25rem;
+  --uir-control-height-lg: 2.75rem;
+
+  /*
+   * Minimum width. Fiori uses 2rem compact / 2.25rem cozy
+   * (`--_ui5_button_base_min_width`). Raised to 3rem so a short label is never
+   * truncated before a longer one, and so `sm` satisfies WCAG SC 2.5.8 on its own
+   * rather than depending on label length.
+   */
+  --uir-control-min-width: 3rem;
+
+  /*
+   * Inline padding. Fiori: .4375rem compact / .5625rem cozy
+   * (`--_ui5_button_base_padding`), rounded up, with an added `lg` step.
+   */
+  --uir-control-pad-inline-sm: 0.5rem;
+  --uir-control-pad-inline-md: 0.75rem;
+  --uir-control-pad-inline-lg: 1rem;
+
+  /*
+   * Block padding, for controls whose content is shorter than the control (inputs,
+   * selects). Kept separate from inline so a dense row can shrink vertically without
+   * also narrowing the label gutter.
+   */
+  --uir-control-pad-block-sm: 0.25rem;
+  --uir-control-pad-block-md: 0.375rem;
+  --uir-control-pad-block-lg: 0.5rem;
+
+  /* Shape. One radius for all controls, so they read as one family. */
+  --uir-control-radius: 0.375rem;
+  --uir-control-border-width: 1px;
+
+  /* Gap between an icon and the adjacent label. Fiori: .375rem. */
+  --uir-control-gap: 0.375rem;
+
+  /* Typography per size. */
+  --uir-control-font-size-sm: 0.875rem;
+  --uir-control-font-size-md: 1rem;
+  --uir-control-font-size-lg: 1.125rem;
+
+  /*
+   * Control labels sit slightly heavier than body text. Fiori sets
+   * `--sapButton_Emphasized_FontFamily` at Semibold; 500 is the closest widely
+   * available weight, and holding it constant stops the family shifting between
+   * variants.
+   */
+  --uir-control-font-weight: 500;
+
+  /*
+   * Icon size per control size. Set below the text size so an icon reads as
+   * subordinate to the label rather than competing with it.
+   */
+  --uir-icon-size-sm: 1rem;
+  --uir-icon-size-md: 1.25rem;
+  --uir-icon-size-lg: 1.5rem;
+
+  /*
+   * Disabled opacity.
+   *
+   * Applied with `pointer-events` left intact. MUI's ButtonBase sets
+   * `pointer-events: none`, which breaks tooltips on disabled controls; MUI documents
+   * that as a limitation on their Button page. Fiori uses `pointer-events: unset`
+   * with `cursor: default`, which is what this token assumes.
+   *
+   * Disabled controls are exempt from WCAG SC 1.4.3 as inactive user interface
+   * components, so a low-contrast disabled state is conformant.
+   */
+  /*
+   * Focus ring. Fiori uses .125rem (2px) solid --sapContent_FocusColor at a .0625rem
+   * (1px) inset (`--_ui5_button_focused_border`); the offset here reproduces the gap
+   * that inset achieves while leaving the ring itself outside the control, so it does
+   * not sit under a filled background.
+   */
+  --uir-focus-ring-width: 2px;
+  --uir-focus-ring-offset: 2px;
+  --uir-focus-ring-color: var(--uir-accent);
+
+  --uir-disabled-opacity: 0.38;
+
+  /* ==================================================================== *
+   * Interaction colours.
+   *
+   * Each tone resolves to a set rather than a single colour, because a control has
+   * three visual states per tone (rest / hover / active) plus a subtle fill for the
+   * `ghost` variant. Fiori models exactly this: `--sapButton_Emphasized_Background`,
+   * `_Hover_Background`, `_Active_Background`, and the same trio per design
+   * (`@ui5/webcomponents/dist/css/themes/Button.css`).
+   *
+   * Without these, every component would invent its own hover colour and they would
+   * drift. Documented in `docs/foundations.md` section 8.
+   * ==================================================================== */
+
+  /*
+   * The neutral tone's fill ramp.
+   *
+   * `solid` has to look filled, and the neutral tone has no colour to fill with. Using
+   * `--uir-surface-raised` (white in the light scheme) made a neutral `solid` button
+   * pixel-identical to a neutral `outline` button — white on white, differing only by a
+   * border — so the emphasis ladder had only two visible steps for the most common tone.
+   *
+   * These are surfaces, not tones: they carry no meaning, only weight. `accent`,
+   * `positive` and `danger` still fill with their own colour.
+   */
+  --uir-neutral-fill: #f1f5f9;
+  --uir-neutral-fill-hover: #e2e8f0;
+  --uir-neutral-fill-active: #cbd5e1;
+
+  --uir-accent-hover: #1d4ed8;
+  --uir-accent-active: #1e40af;
+  /* Fill behind a `ghost` accent control, and its hover text colour. */
+  /* The -50 step, so all three tones' hover washes carry the same visual weight. */
+  --uir-accent-subtle: #eff6ff;
+
+  --uir-success-contrast: #ffffff;
+  --uir-success-hover: #166534;
+  --uir-success-active: #14532d;
+  --uir-success-subtle: #f0fdf4;
+
+  --uir-danger-hover: #991b1b;
+  --uir-danger-active: #7f1d1d;
+  --uir-danger-subtle: #fef2f2;
 }
 
 /*
@@ -87,7 +258,28 @@
   --uir-danger: #f87171;
   --uir-danger-contrast: #1f0d0d;
   --uir-success: #4ade80;
+  --uir-success-contrast: #0b1120;
   --uir-warning: #fbbf24;
+
+  /*
+   * Interaction colours invert on a dark surface: hover moves toward the foreground
+   * rather than away from it, so "more emphasis" still means "brighter".
+   */
+  --uir-neutral-fill: #1e293b;
+  --uir-neutral-fill-hover: #334155;
+  --uir-neutral-fill-active: #475569;
+
+  --uir-accent-hover: #93c5fd;
+  --uir-accent-active: #bfdbfe;
+  --uir-accent-subtle: rgba(96, 165, 250, 0.16);
+
+  --uir-success-hover: #86efac;
+  --uir-success-active: #bbf7d0;
+  --uir-success-subtle: rgba(74, 222, 128, 0.16);
+
+  --uir-danger-hover: #fca5a5;
+  --uir-danger-active: #fecaca;
+  --uir-danger-subtle: rgba(248, 113, 113, 0.16);
 
   --uir-shadow: 0 1px 2px rgb(0 0 0 / 40%);
   --uir-shadow-large: 0 12px 32px rgb(0 0 0 / 55%);
@@ -117,7 +309,29 @@
   --uir-danger: #c00000;
   --uir-danger-contrast: #ffffff;
   --uir-success: #006400;
+  --uir-success-contrast: #ffffff;
   --uir-warning: #7a4b00;
+
+  /*
+   * Hover and active must stay distinguishable without relying on hue alone, so the
+   * border changes weight instead: hover thickens, active thickens further.
+   */
+  --uir-neutral-fill: #1f2937;
+  --uir-neutral-fill-hover: #374151;
+  --uir-neutral-fill-active: #4b5563;
+
+  --uir-accent-hover: #0000ee;
+  --uir-accent-active: #000080;
+  /* The -50 step, so all three tones' hover washes carry the same visual weight. */
+  --uir-accent-subtle: #eff6ff;
+
+  --uir-success-hover: #006400;
+  --uir-success-active: #004000;
+  --uir-success-subtle: #f0fdf4;
+
+  --uir-danger-hover: #c00000;
+  --uir-danger-active: #8a0000;
+  --uir-danger-subtle: #fef2f2;
 
   --uir-shadow: none;
   --uir-shadow-large: none;
@@ -169,7 +383,24 @@
     --uir-danger: #f87171;
     --uir-danger-contrast: #1f0d0d;
     --uir-success: #4ade80;
+    --uir-success-contrast: #0b1120;
     --uir-warning: #fbbf24;
+
+    --uir-neutral-fill: #1e293b;
+    --uir-neutral-fill-hover: #334155;
+    --uir-neutral-fill-active: #475569;
+
+    --uir-accent-hover: #93c5fd;
+    --uir-accent-active: #bfdbfe;
+    --uir-accent-subtle: rgba(96, 165, 250, 0.16);
+
+    --uir-success-hover: #86efac;
+    --uir-success-active: #bbf7d0;
+    --uir-success-subtle: rgba(74, 222, 128, 0.16);
+
+    --uir-danger-hover: #fca5a5;
+    --uir-danger-active: #fecaca;
+    --uir-danger-subtle: rgba(248, 113, 113, 0.16);
 
     --uir-shadow: 0 1px 2px rgb(0 0 0 / 40%);
     --uir-shadow-large: 0 12px 32px rgb(0 0 0 / 55%);

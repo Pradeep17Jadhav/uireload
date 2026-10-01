@@ -1,8 +1,11 @@
 # Component authoring
 
-This directory holds one folder per public component. Nothing here is exported yet;
-the repository is at the stage where the first component can be added with no
-architectural restructuring.
+This directory holds one folder per public component.
+
+**Before writing any of it, read [`docs/foundations.md`](../../docs/foundations.md).**
+It specifies sizes, the emphasis ladder, the tone set, the six control states, shape,
+typography and truncation. A component that implements those is consistent with every
+other component by construction; one that invents its own scale is not.
 
 ## Layout
 

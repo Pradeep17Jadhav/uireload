@@ -45,7 +45,7 @@ npm install uireload
 import { Button } from "uireload/components/button";
 
 // The barrel works too and tree-shakes the same way.
-import { Button, Dialog } from "uireload";
+import { Button, ToggleButtonGroup } from "uireload";
 ```
 
 ```ts
@@ -53,8 +53,24 @@ import { Button, Dialog } from "uireload";
 import "uireload/styles.css";
 ```
 
-Components are not implemented yet. The imports above are the intended API and are
-wired through the build, the export map and the type declarations.
+```tsx
+<Button variant="solid" tone="accent" size="md">
+  Save
+</Button>
+
+<ToggleButtonGroup label="View" defaultValue="grid">
+  <ToggleButton value="grid">Grid</ToggleButton>
+  <ToggleButton value="list">List</ToggleButton>
+</ToggleButtonGroup>
+```
+
+Emphasis and intent are separate axes, so every tone exists at every emphasis level:
+
+|           | `neutral` | `accent`       | `positive` | `danger`              |
+| --------- | --------- | -------------- | ---------- | --------------------- |
+| `solid`   |           | Primary action | Confirm    | Destructive primary   |
+| `outline` |           | Secondary      |            | Destructive secondary |
+| `ghost`   | Tertiary  | Quiet accent   |            | Quiet destructive     |
 
 ## Theming
 
@@ -81,11 +97,16 @@ mirrored as a typed contract in `src/theme/tokens.ts`.
 src/
   index.ts             public API barrel (re-exports only)
   types.ts             shared public prop types
+  foundations.ts       Variant / Tone / Size, control token names
   index.css            base + utility layers, assembled into styles.css
-  theme/               token contract and defaults
+  theme/               token contract, control tokens, interaction colours
   i18n/                message catalog and interpolation
   internal/            private utilities: focus, state, refs, events, RTL
   components/
+    button/            Button
+    icon-button/       IconButton
+    toggle-button/     ToggleButton
+    toggle-button-group/ ToggleButtonGroup
     _template/         authoring template, excluded from the build
 tests/
   conventions.test.ts        CSS and token architecture

@@ -55,12 +55,39 @@ export {
 } from "./i18n";
 
 /* ------------------------------------------------------------ components --- */
+export { Button } from "./components/button";
+export type { ButtonProps, ButtonOwnProps, ButtonType } from "./components/button";
+
+export { IconButton } from "./components/icon-button";
+export type { IconButtonProps, IconButtonOwnProps } from "./components/icon-button";
+
+export { ToggleButton } from "./components/toggle-button";
+export type {
+  ToggleButtonProps,
+  ToggleButtonOwnProps,
+  ToggleButtonRole,
+} from "./components/toggle-button";
+
+export { ToggleButtonGroup } from "./components/toggle-button-group";
+export type { ToggleButtonGroupProps, SelectionMode } from "./components/toggle-button-group";
+
+/* ---------------------------------------------------------- foundations --- */
 /*
- * One re-export per component, added as components land:
- *
- * export { Button } from "./components/button";
- * export type { ButtonProps } from "./components/button";
- *
- * Component files are intentionally absent. This repository contains
- * infrastructure only; see `src/components/README.md`.
+ * The shared design contract. Exported so consumers can type their own abstractions
+ * against the same `Variant` / `Tone` / `Size`, and so `CONTROL_TOKENS` lets tooling
+ * reference token names without duplicating strings. See `docs/foundations.md`.
  */
+export {
+  VARIANTS,
+  TONES,
+  SIZES,
+  CONTROL_STATES,
+  CONTROL_TOKENS,
+  controlToken,
+  isVariant,
+  isTone,
+  isSize,
+  type Variant,
+  type Tone,
+  type ControlState,
+} from "./foundations";

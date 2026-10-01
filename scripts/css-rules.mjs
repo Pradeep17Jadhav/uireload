@@ -71,18 +71,36 @@ export const VALUE_CHECKS = [
 export const CLASS_PREFIX = "uir-";
 
 /**
- * Strip constructs that can look like rules but are not.
+ * Strip block comments from a whole stylesheet, preserving line numbers.
  *
- * Comments, quoted strings, `@import` targets and `url()` bodies all contain dots
- * (e.g. `./theme/tokens.css`, `0.5rem`), and a naive scan reads them as class
- * selectors. Comments go first so prose documenting `margin-left` is not flagged.
+ * Each comment is replaced with one newline per line it spanned, so line indices still
+ * correspond to the original source and error messages stay accurate.
+ *
+ * This has to run over the whole file rather than per line. A block comment that opens
+ * on one line and closes on another cannot be matched line by line, so its prose gets
+ * parsed as code. That produced a real false positive on the first component
+ * stylesheet, whose comment quoted Fiori's generated CSS.
  *
  * @param {string} css
  * @returns {string}
  */
-export function stripNonCode(css) {
-  return css
-    .replace(/\/\*[\s\S]*?\*\//g, "")
+export function stripBlockComments(css) {
+  return css.replace(/\/\*[\s\S]*?\*\//g, (comment) => {
+    const newlines = comment.match(/\n/g);
+    return newlines === null ? "" : newlines.join("");
+  });
+}
+
+/**
+ * Strip constructs that can look like rules but are not, within a single line.
+ *
+ * Comments must already be gone; see {@link stripBlockComments}.
+ *
+ * @param {string} line
+ * @returns {string}
+ */
+export function stripNonCode(line) {
+  return line
     .replace(/@import[^;]+;/g, "")
     .replace(/url\([^)]*\)/g, "")
     .replace(/"[^"]*"/g, '""')
@@ -113,16 +131,26 @@ export function classSelectors(line) {
 /**
  * Check one line of CSS.
  *
+ * `line` should already have block comments stripped; see
+ * {@link checkCss}, which does that for the whole file.
+ *
  * @param {string} line
- * @param {{ disableMarker?: string, prefix?: string }} [options]
+ * @param {{ suppressed?: boolean, prefix?: string }} [options]
  * @returns {CssViolation[]}
  */
 export function checkLine(line, options = {}) {
-  const { disableMarker = DISABLE_MARKER, prefix = CLASS_PREFIX } = options;
+  const { prefix = CLASS_PREFIX } = options;
+
+  /*
+   * Suppression is decided by the caller from the *original* line. The marker is
+   * almost always written as a trailing comment, and by the time comments are
+   * stripped it would be gone � which would silently disable every inline
+   * suppression in the codebase.
+   */
+  if (options.suppressed === true) return [];
 
   const code = stripNonCode(line).trim();
   if (code === "") return [];
-  if (line.includes(disableMarker)) return [];
 
   /** @type {CssViolation[]} */
   const violations = [];
@@ -198,16 +226,27 @@ export function checkLine(line, options = {}) {
  * @returns {CssViolation[]}
  */
 export function checkCss(source, file, options = {}) {
+  const { disableMarker = DISABLE_MARKER, prefix = CLASS_PREFIX } = options;
+
   /** @type {CssViolation[]} */
   const found = [];
 
-  source.split("\n").forEach((line, index) => {
-    for (const violation of checkLine(line, options)) {
-      violation.file = file;
-      violation.line = index + 1;
-      found.push(violation);
-    }
-  });
+  const original = source.split("\n");
+
+  // Comments are stripped for the whole file first, with line numbers preserved, so a
+  // multi-line comment's prose is never read as a rule.
+  stripBlockComments(source)
+    .split("\n")
+    .forEach((line, index) => {
+      // The marker is read from the original line, because it lives in a comment.
+      const suppressed = (original[index] ?? "").includes(disableMarker);
+
+      for (const violation of checkLine(line, { prefix, suppressed })) {
+        violation.file = file;
+        violation.line = index + 1;
+        found.push(violation);
+      }
+    });
 
   return found;
 }

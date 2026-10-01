@@ -1,0 +1,78 @@
+/*
+ * ToggleButtonGroup styles.
+ *
+ * The group is a container; its members come from `Button` and are joined edge to
+ * edge. Fiori does the same on `ui5-segmented-button-item`:
+ * `:host(:not(:first-child))` collapses one side.
+ */
+
+@layer uireload.components {
+  .uir-toggle-button-group {
+    display: inline-flex;
+    /* Members butt against each other with no gap, so the seams read as one control. */
+    gap: 0;
+    /* A group must not inherit a stray radius from a flex ancestor. */
+    vertical-align: middle;
+  }
+
+  .uir-toggle-button-group[data-orientation="horizontal"] {
+    flex-direction: row;
+  }
+
+  .uir-toggle-button-group[data-orientation="vertical"] {
+    flex-direction: column;
+  }
+
+  /*
+   * Rounded only on the outer ends. The interior corners are square so the group reads
+   * as one segmented control rather than a row of separate buttons.
+   */
+  .uir-toggle-button-group > * {
+    border-radius: 0;
+  }
+
+  .uir-toggle-button-group[data-orientation="horizontal"] > *:first-child {
+    border-start-start-radius: var(--uir-control-radius);
+    border-end-start-radius: var(--uir-control-radius);
+  }
+
+  .uir-toggle-button-group[data-orientation="horizontal"] > *:last-child {
+    border-start-end-radius: var(--uir-control-radius);
+    border-end-end-radius: var(--uir-control-radius);
+  }
+
+  .uir-toggle-button-group[data-orientation="vertical"] > *:first-child {
+    border-start-start-radius: var(--uir-control-radius);
+    border-start-end-radius: var(--uir-control-radius);
+  }
+
+  .uir-toggle-button-group[data-orientation="vertical"] > *:last-child {
+    border-end-start-radius: var(--uir-control-radius);
+    border-end-end-radius: var(--uir-control-radius);
+  }
+
+  /*
+   * Collapse the shared seam. `Button` already handles this via `data-grouped`; the
+   * rules are repeated here against the direct child so the group is correct even if
+   * a consumer wraps a member in their own element.
+   */
+  .uir-toggle-button-group[data-orientation="horizontal"] > *:not(:first-child) {
+    margin-inline-start: calc(-1 * var(--uir-control-border-width));
+  }
+
+  .uir-toggle-button-group[data-orientation="vertical"] > *:not(:first-child) {
+    margin-block-start: calc(-1 * var(--uir-control-border-width));
+  }
+
+  /*
+   * A member keeps a visible focus ring even where its border was collapsed, so
+   * keyboard focus is never hidden by the seam. The ring is drawn outside the box
+   * (`outline-offset`), so it survives the negative margin.
+   */
+  .uir-toggle-button-group > *:focus-visible {
+    /* Nothing to add; the outline is already outside the border box. This rule exists
+       to document the invariant and to catch a future `overflow: hidden` ancestor. */
+    position: relative;
+    z-index: 1;
+  }
+}

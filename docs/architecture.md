@@ -455,6 +455,42 @@ Detailed in `src/components/README.md`. The summary:
 - `useControllableState` for any open/closed or checked state.
 - Folders starting with `_` are never published.
 
+### Cross-component consistency
+
+Consistency across components is **structural, not procedural**.
+`docs/foundations.md` is the human-readable contract; two things enforce it:
+
+| Mechanism                | What it holds                                                                    |
+| ------------------------ | -------------------------------------------------------------------------------- |
+| `src/foundations.ts`     | `Variant`, `Tone`, `Size`, `CONTROL_TOKENS` — the vocabulary, exported publicly. |
+| `--uir-control-*` tokens | Every dimension, in `src/theme/tokens.css`. A hardcoded size is a test failure.  |
+
+A new control therefore has no decisions left to make about its own size, emphasis,
+intent or state colours. It writes a stylesheet against tokens that already exist, which
+is why `Button`, `IconButton`, `ToggleButton` and `ToggleButtonGroup` agree without any of
+them knowing about the others — three of the four compose `Button` and inherit its
+behaviour outright.
+
+Three axes are separated rather than conflated, which is the main divergence from both
+reference libraries: **emphasis** (`variant`: `ghost` / `outline` / `solid`), **intent**
+(`tone`: `neutral` / `accent` / `positive` / `danger`) and **size** (`sm` / `md` / `lg`).
+MUI folds intent into `color` and emphasis into `variant`; UI5 folds both into `design`.
+Separating them is what makes `variant="solid" tone="danger"` expressible — a destructive
+primary action — instead of needing a ninth design value.
+
+### What the first four components changed in the foundations
+
+Authoring them surfaced defects that no amount of review would have found, all of which
+are now fixed and guarded by tests:
+
+- A **multi-line CSS comment** was parsed as CSS by the linter, which worked line by line.
+- **`--uir-success` and `--uir-border-strong` failed WCAG** while looking correct.
+  Contrast is now measured in `tests/contrast.test.ts`, not reviewed.
+- A **per-tone single foreground** made `ghost` and `outline` labels invisible.
+- **Unknown props leaked to the DOM** on `ToggleButtonGroup`.
+- **Storybook rendered composed components unstyled**, because stories imported only their
+  own stylesheets. The preview now loads the assembled `dist/index.css`.
+
 ---
 
 ## Known limitations
@@ -475,7 +511,15 @@ Stated rather than hidden:
   consumers. That resolution mode is on its way out; the map is a courtesy.
 - **Coverage thresholds start low** (60–70%) because the library is currently
   infrastructure. Raise them deliberately as components land.
-- **Two tripwire tests fail when the first component lands**:
-  "has no components yet" and the deep-import probe becoming meaningful. That is
-  deliberate: it forces a review of the packaging conventions at exactly the moment
-  they start mattering, instead of leaving them to rot unattended.
+- **Per-subtree light and dark cannot coexist.** Auto dark mode is decided on
+  `:root:not([data-uir-scheme])`, so a `light` pin below the root arrives after those
+  values are inherited and cannot undo them. Plain CSS cannot express it. Pin the scheme on
+  `<html>`; `docs/theming.md` has the table of what works where.
+- **`ToggleButtonGroup` requires `ToggleButton` children directly.** It rebuilds each child
+  to attach selection, which needs each child's `value` prop. A child that is a component
+  or a fragment hides that prop, and the group logs a development error rather than
+  failing silently. A context would remove the constraint; recorded in `docs/roadmap.md`.
+- **The "no components yet" tripwire has been retired.** It fired on the day the first
+  component landed, as designed, and was replaced with positive self-maintaining
+  invariants: every component must be exported, re-exported from the barrel, and named to
+  match its folder.

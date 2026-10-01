@@ -1,0 +1,357 @@
+/*
+ * Button styles.
+ *
+ * Every dimension comes from a `--uir-control-*` or `--uir-icon-size-*` token, so
+ * this file has no hardcoded sizes. See `docs/foundations.md`.
+ */
+
+@layer uireload.components {
+  .uir-button {
+    /*
+     * Inline-flex with an explicit gap, so an icon and its label stay at
+     * `--uir-control-gap` whether or not there is a label. A label-less button
+     * collapses to the icon, centred.
+     */
+    align-items: center;
+    border: var(--uir-control-border-width) solid transparent;
+    border-radius: var(--uir-control-radius);
+    cursor: pointer;
+    display: inline-flex;
+    font-family: var(--uir-font-family);
+    font-weight: var(--uir-control-font-weight);
+    gap: var(--uir-control-gap);
+    justify-content: center;
+    /* Labels must not wrap: a two-line control breaks every row alignment below it. */
+    max-inline-size: 100%;
+    min-inline-size: var(--uir-control-min-width);
+    text-align: center;
+    transition:
+      background-color var(--uir-duration) var(--uir-easing),
+      border-color var(--uir-duration) var(--uir-easing),
+      color var(--uir-duration) var(--uir-easing);
+    vertical-align: middle;
+    white-space: nowrap;
+    /* Keeps a long label ellipsised rather than pushing the control wider. */
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ---- Size ---------------------------------------------------------- */
+
+  .uir-button[data-size="sm"] {
+    block-size: var(--uir-control-height-sm);
+    font-size: var(--uir-control-font-size-sm);
+    padding-inline: var(--uir-control-pad-inline-sm);
+  }
+
+  .uir-button[data-size="md"] {
+    block-size: var(--uir-control-height-md);
+    font-size: var(--uir-control-font-size-md);
+    padding-inline: var(--uir-control-pad-inline-md);
+  }
+
+  .uir-button[data-size="lg"] {
+    block-size: var(--uir-control-height-lg);
+    font-size: var(--uir-control-font-size-lg);
+    padding-inline: var(--uir-control-pad-inline-lg);
+  }
+
+  /* ---- Emphasis ------------------------------------------------------ */
+
+  /*
+   * A variant decides *how much* emphasis; a tone decides *what it means*. They
+   * multiply, so a tone must supply colours for every variant rather than one
+   * foreground.
+   *
+   * An earlier version set a single `--uir-button-text` per tone, which is right for
+   * `solid` and badly wrong for `ghost` and `outline`: those render on the page
+   * background, so a tone's on-fill foreground made their labels invisible. Found by
+   * looking at the Storybook, not by any test. See `tests/button-foundation.test.ts`.
+   */
+  .uir-button[data-variant="ghost"] {
+    background-color: transparent;
+    border-color: transparent;
+    color: var(--uir-button-tint);
+  }
+
+  .uir-button[data-variant="outline"] {
+    background-color: transparent;
+    border-color: var(--uir-button-tint-border);
+    color: var(--uir-button-tint);
+  }
+
+  .uir-button[data-variant="solid"] {
+    background-color: var(--uir-button-fill);
+    border-color: var(--uir-button-fill);
+    color: var(--uir-button-on-fill);
+  }
+
+  /* ---- Intent -------------------------------------------------------- */
+
+  /*
+   * Each tone supplies a full role set, so a new tone is eight declarations here and
+   * nothing else changes:
+   *
+   *   --uir-button-fill / -hover / -active   solid background
+   *   --uir-button-on-fill                   text on that background
+   *   --uir-button-tint                      text for ghost and outline
+   *   --uir-button-tint-border               border for outline
+   *   --uir-button-tint-subtle               hover wash for ghost
+   */
+  .uir-button[data-tone="neutral"] {
+    /* A surface, not a colour: the neutral tone fills with a weight, not a hue. */
+    --uir-button-fill: var(--uir-neutral-fill);
+    --uir-button-fill-hover: var(--uir-neutral-fill-hover);
+    --uir-button-fill-active: var(--uir-neutral-fill-active);
+    --uir-button-on-fill: var(--uir-text);
+
+    --uir-button-tint: var(--uir-text);
+    --uir-button-tint-border: var(--uir-border-strong);
+    --uir-button-tint-subtle: var(--uir-surface);
+  }
+
+  .uir-button[data-tone="accent"] {
+    --uir-button-fill: var(--uir-accent);
+    --uir-button-fill-hover: var(--uir-accent-hover);
+    --uir-button-fill-active: var(--uir-accent-active);
+    --uir-button-on-fill: var(--uir-accent-contrast);
+
+    --uir-button-tint: var(--uir-accent);
+    --uir-button-tint-border: var(--uir-accent);
+    --uir-button-tint-subtle: var(--uir-accent-subtle);
+  }
+
+  .uir-button[data-tone="positive"] {
+    --uir-button-fill: var(--uir-success);
+    --uir-button-fill-hover: var(--uir-success-hover);
+    --uir-button-fill-active: var(--uir-success-active);
+    --uir-button-on-fill: var(--uir-success-contrast);
+
+    --uir-button-tint: var(--uir-success);
+    --uir-button-tint-border: var(--uir-success);
+    --uir-button-tint-subtle: var(--uir-success-subtle);
+  }
+
+  .uir-button[data-tone="danger"] {
+    --uir-button-fill: var(--uir-danger);
+    --uir-button-fill-hover: var(--uir-danger-hover);
+    --uir-button-fill-active: var(--uir-danger-active);
+    --uir-button-on-fill: var(--uir-danger-contrast);
+
+    --uir-button-tint: var(--uir-danger);
+    --uir-button-tint-border: var(--uir-danger);
+    --uir-button-tint-subtle: var(--uir-danger-subtle);
+  }
+  /* ---- Hover --------------------------------------------------------- */
+
+  /*
+   * Gated on a fine pointer with hover. A hover state that persists after a tap is a
+   * known mobile annoyance; Fiori's generated CSS gates `:hover` the same way, with
+   * `:not([_is-touch])`.
+   *
+   * Each variant shifts a different token, because a ghost button has no fill to darken
+   * and a solid one has no tint to wash.
+   */
+  @media (hover: hover) and (pointer: fine) {
+    .uir-button[data-variant="solid"]:not(:disabled):hover {
+      background-color: var(--uir-button-fill-hover);
+      border-color: var(--uir-button-fill-hover);
+    }
+
+    .uir-button[data-variant="outline"]:not(:disabled):hover {
+      background-color: var(--uir-button-tint-subtle);
+    }
+
+    .uir-button[data-variant="ghost"]:not(:disabled):hover {
+      background-color: var(--uir-button-tint-subtle);
+    }
+  }
+
+  /* ---- Active -------------------------------------------------------- */
+
+  .uir-button[data-variant="solid"]:not(:disabled):active {
+    background-color: var(--uir-button-fill-active);
+    border-color: var(--uir-button-fill-active);
+  }
+
+  /*
+   * Outline and ghost share an active wash. A second, distinct step would need a
+   * second subtle token per tone; the pressed-state contrast is carried by the border
+   * on outline, and by `data-pressed` on a toggle.
+   */
+  .uir-button[data-variant="outline"]:not(:disabled):active,
+  .uir-button[data-variant="ghost"]:not(:disabled):active {
+    background-color: var(--uir-button-tint-subtle);
+    border-color: var(--uir-button-tint);
+  }
+
+  /*
+   * Kill transitions while pressed. Fiori switches `[active]` styling on mousedown and
+   * off on mouseup, so the visual press is instantaneous; a transition here would lag
+   * the finger.
+   */
+  .uir-button:not(:disabled):active {
+    transition-duration: 0ms;
+  }
+  /* ---- Focus --------------------------------------------------------- */
+
+  /*
+   * `:focus-visible`, never `:focus`: a ring on mouse click is noise, and removing
+   * the ring on keyboard focus is an accessibility failure. The base layer in
+   * `src/index.css` provides the default ring for every focusable element, so this
+   * rule only exists to opt out of the transition while focused.
+   */
+  .uir-button:focus-visible {
+    outline: var(--uir-focus-ring-width) solid var(--uir-focus-ring-color);
+    outline-offset: var(--uir-focus-ring-offset);
+    transition-duration: 0ms;
+  }
+
+  /* ---- Disabled ------------------------------------------------------ */
+
+  /*
+   * Opacity only. `pointer-events: none` is deliberately NOT set: MUI's ButtonBase
+   * sets it and thereby breaks tooltips on disabled controls, which MUI documents as
+   * a limitation. Fiori uses `pointer-events: unset` with `cursor: default`.
+   *
+   * `cursor` rather than `pointer-events: none` gives the affordance without the
+   * side effect. Exempt from WCAG SC 1.4.3 as an inactive component.
+   */
+  .uir-button:disabled {
+    cursor: not-allowed;
+    opacity: var(--uir-disabled-opacity);
+  }
+
+  /* ---- Loading ------------------------------------------------------- */
+
+  /*
+   * The wrapper is always in the DOM and toggled here, because inserting it while a
+   * translation is in flight crashes Google Translate (mui/material-ui#27853).
+   */
+  .uir-button__loading {
+    align-items: center;
+    display: none;
+    inset-block: 0;
+    inset-inline: 0;
+    justify-content: center;
+    position: absolute;
+  }
+
+  .uir-button[data-loading] .uir-button__loading {
+    display: flex;
+  }
+
+  /*
+   * The label stays in the DOM so the button keeps its width and its accessible
+   * name while loading. It is hidden from sight rather than removed.
+   */
+  .uir-button[data-loading] .uir-button__label,
+  .uir-button[data-loading] .uir-button__icon {
+    opacity: 0;
+  }
+
+  .uir-button[data-loading] {
+    cursor: progress;
+    position: relative;
+  }
+
+  /*
+   * A minimal indeterminate ring.
+   *
+   * It occupies the same slot a start or end icon would, so it takes
+   * `--uir-icon-size-*` rather than a dimension of its own. Sizing it separately would
+   * make a busy `sm` button show a spinner as large as a `md` button's icon.
+   */
+  .uir-button__spinner {
+    border: 2px solid currentcolor;
+    border-block-start-color: transparent;
+    border-radius: 50%;
+    block-size: var(--uir-icon-size-md);
+    inline-size: var(--uir-icon-size-md);
+    animation: uir-button-spin 700ms linear infinite;
+  }
+
+  .uir-button[data-size="sm"] .uir-button__spinner {
+    block-size: var(--uir-icon-size-sm);
+    inline-size: var(--uir-icon-size-sm);
+  }
+
+  .uir-button[data-size="lg"] .uir-button__spinner {
+    block-size: var(--uir-icon-size-lg);
+    inline-size: var(--uir-icon-size-lg);
+  }
+
+  @keyframes uir-button-spin {
+    to {
+      transform: rotate(1turn);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .uir-button__spinner {
+      animation-duration: 2.4s;
+    }
+  }
+
+  /* ---- Label and icons ----------------------------------------------- */
+
+  .uir-button__label {
+    /* The label absorbs the ellipsis; the flex container does not shrink. */
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .uir-button__icon {
+    align-items: center;
+    display: inline-flex;
+    flex-shrink: 0;
+    justify-content: center;
+  }
+
+  .uir-button[data-size="sm"] .uir-button__icon {
+    block-size: var(--uir-icon-size-sm);
+    inline-size: var(--uir-icon-size-sm);
+  }
+
+  .uir-button[data-size="md"] .uir-button__icon {
+    block-size: var(--uir-icon-size-md);
+    inline-size: var(--uir-icon-size-md);
+  }
+
+  .uir-button[data-size="lg"] .uir-button__icon {
+    block-size: var(--uir-icon-size-lg);
+    inline-size: var(--uir-icon-size-lg);
+  }
+
+  /* A label-less button collapses to the icon's own size. */
+  .uir-button:not(:has(.uir-button__label)) {
+    padding-inline: 0;
+  }
+
+  /* ---- Full width ---------------------------------------------------- */
+
+  .uir-button[data-full-width] {
+    inline-size: 100%;
+  }
+
+  /* ---- Grouped ------------------------------------------------------- */
+
+  /*
+   * In a group, all but the first member drops its inline-start border so the group
+   * reads as one segmented control. Fiori does the same with
+   * `:not(:first-child)` on `ui5-segmented-button-item`.
+   */
+  .uir-button[data-grouped]:not(:first-of-type) {
+    border-inline-start-width: 0;
+  }
+
+  .uir-button[data-grouped]:first-of-type {
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+  }
+
+  .uir-button[data-grouped]:last-of-type {
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
+  }
+}

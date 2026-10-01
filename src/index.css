@@ -23,9 +23,11 @@
    * always be overridden by a consumer's own rules.
    */
   :where(:root) {
-    --uir-focus-ring-width: 2px;
-    --uir-focus-ring-offset: 2px;
-    --uir-focus-ring-color: var(--uir-accent);
+    /*
+     * The focus ring tokens themselves live in `src/theme/tokens.css`, with the rest
+     * of the design tokens. Only the colour used by the *default* focus rule for
+     * arbitrary focusable elements is declared here.
+     */
     --uir-outline-color: var(--uir-accent);
     --uir-outline-width: 2px;
     --uir-outline-offset: 2px;

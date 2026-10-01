@@ -107,11 +107,49 @@ describe("package manifest", () => {
 });
 
 describe("component packaging", () => {
-  it("has no components yet", () => {
-    // Documents the current state. When the first component lands this fails and
-    // forces a deliberate update, which is exactly when the convention needs to be
-    // re-confirmed.
-    expect(componentDirs()).toEqual([]);
+  it("has components, so the packaging conventions are load-bearing", () => {
+    // Replaces a deliberate tripwire that asserted there were no components, and so
+    // failed on the day the first one landed. The invariant is now positive and
+    // self-maintaining: whatever exists must be reachable three ways.
+    expect(componentDirs().length).toBeGreaterThan(0);
+  });
+
+  it("re-exports every component from the barrel", () => {
+    // A component reachable only by deep path is discoverable only by reading the
+    // source tree. The barrel is the discoverability surface.
+    const barrel = readFileSync(join(root, "src", "index.ts"), "utf8");
+
+    for (const name of componentDirs()) {
+      expect(barrel, `${name} is not re-exported from src/index.ts`).toContain(
+        `"./components/${name}"`
+      );
+    }
+  });
+
+  it("gives every component a PascalCase export matching its folder", () => {
+    for (const name of componentDirs()) {
+      const expected = name
+        .split("-")
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join("");
+
+      const index = readFileSync(join(root, "src", "components", name, "index.ts"), "utf8");
+      const exported = [...index.matchAll(/export\s*\{([^}]+)\}/g)]
+        .flatMap((match) => (match[1] as string).split(","))
+        .map(
+          (entry) =>
+            entry
+              .trim()
+              .split(/\s+as\s+/)
+              .pop() as string
+        )
+        .filter((entry) => entry.length > 0);
+
+      expect(
+        exported.some((entry) => entry.startsWith(expected)),
+        `${name}/index.ts exports [${exported.join(", ")}]; expected something named ${expected}`
+      ).toBe(true);
+    }
   });
 
   it("declares one explicit subpath per component", () => {

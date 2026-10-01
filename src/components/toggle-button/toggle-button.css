@@ -1,0 +1,49 @@
+/*
+ * ToggleButton styles.
+ *
+ * Only the pressed state is new; everything else comes from `Button`. The pressed
+ * appearance reuses the variant's *active* colours, which is why a pressed toggle needs
+ * no palette of its own � see the tone roles in `button.css`.
+ */
+
+@layer uireload.components {
+  /*
+   * A pressed button is never `:active` � that is a transient pointer state � so the
+   * active colours have to be applied explicitly, and the right ones depend on the
+   * variant. A `solid` toggle darkens its fill; an unfilled one gets a wash.
+   */
+  .uir-toggle-button[data-variant="solid"][data-pressed] {
+    background-color: var(--uir-button-fill-active);
+    border-color: var(--uir-button-fill-active);
+  }
+
+  .uir-toggle-button[data-variant="outline"][data-pressed],
+  .uir-toggle-button[data-variant="ghost"][data-pressed] {
+    background-color: var(--uir-button-tint-subtle);
+  }
+
+  .uir-toggle-button[data-variant="outline"][data-pressed] {
+    border-color: var(--uir-button-tint);
+  }
+
+  /*
+   * `ghost` has no border to fill, so the wash plus a tinted foreground is the whole
+   * signal. Without this a pressed ghost button is indistinguishable from an
+   * unpressed one.
+   */
+  .uir-toggle-button[data-variant="ghost"][data-pressed] {
+    color: var(--uir-button-tint);
+  }
+
+  /*
+   * Selected state must not rely on colour alone, and must survive forced-colors mode
+   * where the palette is replaced entirely. `forced-color-adjust: none` keeps the
+   * pressed background visible instead of being flattened to the system colour.
+   */
+  @media (forced-colors: active) {
+    .uir-toggle-button[data-pressed] {
+      border-color: Highlight;
+      forced-color-adjust: none;
+    }
+  }
+}

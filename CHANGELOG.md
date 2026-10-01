@@ -7,9 +7,27 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-Nothing released yet.
-
 ### Added
+
+- **Design foundations.** `docs/foundations.md` plus a `--uir-control-*` token layer and
+  `src/foundations.ts`. Sizes, the emphasis ladder, the tone set, the six control
+  states, shape, typography and truncation are specified once so components are
+  consistent by construction rather than by review.
+- **`Button`, `IconButton`, `ToggleButton`, `ToggleButtonGroup`.** The first four
+  components, each designed against MUI and SAP Fiori UI5 per `AGENTS.md`.
+- `VARIANTS` (`ghost` / `outline` / `solid`) and `TONES`
+  (`neutral` / `accent` / `positive` / `danger`) split emphasis from intent, which
+  both reference libraries conflate.
+- `ToggleButtonGroup` renders `role="radiogroup"` with roving tabindex and
+  selection-follows-focus in single mode, and `role="group"` with individually
+  tabbable pressed buttons in multiple mode. MUI's ToggleButtonGroup sets no role at
+  all.
+- `useRovingFocus` gained `itemSelector` and `onNavigate`, so selection can follow
+  focus without the focus helper assuming it.
+- axe-core as a dev dependency, with `tests/accessibility.test.tsx` asserting zero
+  violations per component in every colour scheme.
+- `tests/theme-tokens.test.ts` asserts the dark palette declared for
+  `data-uir-scheme` and for `prefers-color-scheme` cannot drift apart.
 
 - Build pipeline: dual ESM/CJS output, per-component entry points, generated type
   declarations, published CSS as a stable artifact.
@@ -32,6 +50,36 @@ Nothing released yet.
 - Component authoring template at `src/components/_template`.
 - CI across Node 20 and 22 on Linux and Windows, plus dependency audit and a
   publish dry run.
+
+### Fixed
+
+- **`ghost` and `outline` labels were invisible** for the `accent`, `positive` and
+  `danger` tones. Each tone set one foreground, which is correct for `solid` but painted
+  an on-fill colour onto the page background. Tones now supply a role set with separate
+  fill and unfilled foregrounds.
+- **A neutral `solid` button looked identical to a neutral `outline` button.** It filled
+  with `--uir-surface-raised`, which is white in the light scheme. The neutral tone has a
+  surface ramp of its own now.
+- **`--uir-success` and `--uir-danger` failed WCAG SC 1.4.3** at 3.30:1 and 4.24:1 as
+  labels, and `--uir-border-strong` failed SC 1.4.11 at 2.56:1. Both semantic ramps are one
+  step darker than a conventional 600/400 scale. `tests/contrast.test.ts` measures every
+  tone x variant x scheme pair and fails below the threshold.
+- **`selectionMode`, `value`, `defaultValue` and `onValueChange` leaked to the DOM** on
+  `ToggleButtonGroup` as `selectionmode="single"` and friends, because they were read as
+  `props.x` rather than destructured out of the rest props.
+- **A `ToggleButtonGroup` child that is a component or fragment silently collapsed** to a
+  single valueless, label-less button. It now logs a development error naming the problem.
+- **Storybook rendered composited components unstyled.** Each story imported only its own
+  stylesheet, so `ToggleButtonGroup` showed three default grey buttons. The preview now
+  imports the assembled `dist/index.css`, which is what a consumer loads.
+- **Pinning `data-uir-scheme="light"` on a subtree did nothing**, because the auto-dark
+  rule lives on `:root:not([data-uir-scheme])`. The pin is now declared alongside `:root`,
+  and `docs/theming.md` states where the attribute has to go.
+
+- The CSS linter could not strip multi-line block comments, because it worked
+  line by line. A comment that opened and closed on different lines had its prose
+  parsed as CSS. `stripBlockComments` now runs over the whole file with line numbers
+  preserved.
 
 ### Known limitations
 
