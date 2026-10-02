@@ -38,6 +38,13 @@ if (typeof globalThis.DOMRect === "undefined") {
   } as unknown as typeof DOMRect;
 }
 
+// jsdom does no layout and has no concept of scrolling, but `Select` calls
+// `scrollIntoView` to keep the roving-highlighted option visible in a long list. Without this the
+// method is `undefined` and every arrow-key test throws instead of asserting behaviour.
+if (typeof Element !== "undefined" && typeof Element.prototype.scrollIntoView !== "function") {
+  Element.prototype.scrollIntoView = function scrollIntoView(): void {};
+}
+
 // `matchMedia` is used by responsive components and by Storybook's toolbar. jsdom
 // ships a stub that returns `matches: false` for everything, which silently hides
 // SSR/hydration bugs. This default keeps tests deterministic.

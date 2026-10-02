@@ -13,6 +13,20 @@ export { useControllableState, type ControllableState } from "./use-controllable
 export { useDirection, readDirection, opposite, type Direction } from "./use-direction";
 export { useIsomorphicLayoutEffect, useMediaQuery, isBrowser } from "./use-media-query";
 export {
+  Portal,
+  useScrollLock,
+  useDismiss,
+  useAnchorInView,
+  useRepositionOnChange,
+} from "./overlay";
+export {
+  computeOverlayPosition,
+  resolvePlacement,
+  type PositionedOverlay,
+  type OverlayPlacement,
+  type ComputePositionOptions,
+} from "./positioning";
+export {
   useFocusTrap,
   useRovingFocus,
   getTabbableElements,

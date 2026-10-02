@@ -10,7 +10,8 @@
  * axe is a **dev** dependency. Nothing here ships.
  */
 
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import axe, { type AxeResults, type ElementContext, type RunOptions } from "axe-core";
 import { expect, describe, it } from "vitest";
 
@@ -207,6 +208,246 @@ describe("Textbox", () => {
     );
 
     await expectNoViolations(container);
+  });
+});
+
+describe("Switch", () => {
+  it("has no accessibility violations", async () => {
+    const { Switch } = await import("uireload/components/switch");
+
+    const { container } = render(
+      <>
+        <Switch id="a" label="Reduce motion" defaultChecked />
+        <Switch id="b" label="Beta features" aria-describedby="beta-hint" />
+        <Switch id="c" label="Disabled" disabled defaultChecked />
+        <Switch id="d" label="Required" required />
+        <span id="beta-hint">Might change without warning</span>
+      </>
+    );
+
+    await expectNoViolations(container);
+  });
+
+  it("has no violations in every scheme", async () => {
+    const { Switch } = await import("uireload/components/switch");
+
+    for (const scheme of ["light", "dark", "high-contrast"] as const) {
+      const { container, unmount } = renderWithProviders(
+        <Switch id="s" label="Reduce motion" defaultChecked />,
+        { scheme }
+      );
+
+      await expectNoViolations(container);
+      unmount();
+    }
+  });
+});
+
+/*
+ * The three overlays below render into a portal, so axe is run against `document.body` rather than
+ * against the render container. Running it against `container` would pass trivially — the portalled
+ * nodes are not inside it, so there would be nothing to find and the test would prove nothing.
+ *
+ * `body` is the wider scope, so these are genuinely stronger than the in-place components' checks.
+ */
+describe("Popover", () => {
+  /**
+   * `anchor` needs a DOM node, and the render `container` is assigned *by* the render call it would
+   * be used inside, so it cannot be referenced there. `document.body` is the honest stand-in for
+   * these checks: it is a real, measurable anchor, and axe is being run against it anyway because
+   * the surface is portalled.
+   */
+  it("has no accessibility violations when open", async () => {
+    const { Popover } = await import("uireload/components/popover");
+    const { Button } = await import("uireload/components/button");
+
+    render(
+      <>
+        <Button>Open</Button>
+        <Popover
+          open
+          id="notifications"
+          anchor={document.body}
+          title="Notifications"
+          footer={<Button>Mark all read</Button>}
+        >
+          <p>Nothing new.</p>
+        </Popover>
+      </>
+    );
+
+    await expectNoViolations(document.body);
+  });
+
+  it("has no violations when labelled only by aria-label", async () => {
+    const { Popover } = await import("uireload/components/popover");
+
+    render(
+      <Popover open anchor={document.body} aria-label="Details">
+        <p>Body</p>
+      </Popover>
+    );
+
+    await expectNoViolations(document.body);
+  });
+});
+
+describe("Dialog", () => {
+  it("has no accessibility violations when open", async () => {
+    const { Dialog } = await import("uireload/components/dialog");
+    const { Button } = await import("uireload/components/button");
+
+    render(
+      <>
+        <Button>Open</Button>
+        <Dialog
+          open
+          id="confirm"
+          title="Delete this project?"
+          showCloseButton
+          footer={
+            <>
+              <Button variant="ghost">Cancel</Button>
+              <Button variant="solid" tone="danger">
+                Delete
+              </Button>
+            </>
+          }
+        >
+          <p>This cannot be undone.</p>
+        </Dialog>
+      </>
+    );
+
+    await expectNoViolations(document.body);
+  });
+
+  it("has no violations as an urgent dialog", async () => {
+    const { Dialog } = await import("uireload/components/dialog");
+    const { Button } = await import("uireload/components/button");
+
+    render(
+      <Dialog open id="destructive" title="Session expired" urgency="alert" tone="danger">
+        <Button>Sign in again</Button>
+      </Dialog>
+    );
+
+    // `role="alertdialog"` has the same required-children and naming rules as `dialog`; the urgency
+    // must not cost the dialog its accessible name.
+    await expectNoViolations(document.body);
+  });
+
+  it("has no violations with a close button and no title", async () => {
+    const { Dialog } = await import("uireload/components/dialog");
+
+    render(
+      <Dialog open id="bare" label="Status" showCloseButton>
+        <p>Everything is fine.</p>
+      </Dialog>
+    );
+
+    await expectNoViolations(document.body);
+  });
+
+  it("has no violations in every scheme", async () => {
+    const { Dialog } = await import("uireload/components/dialog");
+
+    for (const scheme of ["light", "dark", "high-contrast"] as const) {
+      const { unmount } = renderWithProviders(
+        <Dialog open id="s" title="Delete this project?" tone="danger" showCloseButton>
+          <p>This cannot be undone.</p>
+        </Dialog>,
+        { scheme }
+      );
+
+      await expectNoViolations(document.body);
+      unmount();
+    }
+  });
+});
+
+describe("Select", () => {
+  const OPTIONS = [
+    { value: "ams", label: "Amsterdam" },
+    { value: "ber", label: "Berlin" },
+    { value: "hel", label: "Helsinki", disabled: true },
+  ];
+
+  it("has no accessibility violations when closed", async () => {
+    const { Select } = await import("uireload/components/select");
+
+    const { container } = render(
+      <Select id="region" label="Region" options={OPTIONS} helperText="Pick the nearest" />
+    );
+
+    await expectNoViolations(container);
+  });
+
+  it("has no violations with the listbox open", async () => {
+    const user = userEvent.setup();
+    const { Select } = await import("uireload/components/select");
+
+    render(<Select id="region" label="Region" options={OPTIONS} defaultValue="ber" />);
+    await user.click(screen.getByRole("button", { name: /Region/ }));
+
+    // Portalled, so `document.body` again — see the note above the Popover block.
+    await expectNoViolations(document.body);
+  });
+
+  it("has no violations with groups and a disabled option open", async () => {
+    const user = userEvent.setup();
+    const { Select } = await import("uireload/components/select");
+
+    render(
+      <Select
+        id="state"
+        label="Workflow state"
+        options={[
+          { value: "draft", label: "Draft" },
+          { group: true, label: "Archived", options: OPTIONS },
+        ]}
+      />
+    );
+    await user.click(screen.getByRole("button", { name: /Workflow state/ }));
+
+    await expectNoViolations(document.body);
+  });
+
+  it("has no violations when invalid, required or disabled", async () => {
+    const { Select } = await import("uireload/components/select");
+
+    const { container } = render(
+      <>
+        <Select id="a" label="Invalid" options={OPTIONS} invalid helperText="Choose one" required />
+        <Select id="b" label="Disabled" options={OPTIONS} disabled defaultValue="ams" />
+      </>
+    );
+
+    await expectNoViolations(container);
+  });
+
+  it("has no violations when labelled only by aria-label", async () => {
+    const { Select } = await import("uireload/components/select");
+
+    const { container } = render(
+      <Select id="filter" label={undefined} aria-label="Filter by region" options={OPTIONS} />
+    );
+
+    await expectNoViolations(container);
+  });
+
+  it("has no violations in every scheme", async () => {
+    const { Select } = await import("uireload/components/select");
+
+    for (const scheme of ["light", "dark", "high-contrast"] as const) {
+      const { unmount } = renderWithProviders(
+        <Select id="s" label="Region" options={OPTIONS} defaultValue="ber" invalid />,
+        { scheme }
+      );
+
+      await expectNoViolations(document.body);
+      unmount();
+    }
   });
 });
 

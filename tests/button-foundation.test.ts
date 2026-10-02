@@ -59,7 +59,9 @@ describe("tone roles", () => {
       "--uir-button-on-fill",
       "--uir-button-tint",
       "--uir-button-tint-border",
-      "--uir-button-tint-subtle",
+      "--uir-button-tint-wash",
+      "--uir-button-tint-wash-active",
+      "--uir-button-tint-on-wash",
     ]) {
       expect(rule, `${tone} is missing ${role}`).toContain(`${role}:`);
     }
@@ -105,6 +107,63 @@ describe("state rules", () => {
 
     expect(interactive.length).toBeGreaterThan(0);
     expect(css).not.toMatch(/\.uir-button:disabled:hover/);
+  });
+
+  it("paints a press differently from a hover", () => {
+    /*
+     * The bug this file exists to prevent, in its second form. `ghost` and `outline` have no
+     * fill to darken, so the wash *is* the whole state signal — and both states read from one
+     * token, so a press painted the button exactly as the hover already on screen and the
+     * click showed nothing at all.
+     *
+     * Asserted on the stylesheet rather than on computed colour, because jsdom does no
+     * painting and the token values are what `tests/contrast.test.ts` measures.
+     */
+    const backgroundIn = (state: "hover" | "active"): string[] =>
+      [
+        // A template literal, not a regex literal: `${state}` inside `/.../` is literal text.
+        ...css.matchAll(
+          new RegExp(`\\.uir-button[^{]*:not\\(:disabled\\):${state}\\s*\\{([^}]*)\\}`, "g")
+        ),
+      ]
+        .flatMap(([, body]) => [...(body ?? "").matchAll(/background-color:\s*([^;]+);/g)])
+        .map((match) => (match[1] as string).trim());
+
+    const hover = backgroundIn("hover");
+    const active = backgroundIn("active");
+
+    expect(hover.length).toBeGreaterThan(0);
+    expect(active.length).toBeGreaterThan(0);
+
+    // Every unfilled variant resolves the hover step on hover and the press step on press.
+    //
+    // Compared as whole `var()` references, not substrings: `--uir-button-tint-wash` is a
+    // prefix of `--uir-button-tint-wash-active`, so a substring check would pass the press
+    // rule on the hover token alone and the bug could not recur unnoticed.
+    const wash = "var(--uir-button-tint-wash)";
+    const washActive = "var(--uir-button-tint-wash-active)";
+
+    expect(hover, "hover must use the hover wash").toContain(wash);
+    expect(hover, "hover must not use the press wash").not.toContain(washActive);
+    expect(active, "press must use the press wash").toContain(washActive);
+    expect(active, "press must not use the hover wash").not.toContain(wash);
+
+    // And no state may fall back to the static `-subtle` fill, which is the pale step.
+    expect(css).not.toMatch(/background-color:\s*var\(--uir-button-tint-subtle\)/);
+  });
+
+  it("recolours the label on an unfilled variant's wash", () => {
+    /*
+     * The wash is a darker ground than the page, so a label that was legible at rest is not
+     * automatically legible on top of it. Without this the press state would be readable but
+     * not legible.
+     *
+     * Three rules: `outline` and `ghost` on hover, then both variants sharing one press rule.
+     * `solid` is absent on purpose — it keeps its on-fill foreground throughout.
+     */
+    expect([
+      ...css.matchAll(/:(?:hover|active)\s*\{[^}]*color:\s*var\(--uir-button-tint-on-wash\)/g),
+    ]).toHaveLength(3);
   });
 
   it("does not set pointer-events: none on disabled", () => {

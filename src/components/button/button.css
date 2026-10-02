@@ -94,9 +94,11 @@
    *
    *   --uir-button-fill / -hover / -active   solid background
    *   --uir-button-on-fill                   text on that background
-   *   --uir-button-tint                      text for ghost and outline
+   *   --uir-button-tint                      text for ghost and outline at rest
    *   --uir-button-tint-border               border for outline
-   *   --uir-button-tint-subtle               hover wash for ghost
+   *   --uir-button-tint-wash                 ghost/outline hover background
+   *   --uir-button-tint-wash-active          ghost/outline press background
+   *   --uir-button-tint-on-wash              ghost/outline text on either wash
    */
   .uir-button[data-tone="neutral"] {
     /* A surface, not a colour: the neutral tone fills with a weight, not a hue. */
@@ -107,7 +109,9 @@
 
     --uir-button-tint: var(--uir-text);
     --uir-button-tint-border: var(--uir-border-strong);
-    --uir-button-tint-subtle: var(--uir-surface);
+    --uir-button-tint-wash: var(--uir-neutral-wash);
+    --uir-button-tint-wash-active: var(--uir-neutral-wash-active);
+    --uir-button-tint-on-wash: var(--uir-neutral-on-wash);
   }
 
   .uir-button[data-tone="accent"] {
@@ -118,7 +122,9 @@
 
     --uir-button-tint: var(--uir-accent);
     --uir-button-tint-border: var(--uir-accent);
-    --uir-button-tint-subtle: var(--uir-accent-subtle);
+    --uir-button-tint-wash: var(--uir-accent-wash);
+    --uir-button-tint-wash-active: var(--uir-accent-wash-active);
+    --uir-button-tint-on-wash: var(--uir-accent-on-wash);
   }
 
   .uir-button[data-tone="positive"] {
@@ -129,7 +135,9 @@
 
     --uir-button-tint: var(--uir-success);
     --uir-button-tint-border: var(--uir-success);
-    --uir-button-tint-subtle: var(--uir-success-subtle);
+    --uir-button-tint-wash: var(--uir-success-wash);
+    --uir-button-tint-wash-active: var(--uir-success-wash-active);
+    --uir-button-tint-on-wash: var(--uir-success-on-wash);
   }
 
   .uir-button[data-tone="danger"] {
@@ -140,8 +148,11 @@
 
     --uir-button-tint: var(--uir-danger);
     --uir-button-tint-border: var(--uir-danger);
-    --uir-button-tint-subtle: var(--uir-danger-subtle);
+    --uir-button-tint-wash: var(--uir-danger-wash);
+    --uir-button-tint-wash-active: var(--uir-danger-wash-active);
+    --uir-button-tint-on-wash: var(--uir-danger-on-wash);
   }
+
   /* ---- Hover --------------------------------------------------------- */
 
   /*
@@ -151,6 +162,11 @@
    *
    * Each variant shifts a different token, because a ghost button has no fill to darken
    * and a solid one has no tint to wash.
+   *
+   * `ghost` and `outline` also take the `on-wash` label here. The wash is darker than
+   * the page, so a label that was legible at rest is not automatically legible on top of
+   * it, and each pair is measured in `tests/contrast.test.ts`. Fiori does the same thing
+   * through `--sapButton_Lite_Hover_TextColor`.
    */
   @media (hover: hover) and (pointer: fine) {
     .uir-button[data-variant="solid"]:not(:disabled):hover {
@@ -159,11 +175,13 @@
     }
 
     .uir-button[data-variant="outline"]:not(:disabled):hover {
-      background-color: var(--uir-button-tint-subtle);
+      background-color: var(--uir-button-tint-wash);
+      color: var(--uir-button-tint-on-wash);
     }
 
     .uir-button[data-variant="ghost"]:not(:disabled):hover {
-      background-color: var(--uir-button-tint-subtle);
+      background-color: var(--uir-button-tint-wash);
+      color: var(--uir-button-tint-on-wash);
     }
   }
 
@@ -175,13 +193,23 @@
   }
 
   /*
-   * Outline and ghost share an active wash. A second, distinct step would need a
-   * second subtle token per tone; the pressed-state contrast is carried by the border
-   * on outline, and by `data-pressed` on a toggle.
+   * The press step, one visible step past hover.
+   *
+   * `outline` and `ghost` used to share a single wash with hover, so a press painted the
+   * button identically to the hover already on screen and the click registered nothing.
+   * Fiori's `Transparent` design carries distinct `_Hover_Background` and
+   * `_Active_Background` values for the same reason.
+   *
+   * `outline` additionally takes the tone's own colour as its border, which is the part
+   * of the press signal that survives `forced-colors: active`.
    */
   .uir-button[data-variant="outline"]:not(:disabled):active,
   .uir-button[data-variant="ghost"]:not(:disabled):active {
-    background-color: var(--uir-button-tint-subtle);
+    background-color: var(--uir-button-tint-wash-active);
+    color: var(--uir-button-tint-on-wash);
+  }
+
+  .uir-button[data-variant="outline"]:not(:disabled):active {
     border-color: var(--uir-button-tint);
   }
 

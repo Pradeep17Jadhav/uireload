@@ -1,0 +1,279 @@
+/*
+ * Dialog styles.
+ *
+ * Every dimension comes from a `--uir-control-*` token or one of the four dialog-specific sizes
+ * declared on the surface, so this file has no hardcoded measurements.
+ *
+ * Position is CSS, not measured: a dialog is viewport-centred, which is the one overlay case where
+ * a positioning algorithm would be pure overhead. `Popover` needs measurement; this does not.
+ */
+
+@layer uireload.components {
+  .uir-dialog,
+  .uir-dialog__header,
+  .uir-dialog__title,
+  .uir-dialog__content,
+  .uir-dialog__footer {
+    box-sizing: border-box;
+  }
+
+  /* ---- Backdrop ------------------------------------------------------ */
+
+  /*
+   * Covers the viewport and blocks pointer events, so the page behind genuinely cannot be
+   * interacted with. That is what makes a dialog modal; a transparent backdrop that does nothing
+   * would let a click land on the page and then close the dialog, losing whatever the user was
+   * doing.
+   *
+   * `aria-hidden` in the markup rather than here, so the reason is visible in the tree.
+   */
+  .uir-dialog__backdrop {
+    background-color: rgb(15 23 42 / 50%);
+    inset: 0;
+    position: fixed;
+    z-index: var(--uir-z-index-overlay);
+  }
+
+  /* ---- Surface ------------------------------------------------------- */
+
+  .uir-dialog {
+    /*
+     * The four sizes. Declared once on the surface so every region can read them, which is what
+     * keeps the content's padding and the footer consistent with the width.
+     *
+     * Fiori's dialog is "approximately 90% of the viewport" on desktop (`stretch`), which is the
+     * number behind the `lg` maximum width.
+     */
+    --uir-dialog-width-sm: 20rem;
+    --uir-dialog-width-md: 32rem;
+    --uir-dialog-width-lg: 44rem;
+
+    background-color: var(--uir-surface-raised);
+    border: var(--uir-control-border-width) solid var(--uir-dialog-border);
+    border-radius: var(--uir-control-radius);
+    color: var(--uir-text);
+    font-family: var(--uir-font-family);
+    /*
+     * `position: fixed` + `inset: 0` + `margin: auto` centres in both axes while keeping the
+     * block-start edge reachable when the content overflows. Flex centring (`display: flex` plus
+     * `align-items`/`justify-content: center`) clamps to the viewport instead and pushes the header
+     * off the top, which is how a long dialog ends up with no title and no way to scroll to it.
+     */
+    inset: 0;
+    margin: auto;
+    max-block-size: calc(100vh - var(--uir-space) * 4);
+    max-inline-size: var(--uir-dialog-width-md);
+    overflow: hidden;
+    position: fixed;
+    z-index: calc(var(--uir-z-index-overlay) + 1);
+  }
+
+  /*
+   * The surface is a grid of three rows: header, content, footer.
+   *
+   * Grid rather than flex because of `minmax(0, 1fr)` on the content row. A flex item's default
+   * minimum is its content size, so a long dialog refuses to shrink and the footer is pushed past
+   * the bottom of the viewport, where it cannot be reached. `minmax(0, 1fr)` opts the row out of
+   * that, and the content region scrolls instead.
+   */
+  .uir-dialog {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  .uir-dialog[data-size="sm"] {
+    --uir-dialog-width-md: var(--uir-dialog-width-sm);
+  }
+
+  .uir-dialog[data-size="lg"] {
+    --uir-dialog-width-md: var(--uir-dialog-width-lg);
+  }
+
+  /* ---- Intent -------------------------------------------------------- */
+
+  /*
+   * Three roles: the surface border, the focus ring, and the footer wash. Splitting urgency from
+   * tone means a `positive` dialog does not become an `alertdialog`, which is the whole reason for
+   * having read both reference libraries — see `README.md`.
+   */
+  .uir-dialog[data-tone="neutral"] {
+    --uir-dialog-border: var(--uir-border);
+    --uir-dialog-ring: var(--uir-focus-ring-color);
+    --uir-dialog-footer: var(--uir-surface);
+  }
+
+  .uir-dialog[data-tone="accent"] {
+    --uir-dialog-border: var(--uir-accent);
+    --uir-dialog-ring: var(--uir-accent);
+    --uir-dialog-footer: var(--uir-accent-subtle);
+  }
+
+  .uir-dialog[data-tone="positive"] {
+    --uir-dialog-border: var(--uir-success);
+    --uir-dialog-ring: var(--uir-success);
+    --uir-dialog-footer: var(--uir-success-subtle);
+  }
+
+  .uir-dialog[data-tone="danger"] {
+    --uir-dialog-border: var(--uir-danger);
+    --uir-dialog-ring: var(--uir-danger);
+    --uir-dialog-footer: var(--uir-danger-subtle);
+  }
+
+  /*
+   * An urgent dialog is also *announced* urgently, and the border alone would not say so to
+   * everyone. The thicker border is the non-colour signal: urgency is now visible as a weight
+   * change rather than only as a hue, which matters for a state that is not decorative.
+   */
+  .uir-dialog[data-urgency="alert"] {
+    border-width: 2px;
+  }
+
+  /* ---- Regions ------------------------------------------------------- */
+
+  /*
+   * Header, content and footer, straight from UI5's `@csspart header` / `content` / `footer` and
+   * its "A `ui5-dialog` consists of a header, content, and a footer" description.
+   */
+  .uir-dialog__header {
+    align-items: flex-start;
+    border-block-end: var(--uir-control-border-width) solid var(--uir-border);
+    display: flex;
+    gap: var(--uir-space);
+    justify-content: space-between;
+    padding: var(--uir-space);
+  }
+
+  .uir-dialog__title {
+    color: var(--uir-text);
+    font-size: var(--uir-control-font-size-lg);
+    font-weight: var(--uir-control-font-weight);
+    line-height: var(--uir-line-height);
+    margin: 0;
+  }
+
+  /* The content region scrolls; the header and footer do not. See the grid rows above. */
+  .uir-dialog__content {
+    overflow-y: auto;
+    padding: var(--uir-space);
+  }
+
+  /*
+   * The footer does not scroll with the content. Action buttons that scroll away are the reason
+   * users cannot complete a dialog, so they stay put while the body scrolls under them.
+   */
+  .uir-dialog__footer {
+    background-color: var(--uir-dialog-footer);
+    border-block-start: var(--uir-control-border-width) solid var(--uir-border);
+    padding: var(--uir-space);
+  }
+
+  /* ---- Close button -------------------------------------------------- */
+
+  /*
+   * A real `<button>`, sized from `--uir-control-*` so it matches every other control in the
+   * library, and not `aria-hidden` — a keyboard user with no other route out of the dialog needs it.
+   *
+   * `--uir-icon-size-md` rather than a literal, so the glyph scales with the control family.
+   */
+  .uir-dialog__close {
+    align-items: center;
+    background-color: transparent;
+    border: 0;
+    border-radius: var(--uir-control-radius);
+    color: var(--uir-text-muted);
+    cursor: pointer;
+    display: inline-flex;
+    flex-shrink: 0;
+    font-size: var(--uir-control-font-size-lg);
+    block-size: var(--uir-control-height-sm);
+    inline-size: var(--uir-control-height-sm);
+    justify-content: center;
+    padding: 0;
+    transition:
+      background-color var(--uir-duration) var(--uir-easing),
+      color var(--uir-duration) var(--uir-easing);
+  }
+
+  /*
+   * Gated on a fine pointer, for the same reason as every other control: a hover state that
+   * persists after a tap is a known mobile annoyance.
+   */
+  @media (hover: hover) and (pointer: fine) {
+    .uir-dialog__close:hover {
+      background-color: var(--uir-neutral-wash);
+      color: var(--uir-neutral-on-wash);
+    }
+  }
+
+  .uir-dialog__close:focus-visible {
+    outline: var(--uir-focus-ring-width) solid var(--uir-focus-ring-color);
+    outline-offset: var(--uir-focus-ring-offset);
+    transition-duration: 0ms;
+  }
+
+  /* ---- Focus --------------------------------------------------------- */
+
+  /*
+   * On the surface itself, from the base layer's `:focus-visible`.
+   *
+   * This only paints the ring: focus usually lands on the first tabbable descendant, and
+   * `useFocusTrap` gives a container with nothing tabbable a `tabindex="-1"` so that an empty
+   * dialog is still reachable and still shows where focus is.
+   */
+  .uir-dialog:focus-visible {
+    outline: var(--uir-focus-ring-width) solid var(--uir-dialog-ring);
+    outline-offset: var(--uir-focus-ring-offset);
+  }
+
+  /* ---- Responsive -------------------------------------------------- */
+
+  /*
+   * Stretched to the viewport on a narrow screen, which is UI5's recommendation for phones
+   * (`stretch`: "it's recommended to stretch the dialog to full screen on phone devices") and
+   * matches what a phone user expects from a modal.
+   *
+   * The `max-block-size` becomes the full height so the footer still sits at the bottom, and the
+   * radius drops because a rounded corner on an edge-to-edge surface is a lie about its shape.
+   */
+  @media (width <= 30rem) {
+    .uir-dialog {
+      --uir-dialog-width-md: 100%;
+      border-radius: 0;
+      max-block-size: 100vh;
+    }
+  }
+
+  /* ---- Forced colours ----------------------------------------------- */
+
+  /*
+   * The backdrop is a translucency, which the OS replaces outright. Rather than guessing at a
+   * replacement opacity, the surface gets an explicit border — because in forced colours the border
+   * is the only thing separating the dialog from the page behind it.
+   */
+  @media (forced-colors: active) {
+    .uir-dialog__backdrop {
+      background-color: Canvas;
+      opacity: 0.8;
+    }
+
+    .uir-dialog {
+      background-color: Canvas;
+      border-color: CanvasText;
+      color: CanvasText;
+    }
+
+    .uir-dialog__header {
+      border-block-end-color: CanvasText;
+    }
+
+    .uir-dialog__footer {
+      background-color: Canvas;
+      border-block-start-color: CanvasText;
+    }
+
+    .uir-dialog:focus-visible {
+      outline-color: Highlight;
+    }
+  }
+}

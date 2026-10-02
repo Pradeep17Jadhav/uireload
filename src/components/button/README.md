@@ -15,6 +15,7 @@ are unsure how something should behave, read this first.
 | Form type enum          | `@ui5/webcomponents/dist/types/ButtonType.d.ts`                                                                                                                        |
 | Size / state tokens     | `@ui5/webcomponents/dist/generated/themes/sap_horizon/parameters-bundle.css.js` — `--_ui5_button_base_height`, `_base_min_width`, `_base_padding`, `_base_icon_margin` |
 | Hover gating            | `@ui5/webcomponents/dist/css/themes/Button.css` — `:not([_is-touch])` around `:hover`                                                                                  |
+| Unfilled hover / press  | Same file, `[design="Transparent"]` — `--sapButton_Lite_Background`, `_Hover_Background`, `_Active_Background`, `_Hover_TextColor`                                     |
 | Keyboard contract       | WAI-ARIA APG Button pattern; native `<button>` provides it                                                                                                             |
 
 ## Props
@@ -36,16 +37,44 @@ Native `ButtonHTMLAttributes` are forwarded, including `form`, `name` and `value
 
 ## Reconciled design
 
-| Decision         | UIReload                      | MUI                               | UI5                                      | Why                                                                                                          |
-| ---------------- | ----------------------------- | --------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Emphasis names   | `ghost` / `outline` / `solid` | `text` / `outlined` / `contained` | `Transparent` / `Default` / `Emphasized` | Renamed: a variant describes appearance only.                                                                |
-| Intent           | `tone` prop                   | `color` prop                      | folded into `design`                     | Separated so emphasis and intent multiply instead of being conflated.                                        |
-| Default variant  | `outline`                     | `text`                            | `Default`                                | Divergence. `outline` is visible in a toolbar without competing with the page's one primary action.          |
-| Default tone     | `neutral`                     | `primary`                         | `Default`                                | Neutral is the safe default when there is no provider to resolve a palette.                                  |
-| Sizes            | `sm` / `md` / `lg`            | `small`/`medium`/`large`          | Compact / Cozy (two)                     | `Size` was fixed in `src/types.ts` before any component existed.                                             |
-| Disabled styling | `opacity` only                | `pointer-events: none`            | `opacity` + `pointer-events: unset`      | Follows Fiori. MUI's approach breaks tooltips on disabled controls, which their docs record as a limitation. |
-| Loading          | always-mounted wrapper        | `loading` wrapper always rendered | `loading` + `loadingDelay`               | Avoids the Google Translate crash (mui/material-ui#27853).                                                   |
-| Icons            | `startIcon` / `endIcon`       | same                              | `icon` / `endIcon`                       | `startIcon` is unambiguous; `icon` does not say which side.                                                  |
+| Decision         | UIReload                      | MUI                               | UI5                                                           | Why                                                                                                                                                   |
+| ---------------- | ----------------------------- | --------------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Emphasis names   | `ghost` / `outline` / `solid` | `text` / `outlined` / `contained` | `Transparent` / `Default` / `Emphasized`                      | Renamed: a variant describes appearance only.                                                                                                         |
+| Intent           | `tone` prop                   | `color` prop                      | folded into `design`                                          | Separated so emphasis and intent multiply instead of being conflated.                                                                                 |
+| Default variant  | `outline`                     | `text`                            | `Default`                                                     | Divergence. `outline` is visible in a toolbar without competing with the page's one primary action.                                                   |
+| Default tone     | `neutral`                     | `primary`                         | `Default`                                                     | Neutral is the safe default when there is no provider to resolve a palette.                                                                           |
+| Sizes            | `sm` / `md` / `lg`            | `small`/`medium`/`large`          | Compact / Cozy (two)                                          | `Size` was fixed in `src/types.ts` before any component existed.                                                                                      |
+| Disabled styling | `opacity` only                | `pointer-events: none`            | `opacity` + `pointer-events: unset`                           | Follows Fiori. MUI's approach breaks tooltips on disabled controls, which their docs record as a limitation.                                          |
+| Loading          | always-mounted wrapper        | `loading` wrapper always rendered | `loading` + `loadingDelay`                                    | Avoids the Google Translate crash (mui/material-ui#27853).                                                                                            |
+| Icons            | `startIcon` / `endIcon`       | same                              | `icon` / `endIcon`                                            | `startIcon` is unambiguous; `icon` does not say which side.                                                                                           |
+| Unfilled states  | two wash steps + `on-wash`    | `text`/`outlined`: one `hover`    | `_Hover_Background`, `_Active_Background`, `_Hover_TextColor` | `ghost` and `outline` have no fill to darken, so the wash is the whole signal. One value made press identical to hover, and the click showed nothing. |
+
+### The wash ramp
+
+`ghost` and `outline` render on the page background, so they have no fill to darken. Their
+entire hover and press signal is a background wash, and that wash is **two** steps plus a
+matching foreground:
+
+| Role                       | Light     | Dark                    | High contrast |
+| -------------------------- | --------- | ----------------------- | ------------- |
+| `--uir-<tone>-wash`        | `#dbeafe` | `rgba(96,165,250,0.22)` | `#e5e7eb`     |
+| `--uir-<tone>-wash-active` | `#bfdbfe` | `rgba(96,165,250,0.30)` | `#d1d5db`     |
+| `--uir-<tone>-on-wash`     | `#1d4ed8` | `#bfdbfe`               | `#000080`     |
+
+(The table shows the `accent` tone; `positive` and `danger` follow the same shape. The
+`neutral` tone's values are the `--uir-neutral-*` steps in `src/theme/tokens.css`.)
+
+This is deliberately **not** `--uir-<tone>-subtle`. That token is the static tint fill — a
+`solid` field's background, where text sits permanently — so it is the palest step
+available, 1.05:1 to 1.09:1 against a white page. A wash has the opposite requirement: it is
+transient feedback competing with the page for attention, so it clears 1.2:1 on hover and
+1.4:1 on press. Below that it does not read as a deliberate fill, and if the two steps are
+close they collapse back into the single-value bug this ramp exists to fix.
+
+`on-wash` exists because darkening the wash darkens the ground under the label.
+`--uir-accent` clears 4.5:1 on the page but reaches only 4.24:1 on `--uir-accent-wash`, so
+each tone darkens (light) or brightens (dark) its own label as the wash deepens. Every pair
+is measured in `tests/contrast.test.ts`.
 
 ### Rejected, with reasons
 

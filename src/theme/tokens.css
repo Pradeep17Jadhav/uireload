@@ -219,8 +219,11 @@
 
   --uir-accent-hover: #1d4ed8;
   --uir-accent-active: #1e40af;
-  /* Fill behind a `ghost` accent control, and its hover text colour. */
-  /* The -50 step, so all three tones' hover washes carry the same visual weight. */
+  /*
+   * The *static* tint fill: a `solid` text field's background, a dialog footer's
+   * background, a listbox's highlighted option. Deliberately the -50 step, because
+   * these are large areas a user has to read text on, not interaction feedback.
+   */
   --uir-accent-subtle: #eff6ff;
 
   --uir-success-contrast: #ffffff;
@@ -231,6 +234,60 @@
   --uir-danger-hover: #991b1b;
   --uir-danger-active: #7f1d1d;
   --uir-danger-subtle: #fef2f2;
+
+  /* ==================================================================== *
+   * Interaction wash ramp.
+   *
+   * Distinct from the `*-subtle` static fill above, because the two have opposite
+   * requirements. A static fill sits under text permanently and wants to be as pale
+   * as possible; a wash is a transient signal competing with the page for attention
+   * and wants to be obvious.
+   *
+   * Three roles per tone:
+   *
+   *   --uir-<tone>-wash          background of an unfilled control on hover
+   *   --uir-<tone>-wash-active   background of an unfilled control while pressed
+   *   --uir-<tone>-on-wash       its label, on either wash
+   *
+   * Why the ramp rather than one value. `ghost` and `outline` have no fill to darken,
+   * so the wash *is* the entire state signal. A single value meant hover and press
+   * rendered identically and pressing a button showed nothing at all — the feedback
+   * arrived and departed within one frame. Fiori's `Transparent` design carries the
+   * same trio (`--sapButton_Lite_Background`, `_Hover_Background`, `_Active_Background`,
+   * plus `_Hover_TextColor`); see
+   * `@ui5/webcomponents/dist/css/themes/Button.css`.
+   *
+   * Why `on-wash` exists at all. Darkening the wash darkens the ground under the
+   * label, so the label has to darken with it. Each pair below is measured at or above
+   * WCAG SC 1.4.3 (4.5:1) — `tests/contrast.test.ts` fails the build if any drifts.
+   *
+   * Why the steps are chosen as they are. On a white page a wash has to clear roughly
+   * 1.2:1 against the page to read as a deliberate fill rather than as noise, and the
+   * press step has to clear more than the hover step or the two states collapse. On a
+   * dark page the same job is done with alpha instead of a lighter hex, because
+   * lightening a dark surface stops reading as "more emphasis" — see the note above
+   * the dark block.
+   * ==================================================================== */
+
+  --uir-neutral-wash: #e2e8f0;
+  --uir-neutral-wash-active: #cbd5e1;
+  --uir-neutral-on-wash: #0f172a;
+
+  --uir-accent-wash: #dbeafe;
+  --uir-accent-wash-active: #bfdbfe;
+  /* One step darker than `--uir-accent`: 5.49:1 on the hover wash, 4.72:1 on the
+     press wash. `--uir-accent` itself only reaches 4.24:1 on the hover wash. */
+  --uir-accent-on-wash: #1d4ed8;
+
+  --uir-success-wash: #bbf7d0;
+  --uir-success-wash-active: #86efac;
+  /* `--uir-success-active`, held to the same 4.5:1 floor. */
+  --uir-success-on-wash: #14532d;
+
+  --uir-danger-wash: #fee2e2;
+  --uir-danger-wash-active: #fecaca;
+  /* `--uir-danger-hover`. */
+  --uir-danger-on-wash: #991b1b;
 }
 
 /*
@@ -280,6 +337,31 @@
   --uir-danger-hover: #fca5a5;
   --uir-danger-active: #fecaca;
   --uir-danger-subtle: rgba(248, 113, 113, 0.16);
+
+  /*
+   * The wash ramp, inverts with the scheme: on a dark surface the tone's glow is added
+   * as alpha over the page rather than mixed toward a paler hex, so it composites the
+   * same way over `--uir-background` and over `--uir-surface`.
+   *
+   * 0.16 was the old single value and reached only 1.23:1 to 1.37:1 against the page —
+   * effectively invisible. 0.22 and 0.30 are the two steps, and every `on-wash` value
+   * is the tone's own `-active` step, which keeps every label above 7:1.
+   */
+  --uir-neutral-wash: #334155;
+  --uir-neutral-wash-active: #475569;
+  --uir-neutral-on-wash: #e2e8f0;
+
+  --uir-accent-wash: rgba(96, 165, 250, 0.22);
+  --uir-accent-wash-active: rgba(96, 165, 250, 0.3);
+  --uir-accent-on-wash: #bfdbfe;
+
+  --uir-success-wash: rgba(74, 222, 128, 0.22);
+  --uir-success-wash-active: rgba(74, 222, 128, 0.3);
+  --uir-success-on-wash: #bbf7d0;
+
+  --uir-danger-wash: rgba(248, 113, 113, 0.22);
+  --uir-danger-wash-active: rgba(248, 113, 113, 0.3);
+  --uir-danger-on-wash: #fecaca;
 
   --uir-shadow: 0 1px 2px rgb(0 0 0 / 40%);
   --uir-shadow-large: 0 12px 32px rgb(0 0 0 / 55%);
@@ -332,6 +414,30 @@
   --uir-danger-hover: #c00000;
   --uir-danger-active: #8a0000;
   --uir-danger-subtle: #fef2f2;
+
+  /*
+   * The wash ramp. Every tone shares one grey pair here, because hue is not the signal
+   * in this scheme — the two steps differ in lightness and the border carries the rest,
+   * exactly as the `neutral-fill` ramp above does.
+   *
+   * `#e5e7eb` reads at 1.24:1 and `#d1d5db` at 1.47:1 against white, and the labels are
+   * the tones' `-active` steps, so nothing falls below 6.8:1.
+   */
+  --uir-neutral-wash: #e5e7eb;
+  --uir-neutral-wash-active: #d1d5db;
+  --uir-neutral-on-wash: #000000;
+
+  --uir-accent-wash: #e5e7eb;
+  --uir-accent-wash-active: #d1d5db;
+  --uir-accent-on-wash: #000080;
+
+  --uir-success-wash: #e5e7eb;
+  --uir-success-wash-active: #d1d5db;
+  --uir-success-on-wash: #004400;
+
+  --uir-danger-wash: #e5e7eb;
+  --uir-danger-wash-active: #d1d5db;
+  --uir-danger-on-wash: #8a0000;
 
   --uir-shadow: none;
   --uir-shadow-large: none;
@@ -401,6 +507,22 @@
     --uir-danger-hover: #fca5a5;
     --uir-danger-active: #fecaca;
     --uir-danger-subtle: rgba(248, 113, 113, 0.16);
+
+    --uir-neutral-wash: #334155;
+    --uir-neutral-wash-active: #475569;
+    --uir-neutral-on-wash: #e2e8f0;
+
+    --uir-accent-wash: rgba(96, 165, 250, 0.22);
+    --uir-accent-wash-active: rgba(96, 165, 250, 0.3);
+    --uir-accent-on-wash: #bfdbfe;
+
+    --uir-success-wash: rgba(74, 222, 128, 0.22);
+    --uir-success-wash-active: rgba(74, 222, 128, 0.3);
+    --uir-success-on-wash: #bbf7d0;
+
+    --uir-danger-wash: rgba(248, 113, 113, 0.22);
+    --uir-danger-wash-active: rgba(248, 113, 113, 0.3);
+    --uir-danger-on-wash: #fecaca;
 
     --uir-shadow: 0 1px 2px rgb(0 0 0 / 40%);
     --uir-shadow-large: 0 12px 32px rgb(0 0 0 / 55%);

@@ -54,8 +54,21 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
       loadingIndicator={loadingIndicator}
       className={cx("uir-icon-button", className)}
       data-edge={edge === false ? undefined : edge}
-    >
-      <span className="uir-icon-button__icon">{children}</span>
-    </Button>
+      /*
+       * `startIcon`, not `children`.
+       *
+       * `Button` wraps `children` in `.uir-button__label`, and a label is a line box:
+       * an inline-flex icon inside one sits on the text baseline, with the parent's
+       * font descent left below it, so the icon lands a few pixels high. Both
+       * references avoid that by keeping the icon out of the text wrapper — MUI
+       * renders `children` straight into the button root
+       * (`@mui/material/IconButton/IconButton.js`, `children`), and Fiori renders the
+       * icon as a sibling of `ui5-button-text`, not inside it
+       * (`@ui5/webcomponents/dist/ButtonTemplate.js`). The icon slot is a direct flex
+       * child of the root, so `align-items: center` on `.uir-button` centres it and
+       * the label is left empty for the `:empty` collapse.
+       */
+      startIcon={<span className="uir-icon-button__icon">{children}</span>}
+    />
   );
 });

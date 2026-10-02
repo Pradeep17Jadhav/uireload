@@ -1,0 +1,433 @@
+/*
+ * Select styles.
+ *
+ * The trigger reuses the same token set as `Textbox`'s control, deliberately: a select and a text
+ * field side by side in a form have to be the same height, the same radius and the same type scale,
+ * and that is only guaranteed if both read the same tokens. The listbox reuses `Popover`'s surface
+ * tokens for the same reason.
+ *
+ * Nothing here hardcodes a dimension.
+ */
+
+@layer uireload.components {
+  .uir-select,
+  .uir-select__label,
+  .uir-select__trigger,
+  .uir-select__helper {
+    box-sizing: border-box;
+  }
+
+  /* ---- Root ---------------------------------------------------------- */
+
+  .uir-select {
+    display: inline-flex;
+    flex-direction: column;
+    font-family: var(--uir-font-family);
+    max-inline-size: 100%;
+  }
+
+  .uir-select[data-full-width] {
+    display: flex;
+    inline-size: 100%;
+  }
+
+  /* ---- Label --------------------------------------------------------- */
+
+  .uir-select__label {
+    color: var(--uir-text);
+    cursor: default;
+    font-size: var(--uir-control-font-size-md);
+    font-weight: var(--uir-control-font-weight);
+    line-height: var(--uir-line-height);
+  }
+
+  .uir-select[data-size="sm"] .uir-select__label {
+    font-size: var(--uir-control-font-size-sm);
+  }
+
+  .uir-select[data-size="lg"] .uir-select__label {
+    font-size: var(--uir-control-font-size-lg);
+  }
+
+  /* ---- Trigger ------------------------------------------------------- */
+
+  /*
+   * The same construction as `Textbox`'s control, for the same reason: a select and a field in the
+   * same form row must line up exactly.
+   */
+  .uir-select__trigger {
+    align-items: center;
+    background-color: transparent;
+    border: var(--uir-control-border-width) solid var(--uir-select-border);
+    border-radius: var(--uir-control-radius);
+    color: var(--uir-text);
+    cursor: pointer;
+    display: flex;
+    font-family: inherit;
+    font-size: var(--uir-control-font-size-md);
+    gap: var(--uir-control-gap);
+    /*
+     * A control's content is a single line that truncates, never two lines. The trigger holds a
+     * label, and a wrapping label would change the control's height mid-interaction — which breaks
+     * the row it sits in exactly when the user opens it.
+     */
+    max-inline-size: 100%;
+    min-block-size: var(--uir-select-height);
+    min-inline-size: var(--uir-control-min-width);
+    padding-block: var(--uir-control-pad-block-md);
+    padding-inline: var(--uir-control-pad-inline-md);
+    text-align: start;
+    transition:
+      background-color var(--uir-duration) var(--uir-easing),
+      border-color var(--uir-duration) var(--uir-easing);
+    inline-size: 100%;
+  }
+
+  .uir-select {
+    --uir-select-height: calc(var(--uir-control-height-md) + var(--uir-control-border-width) * 2);
+
+    /*
+     * The listbox's own two colours, as component-local tokens because only this component uses
+     * them. Declared on the root rather than on the listbox so the popover — which is portalled and
+     * therefore *not* a descendant of the root — still resolves them.
+     *
+     * That inheritance detail is the reason these two are here and not on `.uir-select__listbox`:
+     * `--uir-*` custom properties do not cross a portal boundary, so a token declared on the root
+     * would not reach the listbox inside `Popover`. See `docs/architecture.md`.
+     */
+    --uir-select-active: var(--uir-accent-wash-active);
+    --uir-select-active-border: var(--uir-accent);
+    --uir-select-hover: var(--uir-neutral-wash);
+  }
+
+  .uir-select[data-size="sm"] {
+    --uir-select-height: calc(var(--uir-control-height-sm) + var(--uir-control-border-width) * 2);
+  }
+
+  .uir-select[data-size="lg"] {
+    --uir-select-height: calc(var(--uir-control-height-lg) + var(--uir-control-border-width) * 2);
+  }
+
+  .uir-select[data-size="sm"] .uir-select__trigger {
+    font-size: var(--uir-control-font-size-sm);
+    padding-block: var(--uir-control-pad-block-sm);
+    padding-inline: var(--uir-control-pad-inline-sm);
+  }
+
+  .uir-select[data-size="lg"] .uir-select__trigger {
+    font-size: var(--uir-control-font-size-lg);
+    padding-block: var(--uir-control-pad-block-lg);
+    padding-inline: var(--uir-control-pad-inline-lg);
+  }
+
+  /*
+   * The value absorbs the ellipsis and the trigger does not shrink.
+   *
+   * A flex item's default `min-width: auto` refuses to shrink below its content, so a long option
+   * would push the trigger wider than its container instead of truncating — so the minimum is
+   * zeroed, exactly as on `Textbox`.
+   */
+  .uir-select__value {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /*
+   * The placeholder. Not `opacity`, for the same reason as `Textbox`: the browser's default would
+   * put it below the contrast the tokens were measured at.
+   */
+  .uir-select[data-empty] .uir-select__value {
+    color: var(--uir-text-muted);
+  }
+
+  /* ---- Emphasis ------------------------------------------------------ */
+
+  .uir-select[data-variant="ghost"] .uir-select__trigger {
+    background-color: transparent;
+    border-color: transparent;
+  }
+
+  .uir-select[data-variant="outline"] .uir-select__trigger {
+    background-color: transparent;
+  }
+
+  .uir-select[data-variant="solid"] .uir-select__trigger {
+    background-color: var(--uir-select-fill);
+  }
+
+  /* ---- Intent -------------------------------------------------------- */
+
+  /*
+   * Five roles, matching `Textbox`'s five, so the two controls read as one family and a new tone is
+   * the same five declarations in both places.
+   */
+  .uir-select[data-tone="neutral"] {
+    --uir-select-border: var(--uir-border-strong);
+    --uir-select-border-hover: var(--uir-text);
+    --uir-select-ring: var(--uir-focus-ring-color);
+    --uir-select-helper: var(--uir-text-muted);
+    --uir-select-fill: var(--uir-surface);
+  }
+
+  .uir-select[data-tone="accent"] {
+    --uir-select-border: var(--uir-accent);
+    --uir-select-border-hover: var(--uir-accent-hover);
+    --uir-select-ring: var(--uir-accent);
+    --uir-select-helper: var(--uir-text-muted);
+    --uir-select-fill: var(--uir-accent-subtle);
+  }
+
+  .uir-select[data-tone="positive"] {
+    --uir-select-border: var(--uir-success);
+    --uir-select-border-hover: var(--uir-success-hover);
+    --uir-select-ring: var(--uir-success);
+    --uir-select-helper: var(--uir-text-muted);
+    --uir-select-fill: var(--uir-success-subtle);
+  }
+
+  .uir-select[data-tone="danger"] {
+    --uir-select-border: var(--uir-danger);
+    --uir-select-border-hover: var(--uir-danger-hover);
+    --uir-select-ring: var(--uir-danger);
+    --uir-select-helper: var(--uir-danger);
+    --uir-select-fill: var(--uir-danger-subtle);
+  }
+
+  /* Declared after the tone blocks, so source order makes it win at equal specificity. */
+  .uir-select[data-invalid] {
+    --uir-select-border: var(--uir-danger);
+    --uir-select-border-hover: var(--uir-danger-hover);
+    --uir-select-ring: var(--uir-danger);
+    --uir-select-helper: var(--uir-danger);
+  }
+
+  /* ---- Chevron ------------------------------------------------------- */
+
+  /*
+   * Two borders meeting at a point, the same construction as `Popover`'s arrow: no markup, no
+   * request, nothing extra to theme.
+   *
+   * `rotate` rather than swapping borders, so it transitions. `transform` is a compositing
+   * property, which is why the open state can animate this without a repaint.
+   */
+  .uir-select__chevron {
+    border-block-end: 2px solid var(--uir-text-muted);
+    border-inline-end: 2px solid var(--uir-text-muted);
+    block-size: 0.375rem;
+    flex-shrink: 0;
+    inline-size: 0.375rem;
+    margin-inline-start: auto;
+    transition: transform var(--uir-duration) var(--uir-easing);
+  }
+
+  .uir-select__trigger[aria-expanded="true"] .uir-select__chevron {
+    transform: rotate(225deg);
+  }
+
+  /* ---- Adornments ---------------------------------------------------- */
+
+  .uir-select__adornment {
+    align-items: center;
+    color: var(--uir-text-muted);
+    display: inline-flex;
+    flex-shrink: 0;
+    justify-content: center;
+  }
+
+  .uir-select__adornment > * {
+    block-size: var(--uir-icon-size-md);
+    inline-size: var(--uir-icon-size-md);
+  }
+
+  .uir-select[data-size="sm"] .uir-select__adornment > * {
+    block-size: var(--uir-icon-size-sm);
+    inline-size: var(--uir-icon-size-sm);
+  }
+
+  .uir-select[data-size="lg"] .uir-select__adornment > * {
+    block-size: var(--uir-icon-size-lg);
+    inline-size: var(--uir-icon-size-lg);
+  }
+
+  /* ---- States -------------------------------------------------------- */
+
+  @media (hover: hover) and (pointer: fine) {
+    .uir-select:not([data-disabled]) .uir-select__trigger:hover {
+      border-color: var(--uir-select-border-hover);
+    }
+  }
+
+  /*
+   * The open trigger keeps the "pressed" border rather than the hover one, so the control the
+   * user is interacting with stays visibly the same one while the listbox is up.
+   */
+  .uir-select:not([data-disabled]) .uir-select__trigger[aria-expanded="true"] {
+    border-color: var(--uir-select-border-hover);
+  }
+
+  /*
+   * The ring is drawn by the trigger itself, offset inwards so it lands inside the border rather
+   * than floating outside the control. `Textbox` does the same thing on its `<input>`, and for the
+   * same reason: a wrapper ring would be a second ring under the base layer's own.
+   */
+  .uir-select__trigger:focus-visible {
+    outline: var(--uir-focus-ring-width) solid var(--uir-select-ring);
+    outline-offset: calc(-1 * (var(--uir-focus-ring-width) + var(--uir-control-border-width)));
+    transition-duration: 0ms;
+  }
+
+  /*
+   * Disabled. `opacity` only, with `pointer-events` intact, for the reason every control in this
+   * library states: MUI's `pointer-events: none` breaks the tooltip that explains why.
+   */
+  .uir-select[data-disabled] .uir-select__trigger {
+    cursor: not-allowed;
+    opacity: var(--uir-disabled-opacity);
+  }
+
+  /* ---- Description --------------------------------------------------- */
+
+  .uir-select__helper {
+    color: var(--uir-select-helper);
+    font-size: var(--uir-control-font-size-sm);
+    line-height: var(--uir-line-height);
+  }
+
+  .uir-select[data-invalid] .uir-select__helper {
+    font-weight: var(--uir-control-font-weight);
+  }
+
+  /* ---- Listbox ------------------------------------------------------- */
+
+  /*
+   * The popover's own padding is removed, because a listbox's options should reach the surface's
+   * edge. `Popover` is composed with no `header`, `title` or `footer`, so the content region is the
+   * whole surface, and this rule is what makes that read as a list rather than as a panel.
+   */
+  .uir-select__popover {
+    min-inline-size: 0;
+    padding: 0;
+  }
+
+  .uir-select__listbox {
+    /*
+     * Bounded so a list of two hundred options cannot be taller than the viewport. `max-block-size`
+     * rather than `block-size`, so a short list still shrinks to its content.
+     */
+    max-block-size: min(60vh, 24rem);
+    overflow-y: auto;
+    padding: calc(var(--uir-space) * 0.5) 0;
+  }
+
+  .uir-select__group-label {
+    color: var(--uir-text-muted);
+    font-size: var(--uir-control-font-size-sm);
+    font-weight: var(--uir-control-font-weight);
+    padding: calc(var(--uir-space) * 0.5) var(--uir-space);
+  }
+
+  /*
+   * One option.
+   *
+   * `cursor: pointer` because the option is a real choice, and the listbox itself is not — which is
+   * why this rule is here and not on `.uir-select__listbox`.
+   */
+  .uir-select__option {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    font-size: var(--uir-control-font-size-md);
+    /*
+     * No padding on the option itself. The highlight is inset by `box-shadow` instead, so a
+     * highlighted option does not shift the options below it when the highlight moves — a padding
+     * change here would make arrowing down a list visibly jitter.
+     */
+    padding-block: calc(var(--uir-space) * 0.625);
+    padding-inline: var(--uir-space);
+  }
+
+  .uir-select__option-label {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /*
+   * The highlighted option: `data-active` is the roving focus position, which moves with the arrow
+   * keys and is *not* the selection. `box-shadow: inset` keeps it from affecting layout.
+   */
+  .uir-select__option[data-active] {
+    background-color: var(--uir-select-active);
+    box-shadow: inset 0 0 0 var(--uir-control-border-width) var(--uir-select-active-border);
+  }
+
+  /*
+   * The selected option, marked independently of the highlight.
+   *
+   * A tick rather than a colour change: colour alone would make "which one is selected" and "which
+   * one is highlighted" indistinguishable, and `docs/foundations.md` §8 requires a non-colour signal.
+   */
+  .uir-select__option[data-selected] .uir-select__option-label::after {
+    content: "✓";
+    color: var(--uir-select-active-border);
+    margin-inline-start: var(--uir-space);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .uir-select__option:not([data-disabled]):hover {
+      background-color: var(--uir-select-hover);
+    }
+  }
+
+  /*
+   * A disabled option is dimmed *and* says so through `aria-disabled` in the markup. Not
+   * `pointer-events: none` — the option still needs to be readable, and the cursor is the only
+   * affordance being given up.
+   */
+  .uir-select__option[data-disabled] {
+    cursor: not-allowed;
+    opacity: var(--uir-disabled-opacity);
+  }
+
+  /* ---- Reduced motion ------------------------------------------------ */
+
+  /*
+   * The chevron still rotates and still lands in the right place; it just stops taking
+   * `--uir-duration`. The rotation is not decoration — it is how the control says whether the list
+   * is open — so it is not removed, only made instantaneous.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .uir-select__chevron {
+      transition-duration: 0ms;
+    }
+  }
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  @media (forced-colors: active) {
+    .uir-select__trigger {
+      background-color: Canvas;
+      border-color: CanvasText;
+      color: CanvasText;
+    }
+
+    /*
+     * The selected tick is a glyph rather than a colour, so it survives forced colours untouched.
+     * The highlight gets an explicit border, because a `background-color` would be replaced.
+     */
+    .uir-select__option[data-active] {
+      background-color: Highlight;
+      color: HighlightText;
+      forced-color-adjust: none;
+    }
+
+    .uir-select__option[data-selected] .uir-select__option-label::after {
+      color: CanvasText;
+    }
+  }
+}

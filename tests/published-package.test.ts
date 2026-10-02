@@ -53,9 +53,63 @@ function slug(specifier: string): string {
   return specifier.replace(/[^a-z0-9]+/gi, "-");
 }
 
+/**
+ * JavaScript's reserved words, which are invalid as identifiers even though they are perfectly
+ * ordinary component folder names.
+ *
+ * Found by the first component whose name collided: `switch`, added as `src/components/switch`.
+ * The generated probe did `import * as switch from "uireload/components/switch"` and every
+ * `moduleResolution` mode failed with TS1359, which reads as a packaging problem and is not one.
+ */
+const RESERVED_WORDS = new Set([
+  "await",
+  "break",
+  "case",
+  "catch",
+  "class",
+  "const",
+  "continue",
+  "debugger",
+  "default",
+  "delete",
+  "do",
+  "else",
+  "enum",
+  "export",
+  "extends",
+  "false",
+  "finally",
+  "for",
+  "function",
+  "if",
+  "import",
+  "in",
+  "instanceof",
+  "new",
+  "null",
+  "return",
+  "super",
+  "switch",
+  "this",
+  "throw",
+  "true",
+  "try",
+  "typeof",
+  "var",
+  "void",
+  "while",
+  "with",
+  "yield",
+]);
+
 /** A component name is not always a valid JS identifier. */
 function identifier(name: string): string {
-  return name.replace(/-/g, "_");
+  const flat = name.replace(/-/g, "_");
+
+  // Prefixed rather than suffixed, so `switch` reads as `component_switch` and not
+  // `switch_component`, which could itself collide with a real component named
+  // `switch-component`.
+  return RESERVED_WORDS.has(flat) ? `component_${flat}` : flat;
 }
 
 /** Run node in the scratch consumer, returning trimmed stdout. */

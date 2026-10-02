@@ -1,8 +1,9 @@
 /*
  * IconButton styles.
  *
- * Extends the Button stylesheet rather than restating them. The only new decisions
- * are the square box, the edge offset, and hiding the empty label slot.
+ * Extends the Button stylesheet rather than restating them. The icon is handed to
+ * `Button`'s icon slot, so size, centring and tone all come from `button.css`; the only
+ * new decisions are the square box, the edge offset, and hiding the empty label slot.
  */
 
 @layer uireload.components {
@@ -14,6 +15,19 @@
    */
   .uir-icon-button {
     min-inline-size: var(--uir-control-height-md);
+  }
+
+  /*
+   * `Button` sets its inline padding with `.uir-button[data-size]` — one class and one
+   * attribute selector — which outranks a bare `.uir-icon-button`. The padding reset
+   * therefore has to repeat that selector shape; otherwise it is silently dropped and
+   * the control renders as a wide rectangle with the icon centred inside it, rather
+   * than square. `data-size` is always present: `Button` defaults it to `"md"`.
+   *
+   * Winning on specificity rather than on source order is deliberate, so the rule does
+   * not also depend on this file being bundled after `button.css`.
+   */
+  .uir-button.uir-icon-button[data-size] {
     padding-inline: 0;
   }
 
@@ -30,33 +44,33 @@
   }
 
   /*
-   * `Button` renders an always-present loading wrapper and a label slot. For an icon
-   * button the label is empty, so the button would still reserve a flex child for it.
-   * Collapsing it keeps the icon optically centred.
+   * `Button` renders an always-present loading wrapper and a label slot. The label is
+   * always empty here — the icon goes through `Button`'s icon slot — so it has to be
+   * collapsed, or the button reserves a flex child it does not need.
+   *
+   * `:empty` rather than a bare descendant, on purpose. Anything a consumer put in
+   * `children` as visually hidden text for the accessible name now travels in the icon
+   * slot, but the label is the *name* by `Button`'s own contract: if a future change
+   * ever filled it, this must not hide the control's accessible name to make it look
+   * tidier.
    */
   .uir-icon-button .uir-button__label:empty {
     display: none;
   }
 
+  /*
+   * This element sits inside `Button`'s icon slot, which already sizes the box from
+   * `--uir-icon-size-*` per `data-size`. So the job here is only to fill that box and
+   * centre within it — restating the size would give IconButton a second definition of
+   * the same number, and the two could drift. `100%` resolves because the slot has a
+   * definite size on both axes.
+   */
   .uir-icon-button__icon {
     align-items: center;
-    display: inline-flex;
+    block-size: 100%;
+    display: flex;
+    inline-size: 100%;
     justify-content: center;
-  }
-
-  .uir-icon-button[data-size="sm"] .uir-icon-button__icon {
-    block-size: var(--uir-icon-size-sm);
-    inline-size: var(--uir-icon-size-sm);
-  }
-
-  .uir-icon-button[data-size="md"] .uir-icon-button__icon {
-    block-size: var(--uir-icon-size-md);
-    inline-size: var(--uir-icon-size-md);
-  }
-
-  .uir-icon-button[data-size="lg"] .uir-icon-button__icon {
-    block-size: var(--uir-icon-size-lg);
-    inline-size: var(--uir-icon-size-lg);
   }
 
   /*

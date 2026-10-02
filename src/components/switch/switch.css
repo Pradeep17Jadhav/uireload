@@ -1,0 +1,343 @@
+/*
+ * Switch styles.
+ *
+ * Every dimension comes from a `--uir-control-*` token, or from one of the three
+ * switch-specific sizes declared on the root. The track-to-handle ratio follows UI5's
+ * `--_ui5_switch_track_width` over `--_ui5_switch_handle_width`, because a switch's
+ * readability comes from the handle being visibly displaced at both extremes and those are
+ * the reference numbers rather than an invention.
+ */
+
+@layer uireload.components {
+  .uir-switch,
+  .uir-switch__input,
+  .uir-switch__track,
+  .uir-switch__handle,
+  .uir-switch__label {
+    box-sizing: border-box;
+  }
+
+  /* ---- Root ---------------------------------------------------------- */
+
+  .uir-switch {
+    align-items: center;
+    /*
+     * The three switch-specific dimensions, declared once so nothing downstream repeats
+     * them. `position: relative` is what lets the invisible input cover the whole control.
+     */
+    --uir-switch-track-width: 2.5rem;
+    --uir-switch-track-height: var(--uir-control-height-sm);
+    --uir-switch-handle-size: calc(
+      var(--uir-switch-track-height) - var(--uir-control-border-width) * 4
+    );
+
+    display: inline-flex;
+    /* `gap`, never a physical margin, so the row mirrors in RTL with no extra rule. */
+    gap: var(--uir-control-gap);
+    max-inline-size: 100%;
+    position: relative;
+  }
+
+  .uir-switch[data-size="sm"] {
+    --uir-switch-track-width: 2rem;
+    --uir-switch-track-height: calc(var(--uir-control-height-sm) * 0.875);
+  }
+
+  .uir-switch[data-size="lg"] {
+    --uir-switch-track-width: 3rem;
+    --uir-switch-track-height: var(--uir-control-height-lg);
+  }
+
+  /*
+   * `labelPosition` is a logical direction, so this single rule is all RTL needs: it puts
+   * the label first in a right-to-left row, which is what `start` means there.
+   */
+  .uir-switch[data-label-position="start"] {
+    flex-direction: row-reverse;
+  }
+
+  /* ---- Input --------------------------------------------------------- */
+
+  /*
+   * The native checkbox carries focus, form participation, the Space key and `:checked`, so
+   * it cannot be `display: none` — that would remove it from the tab order and from form
+   * submission. It is made invisible and laid over the control instead, so what the user
+   * clicks *is* the element that is clicked.
+   *
+   * `appearance: none` stops the browser's default checkbox being painted on top of the
+   * custom track.
+   */
+  .uir-switch__input {
+    appearance: none;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    /*
+     * Absolutely positioned to the root's box, so the entire control is one hit target.
+     * Without this a click on the far end of the track would miss the input, and a
+     * consumer's `user.click(track)` would silently do nothing.
+     */
+    inset: 0;
+    inline-size: 100%;
+    margin: 0;
+    opacity: 0;
+    position: absolute;
+  }
+
+  /*
+   * The ring is drawn on the input, which is the element that actually has focus, and an
+   * `outline` still traces a transparent element's box — which is the root's box. So the
+   * ring appears around the whole control, with no wrapper ring and no second outline
+   * underneath it.
+   */
+  .uir-switch__input:focus-visible {
+    outline: var(--uir-focus-ring-width) solid var(--uir-focus-ring-color);
+    outline-offset: var(--uir-focus-ring-offset);
+    transition-duration: 0ms;
+  }
+
+  .uir-switch__input:disabled {
+    cursor: not-allowed;
+  }
+
+  /*
+   * A read-only switch is focusable and its state is readable, so the disabled treatment
+   * would be wrong: dimming it says the setting cannot be read, which is false. Only the
+   * cursor changes.
+   */
+  `n
+  /* ---- Track --------------------------------------------------------- */
+
+  .uir-switch__track {
+    align-items: center;
+    background-color: var(--uir-switch-track);
+    border: var(--uir-control-border-width) solid var(--uir-switch-track-border);
+    border-radius: calc(var(--uir-control-radius) * 2);
+    display: flex;
+    flex-shrink: 0;
+    /*
+     * The padding is what the handle's travel is measured against, and it is symmetric so
+     * the handle sits centred at rest and stops short of the rounded ends. This is why
+     * `--uir-switch-handle-size` subtracts four border widths: two for the track's own
+     * border, two for this inset.
+     */
+    padding: calc(var(--uir-control-border-width) * 2);
+    block-size: var(--uir-switch-track-height);
+    inline-size: var(--uir-switch-track-width);
+    transition:
+      background-color var(--uir-duration) var(--uir-easing),
+      border-color var(--uir-duration) var(--uir-easing);
+  }
+
+  .uir-switch[data-checked] .uir-switch__track {
+    background-color: var(--uir-switch-track-checked);
+    border-color: var(--uir-switch-track-border-checked);
+  }
+
+  /* ---- Handle -------------------------------------------------------- */
+
+  .uir-switch__handle {
+    background-color: var(--uir-surface-raised);
+    block-size: var(--uir-switch-handle-size);
+    border-radius: 50%;
+    inline-size: var(--uir-switch-handle-size);
+    transition: transform var(--uir-duration) var(--uir-easing);
+  }
+
+  /*
+   * The "on" position, as a transform rather than a positional property so it is a pure
+   * compositing change and reflows nothing.
+   *
+   * The distance is computed, not written: `travel` is `track width - handle width - inset`,
+   * so a change to any of the three updates this automatically. A handle that does not reach
+   * the end of its track is the specific failure this exists to prevent.
+   */
+  .uir-switch[data-checked] .uir-switch__handle {
+    transform: translateX(
+      calc(
+        var(--uir-switch-track-width) - var(--uir-switch-handle-size) -
+          var(--uir-control-border-width) * 4 - 100%
+      )
+    );
+  }
+
+  /*
+   * RTL. One rule, because a transform on the handle would mirror on its own if the value
+   * were physical; negating the whole `calc` flips the direction instead, so the handle
+   * travels towards the end of the track that is visually on the left.
+   */
+  [dir="rtl"] .uir-switch[data-checked] .uir-switch__handle {
+    transform: translateX(
+      calc(
+        -1 *
+          (
+            var(--uir-switch-track-width) - var(--uir-switch-handle-size) -
+              var(--uir-control-border-width) * 4 - 100%
+          )
+      )
+    );
+  }
+
+  /* ---- Label --------------------------------------------------------- */
+
+  .uir-switch__label {
+    color: var(--uir-text);
+    cursor: pointer;
+    font-size: var(--uir-control-font-size-md);
+    font-weight: var(--uir-control-font-weight);
+    line-height: var(--uir-line-height);
+    /*
+     * A two-line label beside a switch must align to the text edge in both directions.
+     * `lint:css` fails on `left` / `right` here, which is the point.
+     */
+    text-align: start;
+  }
+
+  .uir-switch[data-size="sm"] .uir-switch__label {
+    font-size: var(--uir-control-font-size-sm);
+  }
+
+  .uir-switch[data-size="lg"] .uir-switch__label {
+    font-size: var(--uir-control-font-size-lg);
+  }
+
+  /* ---- Intent -------------------------------------------------------- */
+
+  /*
+   * A switch's tone supplies five roles, so a new tone is five declarations here and
+   * nothing else changes:
+   *
+   *   --uir-switch-track                track background, off
+   *   --uir-switch-track-border         track border, off
+   *   --uir-switch-track-checked        track background, on
+   *   --uir-switch-track-border-checked track border, on
+   *   --uir-switch-track-active         track background while pressed, off
+   *   --uir-switch-track-checked-active track background while pressed, on
+   *
+   * A track is a large area of colour, so every one of these is a *fill* pair. The
+   * on/off pairs are the two the contrast test measures against the handle drawn on top of
+   * them; the handle is `--uir-surface-raised`, which is the token `tests/contrast.test.ts`
+   * already holds at 4.5:1 against `--uir-surface-raised` backgrounds in every scheme.
+   */
+  .uir-switch[data-tone="neutral"] {
+    --uir-switch-track: var(--uir-surface);
+    --uir-switch-track-border: var(--uir-border-strong);
+    --uir-switch-track-checked: var(--uir-text-muted);
+    --uir-switch-track-border-checked: var(--uir-text-muted);
+    --uir-switch-track-active: var(--uir-neutral-fill-active);
+    --uir-switch-track-checked-active: var(--uir-text);
+  }
+
+  .uir-switch[data-tone="accent"] {
+    --uir-switch-track: var(--uir-surface);
+    --uir-switch-track-border: var(--uir-border-strong);
+    --uir-switch-track-checked: var(--uir-accent);
+    --uir-switch-track-border-checked: var(--uir-accent);
+    --uir-switch-track-active: var(--uir-accent-active);
+    --uir-switch-track-checked-active: var(--uir-accent-active);
+  }
+
+  .uir-switch[data-tone="positive"] {
+    --uir-switch-track: var(--uir-surface);
+    --uir-switch-track-border: var(--uir-border-strong);
+    --uir-switch-track-checked: var(--uir-success);
+    --uir-switch-track-border-checked: var(--uir-success);
+    --uir-switch-track-active: var(--uir-success-active);
+    --uir-switch-track-checked-active: var(--uir-success-active);
+  }
+
+  .uir-switch[data-tone="danger"] {
+    --uir-switch-track: var(--uir-surface);
+    --uir-switch-track-border: var(--uir-border-strong);
+    --uir-switch-track-checked: var(--uir-danger);
+    --uir-switch-track-border-checked: var(--uir-danger);
+    --uir-switch-track-active: var(--uir-danger-active);
+    --uir-switch-track-checked-active: var(--uir-danger-active);
+  }
+
+  /* ---- Hover --------------------------------------------------------- */
+
+  /*
+   * Gated on a fine pointer with hover, for the same reason as `Button`: a hover state that
+   * persists after a tap is a known mobile annoyance, and Fiori's generated CSS gates
+   * `:hover` the same way.
+   *
+   * Read-only is excluded, because there is nothing to do about hovering a control that
+   * cannot change.
+   */
+  @media (hover: hover) and (pointer: fine) {
+    .uir-switch:not([data-disabled]) .uir-switch__track:hover {
+      border-color: var(--uir-switch-track-border-checked);
+    }
+  }
+
+  /* ---- Active -------------------------------------------------------- */
+
+  /*
+   * Pressed, via the adjacent-sibling combinator rather than a wrapper-level `:active`:
+   * the input is the element that receives the press, and the track is its next sibling,
+   * so this is the only selector that can react to it without a parenthesised `:has()`.
+   *
+   * The transition is cut on the handle for the duration of the press, because Fiori
+   * switches pressed styling on mousedown and off on mouseup — a transition here would
+   * lag the finger.
+   */
+  .uir-switch:not([data-disabled]) .uir-switch__input:active + .uir-switch__track {
+    background-color: var(--uir-switch-track-active);
+  }
+
+  .uir-switch[data-checked]:not([data-disabled]) .uir-switch__input:active + .uir-switch__track {
+    background-color: var(--uir-switch-track-checked-active);
+  }
+
+  .uir-switch__input:active + .uir-switch__track .uir-switch__handle {
+    transition-duration: 0ms;
+  }
+
+  /* ---- Disabled ------------------------------------------------------ */
+
+  /*
+   * `opacity` only, with `pointer-events` left intact. MUI's `ButtonBase` sets
+   * `pointer-events: none` on disabled controls, which breaks the tooltip that explains why
+   * they are disabled. Fiori uses `opacity` with `pointer-events: unset`.
+   */
+  .uir-switch[data-disabled] {
+    opacity: var(--uir-disabled-opacity);
+  }
+
+  .uir-switch[data-disabled] .uir-switch__label {
+    cursor: not-allowed;
+  }
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * In Windows High Contrast the OS replaces the palette, and a control whose entire meaning
+   * is a colour difference becomes a solid block. `CanvasText` on `Canvas` restores the
+   * contrast and the handle gets an explicit border so its position is still readable.
+   *
+   * `forced-color-adjust: none` on the handle is required rather than optional: without it
+   * the OS overrides the handle's own background and the "on" state is a filled track with
+   * no visible knob in it.
+   */
+  @media (forced-colors: active) {
+    .uir-switch__track {
+      background-color: Canvas;
+      border-color: CanvasText;
+    }
+
+    .uir-switch[data-checked] .uir-switch__track {
+      background-color: CanvasText;
+    }
+
+    .uir-switch__handle {
+      background-color: Canvas;
+      border: 1px solid CanvasText;
+      forced-color-adjust: none;
+    }
+
+    .uir-switch__input:focus-visible {
+      outline-color: Highlight;
+    }
+  }
+}

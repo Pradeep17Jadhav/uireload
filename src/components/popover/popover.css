@@ -1,0 +1,264 @@
+/*
+ * Popover styles.
+ *
+ * Position comes from inline `style` written by the positioning algorithm, not from this
+ * file. The arrow's position is likewise an inline `inset-inline-start`, since it is a
+ * measured percentage.
+ */
+
+@layer uireload.components {
+  .uir-popover,
+  .uir-popover__header,
+  .uir-popover__title,
+  .uir-popover__content,
+  .uir-popover__footer,
+  .uir-popover__arrow {
+    box-sizing: border-box;
+  }
+
+  /* ---- Surface ------------------------------------------------------- */
+
+  /*
+   * A `role="dialog"` surface, so it reads as one. The border and radius come from the shared
+   * control tokens: this is a control-adjacent surface, and a different shape here is the
+   * single most common reason a component family looks unrelated.
+   */
+  .uir-popover {
+    background-color: var(--uir-surface-raised);
+    border: var(--uir-control-border-width) solid var(--uir-border);
+    border-radius: var(--uir-control-radius);
+    color: var(--uir-text);
+    font-family: var(--uir-font-family);
+    /*
+     * `max-inline-size` rather than `inline-size`: the positioning algorithm measures the real
+     * width, so a popover that sizes to its content is positioned correctly and one given an
+     * explicit width is still respected.
+     */
+    max-inline-size: min(32rem, calc(100vw - var(--uir-space) * 2));
+    min-inline-size: 12rem;
+    overflow: visible;
+    position: fixed;
+    z-index: var(--uir-z-index-overlay);
+  }
+
+  /*
+   * Before the first measurement the surface is centred by the algorithm, which renders as
+   * `left: 50%` with no transform and therefore hangs off the right edge. This keeps the
+   * unmeasured frame visually centred, and it is the only rule that keys off
+   * `data-unpositioned` — after measuring, the element is genuinely placed and this must not
+   * interfere.
+   */
+  .uir-popover[data-unpositioned] {
+    transform: translate(-50%, -50%);
+  }
+
+  /* ---- Intent -------------------------------------------------------- */
+
+  /*
+   * Two roles: the surface border, and the ring. A modal popover is the one place a ring
+   * matters, because its surface is the only thing the user can interact with.
+   */
+  .uir-popover[data-tone="neutral"] {
+    --uir-popover-border: var(--uir-border);
+    --uir-popover-ring: var(--uir-focus-ring-color);
+  }
+
+  .uir-popover[data-tone="accent"] {
+    --uir-popover-border: var(--uir-accent);
+    --uir-popover-ring: var(--uir-accent);
+  }
+
+  .uir-popover[data-tone="positive"] {
+    --uir-popover-border: var(--uir-success);
+    --uir-popover-ring: var(--uir-success);
+  }
+
+  .uir-popover[data-tone="danger"] {
+    --uir-popover-border: var(--uir-danger);
+    --uir-popover-ring: var(--uir-danger);
+  }
+
+  /* ---- Backdrop ------------------------------------------------------ */
+
+  /*
+   * Only rendered when `modal`. It blocks pointer events so the page behind genuinely cannot be
+   * clicked, which is what makes a modal popover modal — the alternative, a transparent
+   * `pointer-events: auto` backdrop that does nothing, would let a click land on the page and
+   * then close the surface, losing whatever the user was doing.
+   *
+   * `z-index` one below the surface, and the surface is a later sibling, so the stacking order
+   * needs no `+ 1` arithmetic that could drift.
+   */
+  .uir-popover__backdrop {
+    background-color: rgb(15 23 42 / 40%);
+    inset: 0;
+    position: fixed;
+    z-index: calc(var(--uir-z-index-overlay) - 1);
+  }
+
+  /* ---- Arrow --------------------------------------------------------- */
+
+  /*
+   * A CSS triangle rather than an SVG or a rotated square.
+   *
+   * Two borders meeting at a point is the smallest thing that draws an arrow with no markup,
+   * no extra request and no themeable fill that would need its own token. It is `aria-hidden`
+   * in the markup, so it costs a screen-reader user nothing.
+   */
+  .uir-popover__arrow {
+    block-size: 0;
+    border-block-end: var(--uir-popover-arrow-size) solid var(--uir-surface-raised);
+    border-inline-end: var(--uir-popover-arrow-size) solid transparent;
+    border-inline-start: var(--uir-popover-arrow-size) solid transparent;
+    inline-size: 0;
+    position: absolute;
+  }
+
+  .uir-popover {
+    /*
+     * The arrow's two dimensions. Declared here because only this component draws an arrow;
+     * `docs/foundations.md` §11 step 6 would promote them to `tokens.css` if a second overlay
+     * grew one. The chosen size means the arrow visually matches the 0.375rem control radius,
+     * so the two corners read as one shape rather than as a triangle stuck to a rounded box.
+     */
+    --uir-popover-arrow-size: 0.375rem;
+    --uir-popover-arrow-offset: calc(var(--uir-popover-arrow-size) - 1px);
+  }
+
+  /*
+   * One rule per placement, so the arrow sits on the correct edge with no `top` / `bottom`
+   * arithmetic and no reliance on the consumer's direction.
+   *
+   * `inset-inline-start` on the arrow, so the measured percentage resolves against the reading
+   * direction: an arrow at 25% sits a quarter along the surface from its start edge, which is
+   * the left in LTR and the right in RTL.
+   */
+  .uir-popover[data-placement="bottom"] .uir-popover__arrow {
+    border-block-end-color: var(--uir-surface-raised);
+    inset-block-start: calc(-1 * var(--uir-popover-arrow-size));
+    transform: translateX(-50%);
+  }
+
+  .uir-popover[data-placement="top"] .uir-popover__arrow {
+    border-block-start: var(--uir-popover-arrow-size) solid var(--uir-surface-raised);
+    border-block-end: none;
+    inset-block-end: calc(-1 * var(--uir-popover-arrow-size));
+    transform: translateX(-50%);
+  }
+
+  .uir-popover[data-placement="end"] .uir-popover__arrow {
+    border-block-end-color: var(--uir-surface-raised);
+    border-inline-end: none;
+    inset-inline-start: calc(-1 * var(--uir-popover-arrow-size));
+    transform: translateY(-50%) rotate(-90deg);
+  }
+
+  .uir-popover[data-placement="start"] .uir-popover__arrow {
+    border-block-end-color: var(--uir-surface-raised);
+    border-inline-start: none;
+    inset-inline-end: calc(-1 * var(--uir-popover-arrow-size));
+    transform: translateY(-50%) rotate(90deg);
+  }
+
+  /* ---- Regions ------------------------------------------------------- */
+
+  /*
+   * Header, content and footer, straight from UI5's `@csspart header` / `content` / `footer`.
+   * The gaps use `--uir-space` rather than a literal so density keeps working.
+   */
+  .uir-popover__header,
+  .uir-popover__content,
+  .uir-popover__footer {
+    padding-inline: var(--uir-space);
+    padding-block: calc(var(--uir-space) * 0.75);
+  }
+
+  .uir-popover__header {
+    border-block-end: var(--uir-control-border-width) solid var(--uir-border);
+    font-size: var(--uir-control-font-size-md);
+    font-weight: var(--uir-control-font-weight);
+  }
+
+  .uir-popover__content {
+    /*
+     * A scrollable body, with a bounded maximum so a long popover cannot be taller than the
+     * viewport. `max-block-size` rather than `block-size` so a short popover still shrinks to
+     * its content.
+     */
+    max-block-size: min(60vh, 24rem);
+    overflow-y: auto;
+  }
+
+  .uir-popover__footer {
+    background-color: var(--uir-surface);
+    border-block-start: var(--uir-control-border-width) solid var(--uir-border);
+  }
+
+  .uir-popover__title {
+    color: var(--uir-text);
+    font-size: var(--uir-control-font-size-lg);
+    font-weight: var(--uir-control-font-weight);
+    line-height: var(--uir-line-height);
+    margin: 0;
+  }
+
+  /* ---- Focus --------------------------------------------------------- */
+
+  /*
+   * On the surface itself, from the base layer's `:focus-visible`. The rule exists only to
+   * colour the ring from the tone's role set, and only for a modal surface: a non-modal popover
+   * does not take focus, so there is nothing for it to ring.
+   *
+   * `useFocusTrap` gives a container with nothing tabbable a `tabindex="-1"`, so this rule is
+   * reachable even for an empty popover.
+   */
+  .uir-popover[data-modal]:focus-visible {
+    outline: var(--uir-focus-ring-width) solid var(--uir-popover-ring);
+    outline-offset: var(--uir-focus-ring-offset);
+  }
+
+  /* ---- Reduced motion ------------------------------------------------ */
+
+  /*
+   * No entry or exit animation at all, deliberately.
+   *
+   * A surface that fades in over `--uir-duration` would need a `data-open` state and a
+   * transition, and the exit animation would have to outlive unmounting — which is the classic
+   * way a portalled component ends up with a half-faded ghost in the DOM. A popover that
+   * appears instantly has no such window. When an animation is wanted, the consumer adds one
+   * through their own CSS keyed off the `data-*` attributes this file exposes.
+   */
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * In Windows High Contrast the surface's border is what separates it from the page, so it is
+   * forced to `CanvasText`. The arrow is the harder case: it is drawn with two transparent
+   * borders meeting at a point, and the OS cannot recolour a transparent border, so the arrow
+   * is hidden rather than left pointing at a colour that no longer exists.
+   */
+  @media (forced-colors: active) {
+    .uir-popover {
+      background-color: Canvas;
+      border-color: CanvasText;
+      color: CanvasText;
+    }
+
+    .uir-popover__header {
+      border-block-end-color: CanvasText;
+    }
+
+    .uir-popover__footer {
+      background-color: Canvas;
+      border-block-start-color: CanvasText;
+    }
+
+    .uir-popover__arrow {
+      display: none;
+    }
+
+    .uir-popover[data-modal]:focus-visible {
+      outline-color: Highlight;
+    }
+  }
+}

@@ -48,6 +48,49 @@ const PAIRS = [
   { scheme: "light", label: "neutral ghost", fg: "--uir-text", bg: "--uir-background" },
   { scheme: "light", label: "muted text on page", fg: "--uir-text-muted", bg: "--uir-background" },
 
+  /*
+   * The interaction wash ramp, for every tone in every scheme.
+   *
+   * These are the pairs that matter most and were measured last. `ghost` and `outline` carry
+   * the entire press signal in the wash, so a wash that is invisible makes the control look
+   * unresponsive — which is exactly the bug that prompted the ramp. And because the wash is a
+   * darker ground than the page, each tone needs its own `on-wash` step rather than the
+   * resting tint: `--uir-accent` reaches only 4.24:1 on `--uir-accent-wash`, below the
+   * 4.5:1 that `--uir-accent` clears on the page.
+   */
+  ...(["light", "dark", "high-contrast"] as const).flatMap((scheme) =>
+    (["neutral", "accent", "success", "danger"] as const).flatMap((tone) => [
+      {
+        scheme,
+        label: `${tone} wash hover`,
+        fg: `--uir-${tone}-on-wash`,
+        bg: `--uir-${tone}-wash`,
+      },
+      {
+        scheme,
+        label: `${tone} wash press`,
+        fg: `--uir-${tone}-on-wash`,
+        bg: `--uir-${tone}-wash-active`,
+      },
+    ])
+  ),
+
+  /*
+   * The static tint fill, which stays pale because a field's value sits on it permanently.
+   *
+   * The foreground is `--uir-text`, not the tone's `-contrast` step: a `solid` field is a pale
+   * tinted box with dark text in it, which is the whole reason this fill is a *tint* rather
+   * than the tone itself. `--uir-accent-contrast` on `--uir-accent-subtle` is 1.09:1.
+   */
+  ...(["light", "dark", "high-contrast"] as const).flatMap((scheme) =>
+    (["accent", "success", "danger"] as const).map((tone) => ({
+      scheme,
+      label: `${tone} solid field value`,
+      fg: "--uir-text",
+      bg: `--uir-${tone}-subtle`,
+    }))
+  ),
+
   // Dark scheme: the on-fill foregrounds invert, so each is checked against its own.
   { scheme: "dark", label: "accent solid", fg: "--uir-accent-contrast", bg: "--uir-accent" },
   { scheme: "dark", label: "positive solid", fg: "--uir-success-contrast", bg: "--uir-success" },

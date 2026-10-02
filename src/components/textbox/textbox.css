@@ -238,28 +238,55 @@
   /* ---- Focus --------------------------------------------------------- */
 
   /*
-   * The ring is drawn by the `<input>`, not by the wrapper, and offset inwards so it
-   * lands immediately inside the border instead of floating outside the whole control.
+   * The ring is drawn by the *control*, not by the `<input>`, and offset outwards so a
+   * visible gap separates it from the border.
    *
-   * Three alternatives were rejected:
+   * The input's own box is the text: `.uir-textbox__input` has `padding: 0`, so it is
+   * exactly the line box, and a ring drawn on it traces 181x26 inside a 207x40 control.
+   * That measured a clearance of -1px between the ring's inner edge and the text — the
+   * ring was drawn *over* the value, not around the field. It also misdescribed the
+   * focusable extent: with an adornment present the ring excluded the adornment, so it
+   * marked less area than the control actually occupies.
    *
-   * - A ring on the wrapper via `:focus-within`, which is what UI5 does with a `::after`
-   *   pseudo-element. It fires on mouse click too, which `docs/accessibility.md` rule 4
-   *   rules out, and it is a *second* ring: the base layer's own `input:focus-visible`
-   *   outline still fires underneath it.
-   * - Suppressing the input's outline. Removing a focus outline is an accessibility
-   *   failure and is out of scope for this library.
-   * - Leaving the base ring at its default `+2px` offset. It would sit 3px outside the
-   *   control, and with an adornment present it would hug the text entry area while the
-   *   border and the adornment sat outside it.
+   * `:has(:focus-visible)` rather than `:focus-within`. `:focus-within` matches on a
+   * mouse click too, which `docs/accessibility.md` rule 4 rules out; `:focus-visible`
+   * keeps the ring keyboard-only, and `:has()` is what puts that state on the wrapper.
    *
-   * What remains is the input's own `:focus-visible` outline with a negative offset that
-   * clears the border: keyboard-only, and on the element that actually has focus.
+   * This is also what both references do, and they both put the indication on the field
+   * rather than on the input: MUI widens the field's own border via
+   * `@mui/material/OutlinedInput/OutlinedInput.js` `.Mui-focused`, and Fiori draws
+   * `_ui5-input-focus-outline` on the wrapper via `::after`
+   * (`@ui5/webcomponents/dist/css/themes/Input.css`).
+   *
+   * The offset is the library-wide `--uir-focus-ring-offset`, so the ring lands in the
+   * same place relative to the border as it does on `Button` and `Switch` — which is
+   * what makes a field and a button in one row agree.
    */
-  .uir-textbox__input:focus-visible {
+  .uir-textbox__control:has(.uir-textbox__input:focus-visible) {
     outline: var(--uir-focus-ring-width) solid var(--uir-textbox-ring);
-    outline-offset: calc(-1 * (var(--uir-focus-ring-width) + var(--uir-control-border-width)));
+    outline-offset: var(--uir-focus-ring-offset);
+    /*
+     * Focusing mid-hover would otherwise animate the border colour while the ring
+     * appeared instantly, which reads as a rendering fault. Same reasoning as `Button`.
+     */
     transition-duration: 0ms;
+  }
+
+  /*
+   * The input's own ring is suppressed, because two rings is worse than one: the
+   * control's ring and this one would both be drawn, and this one would still be the
+   * one touching the text.
+   *
+   * Suppressing an outline is normally out of scope for this library, so it is gated on
+   * the exact capability the rule above needs. If an engine cannot parse
+   * `:has(:focus-visible)`, the rule above never applies *and* this one does not either,
+   * which leaves the field with a single ring on the input rather than with none. The
+   * gate is what makes the suppression safe, so it must not be dropped.
+   */
+  @supports selector(:has(:focus-visible)) {
+    .uir-textbox__input:focus-visible {
+      outline: none;
+    }
   }
 
   /* ---- Input --------------------------------------------------------- */
@@ -405,7 +432,7 @@
       color: CanvasText;
     }
 
-    .uir-textbox__input:focus-visible {
+    .uir-textbox__control:has(.uir-textbox__input:focus-visible) {
       outline-color: Highlight;
     }
   }

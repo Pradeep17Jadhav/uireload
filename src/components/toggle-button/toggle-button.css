@@ -10,7 +10,8 @@
   /*
    * A pressed button is never `:active` � that is a transient pointer state � so the
    * active colours have to be applied explicitly, and the right ones depend on the
-   * variant. A `solid` toggle darkens its fill; an unfilled one gets a wash.
+   * variant. A `solid` toggle darkens its fill; an unfilled one takes the *press* step
+   * of the wash ramp, which is one visible step past the hover a pointer would give it.
    */
   .uir-toggle-button[data-variant="solid"][data-pressed] {
     background-color: var(--uir-button-fill-active);
@@ -19,7 +20,7 @@
 
   .uir-toggle-button[data-variant="outline"][data-pressed],
   .uir-toggle-button[data-variant="ghost"][data-pressed] {
-    background-color: var(--uir-button-tint-subtle);
+    background-color: var(--uir-button-tint-wash-active);
   }
 
   .uir-toggle-button[data-variant="outline"][data-pressed] {
@@ -29,10 +30,12 @@
   /*
    * `ghost` has no border to fill, so the wash plus a tinted foreground is the whole
    * signal. Without this a pressed ghost button is indistinguishable from an
-   * unpressed one.
+   * unpressed one. The foreground is the `on-wash` step rather than the resting tint,
+   * because the pressed wash is a darker ground than the page the tint was chosen for.
    */
+  .uir-toggle-button[data-variant="outline"][data-pressed],
   .uir-toggle-button[data-variant="ghost"][data-pressed] {
-    color: var(--uir-button-tint);
+    color: var(--uir-button-tint-on-wash);
   }
 
   /*

@@ -79,6 +79,37 @@ export type {
   TextboxElement,
 } from "./components/textbox";
 
+export { Switch } from "./components/switch";
+export type { SwitchProps, SwitchOwnProps } from "./components/switch";
+
+export { Popover } from "./components/popover";
+export type {
+  PopoverProps,
+  PopoverOwnProps,
+  PopoverPlacement,
+  PopoverAlign,
+  PopoverCloseReason,
+  PopoverVirtualAnchor,
+} from "./components/popover";
+
+export { Dialog } from "./components/dialog";
+export type {
+  DialogProps,
+  DialogOwnProps,
+  DialogUrgency,
+  DialogCloseReason,
+  DialogInitialFocus,
+} from "./components/dialog";
+
+export { Select, isOptionGroup } from "./components/select";
+export type {
+  SelectProps,
+  SelectOwnProps,
+  SelectItem,
+  SelectOption,
+  SelectOptionGroup,
+} from "./components/select";
+
 /* ---------------------------------------------------------- foundations --- */
 /*
  * The shared design contract. Exported so consumers can type their own abstractions

@@ -90,6 +90,36 @@ describe("IconButton: rendering", () => {
     expect(screen.getByTestId("root").querySelector(".uir-icon-button__icon")).not.toBeNull();
   });
 
+  it("puts the icon in Button's icon slot, not in its label", () => {
+    render(
+      <IconButton aria-label="Delete" data-testid="root">
+        <Glyph />
+      </IconButton>
+    );
+
+    const root = screen.getByTestId("root");
+    const slot = root.querySelector(".uir-icon-button__icon");
+    expect(slot).not.toBeNull();
+
+    /*
+     * `Button` wraps `children` in `.uir-button__label`, and a label is a line box: an
+     * inline-flex icon inside one sits on the text baseline with the parent's font
+     * descent below it, which put the icon a few pixels high. jsdom does no layout, so
+     * nothing here can measure the centring — but the structure is what guarantees it,
+     * because a direct flex child is centred by `align-items: center` on `.uir-button`
+     * and a label descendant is not.
+     *
+     * MUI (`IconButton.js`) renders `children` straight into the button root and Fiori
+     * (`ButtonTemplate.js`) puts the icon beside `ui5-button-text`, never inside it.
+     */
+    expect(slot?.closest(".uir-button__icon")).not.toBeNull();
+    expect(slot?.closest(".uir-button__label")).toBeNull();
+
+    // An empty label is what `.uir-icon-button .uir-button__label:empty` collapses, and
+    // what keeps the control from reserving a flex child it does not need.
+    expect(root.querySelector(".uir-button__label")?.textContent).toBe("");
+  });
+
   it("forwards its ref to the button element", () => {
     const ref = { current: null as HTMLButtonElement | null };
     render(

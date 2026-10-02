@@ -114,6 +114,20 @@ to get wrong, not loud.
   `outline` — the ladder collapsed to two steps for the most common tone.
   `tests/button-foundation.test.ts` asserts the rule.
 
+- `ghost` and `outline` must show a **distinct** hover and press. They render on the page
+  background and have no fill to darken, so the wash is their only state signal. See
+  section 8.1.
+
+  The same reasoning applies to the neutral tone's wash, which cannot borrow
+  `--uir-surface`: that is `#f8fafc`, 1.05:1 against a white page, and the neutral tone is
+  the default, so this affected more buttons than any other tone.
+
+  | Token                       | Light     | Dark      | High contrast |
+  | --------------------------- | --------- | --------- | ------------- |
+  | `--uir-neutral-wash`        | `#e2e8f0` | `#334155` | `#e5e7eb`     |
+  | `--uir-neutral-wash-active` | `#cbd5e1` | `#475569` | `#d1d5db`     |
+  | `--uir-neutral-on-wash`     | `#0f172a` | `#e2e8f0` | `#000000`     |
+
 - The three variants must be distinguishable at every tone. A tone that cannot fill
   visibly needs a surface ramp, not a reuse of a surface token.
 - Exactly one `solid` + `accent` control per page region is the intent. Nothing
@@ -267,20 +281,49 @@ There is no palette and no `color` prop. A control's colours come from
 A tone supplies a **role set**, not a single colour, because a control paints three
 states per tone plus a wash for unfilled variants:
 
-| Role                       | Used by                                   |
-| -------------------------- | ----------------------------------------- |
-| `--uir-button-fill`        | `solid` background                        |
-| `--uir-button-fill-hover`  | `solid` hover                             |
-| `--uir-button-fill-active` | `solid` press, and a pressed solid toggle |
-| `--uir-button-on-fill`     | `solid` text                              |
-| `--uir-button-tint`        | `ghost` and `outline` text                |
-| `--uir-button-tint-border` | `outline` border                          |
-| `--uir-button-tint-subtle` | `ghost` and `outline` hover wash          |
+| Role                            | Used by                                   |
+| ------------------------------- | ----------------------------------------- |
+| `--uir-button-fill`             | `solid` background                        |
+| `--uir-button-fill-hover`       | `solid` hover                             |
+| `--uir-button-fill-active`      | `solid` press, and a pressed solid toggle |
+| `--uir-button-on-fill`          | `solid` text                              |
+| `--uir-button-tint`             | `ghost` and `outline` text at rest        |
+| `--uir-button-tint-border`      | `outline` border                          |
+| `--uir-button-tint-wash`        | `ghost` and `outline` hover background    |
+| `--uir-button-tint-wash-active` | `ghost` and `outline` press background    |
+| `--uir-button-tint-on-wash`     | `ghost` and `outline` text on either wash |
 
-There are deliberately **two** foreground roles, not one. A single per-tone foreground is
-correct for `solid` and makes the other two variants' labels invisible: white-on-blue
-becomes white-on-white. Adding a tone means adding these seven declarations and nothing
-else.
+There are deliberately **two** foreground roles at rest, not one. A single per-tone
+foreground is correct for `solid` and makes the other two variants' labels invisible:
+white-on-blue becomes white-on-white. Adding a tone means adding these nine declarations
+and nothing else.
+
+### 8.1 Two kinds of pale fill
+
+`--uir-<tone>-subtle` and `--uir-<tone>-wash` are both pale tints of the tone, and they
+have **opposite** requirements, so they are not interchangeable:
+
+| Token                 | Used for                                                   | Wants to be                                            |
+| --------------------- | ---------------------------------------------------------- | ------------------------------------------------------ |
+| `--uir-<tone>-subtle` | a `solid` field's background, a dialog footer's background | as pale as possible — text sits on it permanently      |
+| `--uir-<tone>-wash`   | an unfilled control's hover and press background           | obvious — it is the only state signal that variant has |
+
+The wash is therefore **two** steps, `-wash` and `-wash-active`, plus an `-on-wash`
+foreground. All three exist because of a real defect: `ghost` and `outline` have no fill
+to darken, so a single wash token made hover and press render identically, and the press
+registered nothing at all — the signal appeared and vanished inside one frame. The static
+`-subtle` step was 1.05:1 to 1.09:1 against a white page, which is below what an eye reads
+as a deliberate fill. The wash ramp clears 1.2:1 on hover and 1.4:1 on press, or the two
+states collapse into each other again.
+
+Fiori models the same split. `--sapButton_Lite_Background`, `_Hover_Background`,
+`_Active_Background` and `_Hover_TextColor`
+(`@ui5/webcomponents/dist/css/themes/Button.css`, `[design="Transparent"]`) are four
+separate values, not one shared tint.
+
+`-on-wash` exists because darkening the wash darkens the ground under the label.
+`--uir-accent` clears 4.5:1 on the page but only reaches 4.24:1 on `--uir-accent-wash`, so
+each tone darkens (light) or brightens (dark) its own label as the wash deepens.
 
 ### Contrast is measured, not reviewed
 

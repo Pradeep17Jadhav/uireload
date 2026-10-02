@@ -14,7 +14,8 @@ a validation state.
 | DOM structure           | `@ui5/webcomponents/dist/InputTemplate.js` — the `root` > content > `input` nesting, and the `focused` attribute the focus ring keys off                                         |
 | Input type enum         | `@ui5/webcomponents/dist/types/InputType.d.ts` — `Text`, `Email`, `Number`, `Password`, `Tel`, `URL`, `Search`                                                                   |
 | Value-state enum        | `@ui5/webcomponents-base/dist/types/ValueState.d.ts` — `None`, `Positive`, `Critical`, `Negative`, `Information`                                                                 |
-| Focus ring model        | `@ui5/webcomponents/dist/css/themes/Input.css` — `.ui5-input-focusable-element:after` drawn from `:host([focused])`                                                              |
+| Focus ring model        | `@ui5/webcomponents/dist/css/themes/Input.css` — `.ui5-input-focusable-element:after` drawn from `:host([focused])`, i.e. on the wrapper, not the input                          |
+| Focus ring placement    | `@mui/material/OutlinedInput/OutlinedInput.js` — `.Mui-focused .MuiOutlinedInput-notchedOutline { border-width: 2 }`, i.e. the field's own border, not the input                 |
 | Height / padding tokens | `--_ui5_input_base_height` / `--_ui5_input_base_padding` in `@ui5/webcomponents/dist/generated/themes/sap_horizon/parameters-bundle.css.js`                                      |
 | Label association       | `@ui5/webcomponents-base/dist/util/AccessibilityTextsHelper.js` — `getAssociatedLabelForTexts`, which reads a real `<label for>`                                                 |
 | Pattern                 | WAI-ARIA APG Textbox; the native `<label for>` and `<input>` supply role, name and validation                                                                                    |
@@ -155,22 +156,41 @@ Every other dimension comes from `--uir-control-*`. There are no hardcoded sizes
 
 ### The focus ring
 
-Drawn by the `<input>` with `:focus-visible` and a negative `outline-offset` that clears
-the border, so it lands immediately inside the control rather than floating outside it.
+Drawn by the **control**, not the `<input>`, and offset _outwards_ by
+`--uir-focus-ring-offset` so a visible gap separates the ring from the border.
 
-Three alternatives, all rejected, and why:
+The `<input>` cannot carry it. `.uir-textbox__input` has `padding: 0`, so its box _is_
+the line box — measured on an `md` field, 181×26 inside a 207×40 control. A ring drawn on
+the input therefore traces the text area, with the ring's inner edge **1px inside** the
+value rather than around it. It also misdescribed the focusable extent: with an adornment
+present the ring stopped short of the adornment, so it marked less area than the control
+actually occupies.
 
-- **A ring on the wrapper via `:focus-within`**, which is what UI5 does (a `::after`
-  pseudo-element keyed off a `focused` attribute set from `focusin`/`focusout`). It fires
-  on mouse click too, which `docs/accessibility.md` rule 4 rules out, and it is a second
-  ring: the base layer's `input:focus-visible` outline still fires underneath it.
-- **Suppressing the input's outline.** Removing a focus outline is an accessibility
-  failure and is out of scope for this library.
-- **Leaving the base ring at `+2px`.** It sits 3px outside the control, and with an
-  adornment present it hugs the text entry area while the border and the adornment sit
-  outside it.
+```css
+.uir-textbox__control:has(.uir-textbox__input:focus-visible) { … }
+```
 
-The outcome is keyboard-only, on the element that actually has focus, with nothing removed.
+`:has(:focus-visible)`, not `:focus-within`. Verified in the browser on a mouse-clicked
+button, which is the case that separates them:
+
+| Selector                     | Mouse-clicked button |
+| ---------------------------- | -------------------- |
+| `:has(button:focus-visible)` | `false`              |
+| `:has(button:focus-within)`  | `true`               |
+
+So the ring stays keyboard-only, which is what `docs/accessibility.md` rule 4 requires and
+what `:focus-within` would have lost.
+
+The input's own ring is then suppressed, gated on
+`@supports selector(:has(:focus-visible))`. The gate is load-bearing, not defensive
+boilerplate: an engine that cannot parse the wrapper selector drops the rule above, so
+without the gate it would also drop the suppression and the field would have **no** focus
+indicator at all. Inside the gate the two are always in agreement.
+
+Both references put the indication on the field rather than on the input: MUI widens the
+field's own border, and Fiori draws `_ui5-input-focus-outline` on the wrapper via `::after`.
+The offset is the library-wide `--uir-focus-ring-offset`, the same value `Button` and
+`Switch` use, so a field and a button in one row agree.
 
 ## Accessibility
 
