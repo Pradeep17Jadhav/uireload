@@ -41,8 +41,8 @@
      * The four sizes. Declared once on the surface so every region can read them, which is what
      * keeps the content's padding and the footer consistent with the width.
      *
-     * Fiori's dialog is "approximately 90% of the viewport" on desktop (`stretch`), which is the
-     * number behind the `lg` maximum width.
+     * `lg` is the number behind the widest dialog; below 30rem the surface goes edge to edge
+     * instead, which is what a phone user expects from a modal.
      */
     --uir-dialog-width-sm: 20rem;
     --uir-dialog-width-md: 32rem;
@@ -132,8 +132,8 @@
   /* ---- Regions ------------------------------------------------------- */
 
   /*
-   * Header, content and footer, straight from UI5's `@csspart header` / `content` / `footer` and
-   * its "A `ui5-dialog` consists of a header, content, and a footer" description.
+   * Header, content and footer: the three regions a dialog needs, because a dialog that
+   * scrolls its own actions out of reach is a dialog the user cannot complete.
    */
   .uir-dialog__header {
     align-items: flex-start;
@@ -229,7 +229,7 @@
   /* ---- Responsive -------------------------------------------------- */
 
   /*
-   * Stretched to the viewport on a narrow screen, which is UI5's recommendation for phones
+   * Stretched to the viewport on a narrow screen, which is what a phone expects
    * (`stretch`: "it's recommended to stretch the dialog to full screen on phone devices") and
    * matches what a phone user expects from a modal.
    *

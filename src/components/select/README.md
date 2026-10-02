@@ -2,24 +2,17 @@
 
 A dropdown list: a button that opens a listbox in a popover.
 
-## Reference libraries
+## Design notes
 
-| Concern               | Source                                                                                                                                                                                                                                                                                                                                  |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Prop decomposition    | `@mui/material/Select/Select.d.ts` — `SelectProps` (`value`, `multiple`, `onChange`, `renderValue`, `MenuProps`, `input`, `IconComponent`)                                                                                                                                                                                              |
-| Selection model       | Same file — `MenuProps`, `renderValue`, and `SelectChangeEvent`'s `target.value`/``name`                                                                                                                                                                                                                                                |
-| Input integration     | Same file — `InputProps` / `FormControl`, i.e. a native `<input type="hidden" name>` inside the MUI select                                                                                                                                                                                                                              |
-| Behaviour, keyboard   | `@ui5/webcomponents/dist/Select.d.ts` — the `keydown` documentation block: `[F4] / [Alt] + [Up] / [Alt] + [Down] / [Space] or [Enter] - Opens/closes the drop-down`, `[ESC] - Closes the drop-down without changing the selection`, `[Home] / [End] - Moves selection to the first/last option`, `[Alt] + [Home]/[End]`, type-to-select |
-| Option model          | Same file — `Select.d.ts`'s `SelectOptions`/`SelectOption` interfaces and `OptionCustom`; `value` is `@formProperty`                                                                                                                                                                                                                    |
-| Grouping              | Same file — `<ui5-option-group>` with a `headerText` slot and `_groupCountText`                                                                                                                                                                                                                                                         |
-| Unmatched value       | Same file — "If the given value does not match any existing option, no option will be selected and the Select component will be displayed as empty."                                                                                                                                                                                    |
-| Typeahead timing      | Same file — `_typingTimeoutID`, defaulting to 1000 ms                                                                                                                                                                                                                                                                                   |
-| Dropdown positioning  | `@ui5/webcomponents/dist/ResponsivePopover.d.ts` — `placement` of `Bottom` on desktop and `Left`/`Right` on phone                                                                                                                                                                                                                       |
-| Empty-value behaviour | Same file — `_isNoValue` / `_selectedOption`, i.e. the "no selection" state is distinct from a value of `""`                                                                                                                                                                                                                            |
-| APG listbox           | WAI-ARIA APG Listbox pattern; `useRovingFocus` in `src/internal/focus.ts`                                                                                                                                                                                                                                                               |
+The provenance for this component — which reference implementation backed each non-obvious
+choice — is recorded in `docs/references.md`, which is not published.
 
-Versions read from `../referenceUILibraries/package.json`: `@mui/material` 9.4.0,
-`@ui5/webcomponents` 2.27.2.
+The keyboard and focus model is the WAI-ARIA APG Listbox pattern, implemented with
+`useRovingFocus` from `src/internal/focus.ts`.
+
+The published keyboard vocabulary, taken from the documentation every comparable select carries:
+`F4` / `Alt`+`Up` / `Alt`+`Down` / `Space` / `Enter` open and close; `Escape` closes without changing
+the selection; `Home` / `End` move to the first and last option; and typing selects without opening.
 
 ## Props
 
@@ -58,16 +51,16 @@ Native `HTMLAttributes` are forwarded to the **trigger `<button>`**, not the roo
 
 ## Reconciled design
 
-| Decision              | UIReload                                   | MUI                                 | UI5                                  | Why                                                                                                                                                  |
-| --------------------- | ------------------------------------------ | ----------------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Options shape         | a `readonly SelectItem[]` prop             | `children` (`<MenuItem>`)           | `children` (`<ui5-option>`)          | One typed prop beats children here: MUI's `renderValue` and UI5's `OptionCustom` are both escape hatches, and neither is needed for a single-select. |
-| Option name vs value  | `label` and `value`, both required         | `value` with `children` as the name | same collapse                        | UI5's `_applySelectionByValue` falls back to matching text content, so a value can silently change when someone rewords a label.                     |
-| `onChange` signature  | `(value: string) => void`                  | `(event) => void`, `target.value`   | `ui5-change` `detail.selectedOption` | Neither reference event describes _which option_ was chosen without unpacking it.                                                                    |
-| Trigger element       | a real `<button>`                          | a `div` with `role="combobox"`      | a custom element                     | The platform then gives Space/Enter activation for free. See "Space and Enter".                                                                      |
-| Highlight vs selected | separate `data-active` and `aria-selected` | conflated                           | conflated                            | APG listbox: moving the highlight does not select. This is the component's reason to exist.                                                          |
-| Popup behaviour       | composed from `Popover`                    | `Menu` + `Popover` + `Modal`        | `ResponsivePopover`                  | The positioning, portal and dismissal are not worth reimplementing.                                                                                  |
-| Grouping              | `role="group"` + `aria-label`              | `MenuList` nesting                  | `<ui5-option-group>`                 | A nested listbox would make each group its own composite widget.                                                                                     |
-| Empty value           | `data-empty`                               | —                                   | `_isNoValue`                         | "No selection" is a distinct state from `""`.                                                                                                        |
+| Decision              | Choice                                     | Why                                                                                                  |
+| --------------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| Options shape         | a `readonly SelectItem[]` prop             | One typed prop beats children: the custom-render escape hatches are not needed for a single-select.  |
+| Option name vs value  | `label` and `value`, both required         | Collapsing the two into one means a value can silently change when someone rewords a label.          |
+| `onChange` signature  | `(value: string) => void`                  | Neither the DOM change event nor a custom event says _which option_ was chosen without unpacking it. |
+| Trigger element       | a real `<button>`                          | The platform then gives Space/Enter activation for free. See "Space and Enter".                      |
+| Highlight vs selected | separate `data-active` and `aria-selected` | APG listbox: moving the highlight does not select. This is the component's reason to exist.          |
+| Popup behaviour       | composed from `Popover`                    | The positioning, portal and dismissal are not worth reimplementing.                                  |
+| Grouping              | `role="group"` + `aria-label`              | A nested listbox would make each group its own composite widget.                                     |
+| Empty value           | `data-empty`                               | "No selection" is a distinct state from `""`.                                                        |
 
 ### Typing commits, browsing does not
 

@@ -242,7 +242,7 @@ export const Stretched: Story = {
 };
 
 /**
- * A surface with a header and a footer, matching UI5's `@csspart header` / `content` /
+ * A surface with a header and a footer, matching its `content` /
  * `footer` structure.
  */
 export const WithHeaderAndFooter: Story = {
@@ -305,7 +305,7 @@ export const VirtualAnchor: Story = {
 
     /*
      * A bare `getBoundingClientRect` object, which is all the anchor contract requires. This is
-     * what MUI calls a `PopoverVirtualElement`, and it is how a popover is anchored to
+     * what is often called a `virtual element`, and it is how a popover is anchored to
      * something that has no DOM node of its own.
      */
     const anchor = {

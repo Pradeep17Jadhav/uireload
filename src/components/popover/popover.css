@@ -175,7 +175,7 @@
   /* ---- Regions ------------------------------------------------------- */
 
   /*
-   * Header, content and footer, straight from UI5's `@csspart header` / `content` / `footer`.
+   * Header, content and footer: the three regions a surface may expose.
    * The gaps use `--uir-space` rather than a literal so density keeps working.
    */
   .uir-popover__header,

@@ -211,7 +211,8 @@ function ControlledDialog({ children, ...props }: Partial<React.ComponentProps<t
  * Every tone.
  *
  * Note what a `positive` dialog is *not*: it is not an `alertdialog`. Urgency and intent are
- * separate decisions here, which is the one deliberate divergence from UI5 — see `README.md`.
+ * separate decisions here, which is the one deliberate divergence from the obvious design —
+ * see `README.md`.
  */
 export const Tones: Story = {
   render: (args) => (

@@ -149,7 +149,8 @@ export function Select(props: SelectProps) {
   /**
    * The index the user is on, separate from the index that is *selected*.
    *
-   * APG listbox: moving the highlight does not change the selection until the user commits. MUI
+   * APG listbox: moving the highlight does not change the selection until the user commits.
+   * Conflating the two is the common mistake this component exists to avoid —
    * conflates them, which is why its Select highlights a new option as you arrow over it and a
    * consumer has to undo it.
    */
@@ -466,7 +467,7 @@ export function Select(props: SelectProps) {
     /*
      * Alt+Arrow has to be tested *before* the bare arrows: `event.key` is still `ArrowDown` with
      * `altKey` set, so an arrow branch above this one would swallow it and open the list instead of
-     * toggling it. This is the second of UI5's two documented open/close spellings
+     * toggling it. This is the second of the two documented open/close spellings
      * ("[F4] / [Alt] + [Up] / [Alt] + [Down] / [Space] or [Enter] - Opens/closes the drop-down").
      */
     if (event.altKey && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
@@ -660,7 +661,7 @@ export function Select(props: SelectProps) {
 
       {/*
         The trigger is a `<button>`, and a button submits nothing. A hidden input carries the value
-        so the form actually receives it — which is UI5's `@formProperty` and MUI's `name`
+        so the form actually receives it
         behaviour, reached through the one element the platform offers.
       */}
       {name === undefined ? null : (

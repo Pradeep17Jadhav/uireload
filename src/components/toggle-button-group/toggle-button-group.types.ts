@@ -1,10 +1,8 @@
 /**
  * ToggleButtonGroup prop types.
  *
- * From MUI's `ToggleButtonGroupProps` (`@mui/material/ToggleButtonGroup/
- * ToggleButtonGroup.d.ts`) and UI5's `ui5-segmented-button`
- * (`@ui5/webcomponents/dist/SegmentedButton.d.ts`). Reconciliation, and the
- * accessibility decision this component exists to make, in `README.md`.
+ * The reconciliation, and the accessibility decision this component exists to make,
+ * are in `README.md`.
  */
 
 import type { HTMLAttributes, ReactNode, Ref } from "react";
@@ -13,9 +11,8 @@ import type { Size, Tone, Variant } from "../../foundations";
 /**
  * How many members may be pressed at once.
  *
- * UI5's `selectionMode` is `Single | Multiple`
- * (`@ui5/webcomponents/dist/types/SegmentedButtonSelectionMode.d.ts`); MUI uses a
- * boolean, `exclusive`, defaulting to multiple. UIReload takes UI5's enum because a
+ * Comparable designs split on `Single | Multiple` versus a boolean `exclusive`
+ * defaulting to multiple. UIReload takes the enum because a
  * boolean cannot express a third mode later, and because a named prop is easier to
  * read at the call site.
  *

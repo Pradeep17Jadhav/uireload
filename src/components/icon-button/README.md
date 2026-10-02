@@ -2,17 +2,14 @@
 
 A button whose entire content is an icon.
 
-## Reference libraries
+## Design notes
 
-| Concern            | Source                                                                                                                                  |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Prop surface       | `@mui/material/IconButton/IconButton.d.ts` — `IconButtonOwnProps`                                                                       |
-| `edge` semantics   | Same file: `edge?: 'start' \| 'end' \| false`, documented as removing a negative margin                                                 |
-| Icon-only handling | `@ui5/webcomponents/dist/Button.d.ts` — `tooltip` JSDoc, `isIconOnly` getter                                                            |
-| Icon-only styling  | `@ui5/webcomponents/dist/css/themes/Button.css` — `:host([icon-only]…){min-width:auto;padding:0}`                                       |
-| Icon placement     | `@ui5/webcomponents/dist/ButtonTemplate.js` — `ui5-button-icon` is a _sibling_ of `ui5-button-text`, never inside it                    |
-| Icon placement     | `@mui/material/IconButton/IconButton.js` — `children` go straight into the button root, with no label wrapper                           |
-| Accessible name    | UI5 `tooltip` JSDoc: "A tooltip attribute should be provided for icon-only buttons, in order to represent their exact meaning/function" |
+The provenance for this component — which reference implementation backed each non-obvious
+choice — is recorded in `docs/references.md`, which is not published.
+
+The accessible-name requirement is the one every comparable implementation states: a tooltip
+attribute must be provided for icon-only buttons so it represents their exact meaning rather than
+their function.
 
 ## Props
 
@@ -38,12 +35,12 @@ prose. Supply either:
 
 ## Reconciled design
 
-| Decision        | UIReload                    | MUI                  | UI5             | Why                                                                                                               |
-| --------------- | --------------------------- | -------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Default variant | `ghost`                     | inherited (`text`)   | n/a             | An icon button has no label to read as an affordance; a border would be its only cue. Most usage is in a toolbar. |
-| `edge`          | kept                        | kept                 | n/a             | No equivalent a consumer could write without duplicating the negative-margin rule.                                |
-| Composition     | wraps `Button`              | extends `ButtonBase` | `ui5-button`    | Inherits the entire visual contract, so size and state cannot drift from `Button`.                                |
-| Icon goes in…   | `Button`'s `startIcon` slot | the button root      | beside the text | See below.                                                                                                        |
+| Decision        | Choice                      | Why                                                                                                               |
+| --------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Default variant | `ghost`                     | An icon button has no label to read as an affordance; a border would be its only cue. Most usage is in a toolbar. |
+| `edge`          | kept                        | No equivalent a consumer could write without duplicating the negative-margin rule.                                |
+| Composition     | wraps `Button`              | Inherits the entire visual contract, so size and state cannot drift from `Button`.                                |
+| Icon goes in…   | `Button`'s `startIcon` slot | See below.                                                                                                        |
 
 ### The icon goes in `startIcon`, not in `children`
 

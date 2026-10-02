@@ -145,7 +145,7 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(function Switch(
       data-label-position={labelPosition}
     >
       {/*
-        `type="checkbox"` with `role="switch"` rather than UI5's `<div role="switch">` plus a
+        `type="checkbox"` with `role="switch"` rather than a `<div role="switch">` plus a
         separate hidden checkbox. A real input gives native form participation, the Space key, the
         tab order and `:checked` for free, and it means there is exactly one focusable element
         rather than two that have to be kept in agreement.

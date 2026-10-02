@@ -3,20 +3,13 @@
 Triggers an action. The reference implementation for every other control — if you
 are unsure how something should behave, read this first.
 
-## Reference libraries
+## Design notes
 
-| Concern                 | Source                                                                                                                                                                 |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Prop decomposition      | `@mui/material/Button/Button.d.ts` — `ButtonOwnProps`                                                                                                                  |
-| Size / variant enums    | Same file: `size?: 'small' \| 'medium' \| 'large'`, `variant?: 'text' \| 'outlined' \| 'contained'`                                                                    |
-| Class-name contract     | `@mui/material/Button/buttonClasses.d.ts` — `ButtonClasses`                                                                                                            |
-| Behaviour, slots, parts | `@ui5/webcomponents/dist/Button.d.ts` — `design`, `icon`, `endIcon`, `type`, `@csspart button` / `icon` / `endIcon`                                                    |
-| Design enum values      | `@ui5/webcomponents/dist/types/ButtonDesign.d.ts`                                                                                                                      |
-| Form type enum          | `@ui5/webcomponents/dist/types/ButtonType.d.ts`                                                                                                                        |
-| Size / state tokens     | `@ui5/webcomponents/dist/generated/themes/sap_horizon/parameters-bundle.css.js` — `--_ui5_button_base_height`, `_base_min_width`, `_base_padding`, `_base_icon_margin` |
-| Hover gating            | `@ui5/webcomponents/dist/css/themes/Button.css` — `:not([_is-touch])` around `:hover`                                                                                  |
-| Unfilled hover / press  | Same file, `[design="Transparent"]` — `--sapButton_Lite_Background`, `_Hover_Background`, `_Active_Background`, `_Hover_TextColor`                                     |
-| Keyboard contract       | WAI-ARIA APG Button pattern; native `<button>` provides it                                                                                                             |
+The provenance for this component — which reference implementation backed each non-obvious
+choice — is recorded in `docs/references.md`, which is not published.
+
+The keyboard contract is the WAI-ARIA APG Button pattern, which a native `<button>` already
+provides; nothing about activation is reimplemented here.
 
 ## Props
 
@@ -29,25 +22,25 @@ are unsure how something should behave, read this first.
 | `loading`          | `boolean`                                         | `false`     | Busy state; blocks interaction.         |
 | `loadingIndicator` | `ReactNode`                                       | spinner     | Must be decorative.                     |
 | `startIcon`        | `ReactNode`                                       | —           | Sized by `--uir-icon-size-*`.           |
-| `endIcon`          | `ReactNode`                                       | —           | Fiori advises against using it alone.   |
+| `endIcon`          | `ReactNode`                                       | —           | Meaningless without a label.            |
 | `fullWidth`        | `boolean`                                         | `false`     | The only layout-affecting prop.         |
-| `type`             | `"button" \| "submit" \| "reset"`                 | `"button"`  | Narrowed from MUI's `string`.           |
+| `type`             | `"button" \| "submit" \| "reset"`                 | `"button"`  | Narrowed from `string`.                 |
 
 Native `ButtonHTMLAttributes` are forwarded, including `form`, `name` and `value`.
 
 ## Reconciled design
 
-| Decision         | UIReload                      | MUI                               | UI5                                                           | Why                                                                                                                                                   |
-| ---------------- | ----------------------------- | --------------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Emphasis names   | `ghost` / `outline` / `solid` | `text` / `outlined` / `contained` | `Transparent` / `Default` / `Emphasized`                      | Renamed: a variant describes appearance only.                                                                                                         |
-| Intent           | `tone` prop                   | `color` prop                      | folded into `design`                                          | Separated so emphasis and intent multiply instead of being conflated.                                                                                 |
-| Default variant  | `outline`                     | `text`                            | `Default`                                                     | Divergence. `outline` is visible in a toolbar without competing with the page's one primary action.                                                   |
-| Default tone     | `neutral`                     | `primary`                         | `Default`                                                     | Neutral is the safe default when there is no provider to resolve a palette.                                                                           |
-| Sizes            | `sm` / `md` / `lg`            | `small`/`medium`/`large`          | Compact / Cozy (two)                                          | `Size` was fixed in `src/types.ts` before any component existed.                                                                                      |
-| Disabled styling | `opacity` only                | `pointer-events: none`            | `opacity` + `pointer-events: unset`                           | Follows Fiori. MUI's approach breaks tooltips on disabled controls, which their docs record as a limitation.                                          |
-| Loading          | always-mounted wrapper        | `loading` wrapper always rendered | `loading` + `loadingDelay`                                    | Avoids the Google Translate crash (mui/material-ui#27853).                                                                                            |
-| Icons            | `startIcon` / `endIcon`       | same                              | `icon` / `endIcon`                                            | `startIcon` is unambiguous; `icon` does not say which side.                                                                                           |
-| Unfilled states  | two wash steps + `on-wash`    | `text`/`outlined`: one `hover`    | `_Hover_Background`, `_Active_Background`, `_Hover_TextColor` | `ghost` and `outline` have no fill to darken, so the wash is the whole signal. One value made press identical to hover, and the click showed nothing. |
+| Decision         | Choice                        | Why                                                                                                                                                   |
+| ---------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Emphasis names   | `ghost` / `outline` / `solid` | A variant describes appearance only, never intent.                                                                                                    |
+| Intent           | separate `tone` prop          | Separated so emphasis and intent multiply instead of being conflated.                                                                                 |
+| Default variant  | `outline`                     | Visible in a toolbar without competing with the page's one primary action.                                                                            |
+| Default tone     | `neutral`                     | The safe default when there is no provider to resolve a palette.                                                                                      |
+| Sizes            | `sm` / `md` / `lg`            | `Size` was fixed in `src/foundations.ts` before any component existed.                                                                                |
+| Disabled styling | `opacity` only                | `pointer-events: none` breaks the tooltip that explains why a control is disabled.                                                                    |
+| Loading          | always-mounted wrapper        | A conditionally mounted subtree makes Google Translate re-translate it mid-flight, which crashes it.                                                  |
+| Icons            | `startIcon` / `endIcon`       | `startIcon` is unambiguous; a single `icon` does not say which side.                                                                                  |
+| Unfilled states  | two wash steps + `on-wash`    | `ghost` and `outline` have no fill to darken, so the wash is the whole signal. One value made press identical to hover, and the click showed nothing. |
 
 ### The wash ramp
 
@@ -81,18 +74,17 @@ is measured in `tests/contrast.test.ts`.
 - **`href` / `component` / `asChild`.** v1 renders a real `<button>` only. A link
   button needs either `asChild` composition or a second code path for `disabled` on an
   anchor. Both are planned; neither is silently absent.
-- **`loadingPosition`.** Material-specific. Fiori overlays a centred busy indicator,
-  which is what this does.
-- **`loadingDelay`** (UI5, default 1000ms). Rejected: it makes `loading`
+- **`loadingPosition`.** Repositioning the label around the indicator. A centred
+  busy indicator is overlaid instead.
+- **`loadingDelay`** (commonly offered, default 1000ms). Rejected: it makes `loading`
   non-deterministic in tests and in first paint. Recorded rather than omitted
   quietly — `docs/foundations.md` §5.4.
-- **`disableElevation`, `disableRipple`, `disableFocusRipple`.** Material machinery.
-  Elevation and ripples are not part of this library's surface, and a focus ring is
-  never optional.
-- **`badge` slot** (UI5). Needs a `Badge` component first.
-- **`accessibleRole`** (UI5, `Button`/`Link`). Rejected: use a real `<a>`. Emitting
-  `role="button"` on a link misleads assistive technology about what activation does.
-- **`accessibilityAttributes`** (UI5: `expanded`, `hasPopup`, `controls`,
+- **`disableElevation`, `disableRipple`, `disableFocusRipple`.** Elevation and ripples
+  are not part of this library's surface, and a focus ring is never optional.
+- **`badge` slot.** Needs a `Badge` component first.
+- **`accessibleRole`.** Rejected: use a real `<a>`. Emitting `role="button"` on a link
+  misleads assistive technology about what activation does.
+- **`accessibilityAttributes`** (`expanded`, `hasPopup`, `controls`,
   `ariaKeyShortcuts`). No wrapper prop: pass `aria-expanded` etc. directly, which
   `ButtonHTMLAttributes` already allows.
 

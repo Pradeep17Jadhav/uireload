@@ -1,10 +1,7 @@
 /**
  * Popover prop types.
  *
- * API decomposition from MUI's `PopoverProps` (`@mui/material/Popover/Popover.d.ts`);
- * documented behaviour, `@csspart` parts and the placement vocabulary from UI5's
- * `ui5-popover` and its `Popup` base (`@ui5/webcomponents/dist/Popover.d.ts`,
- * `Popup.d.ts`). Reconciliation and the full citation list are in `README.md`.
+ * The reasoning behind each choice is in `README.md`.
  */
 
 import type { CSSProperties, HTMLAttributes, ReactNode, Ref } from "react";
@@ -14,13 +11,13 @@ import type { Tone } from "../../foundations";
 /**
  * Which side of the anchor the popover sits on.
  *
- * UI5's `PopoverPlacement` enum
- * (`@ui5/webcomponents/dist/types/PopoverPlacement.d.ts`: `Start`, `End`, `Top`,
+ * The four-value placement enum
+ * (`Start`, `End`, `Top`,
  * `Bottom`), renamed to the library's logical vocabulary. `Start` and `End` are what
  * `Left` and `Right` are in LTR and the reverse in RTL, so a placement expressed as a
  * logical direction needs no mirroring anywhere else in the library.
  *
- * That is a real improvement on UI5 rather than a rename: `ui5-popover` has to ship a
+ * That is a real improvement rather than a rename: an anchor-relative enum has to ship a
  * `getRTLCorrectionLeft()` method and an `isRtl` getter to patch up the physical case.
  */
 export type PopoverPlacement = "top" | "bottom" | "start" | "end";
@@ -28,7 +25,7 @@ export type PopoverPlacement = "top" | "bottom" | "start" | "end";
 /**
  * How the popover aligns to the anchor along the cross axis.
  *
- * UI5 splits this into two separate enums, `PopoverVerticalAlign` and
+ * A comparable design splits this into two separate enums, one per axis, which
  * `PopoverHorizontalAlign` (`.../types/PopoverVerticalAlign.d.ts`,
  * `.../types/PopoverHorizontalAlign.d.ts`), each of which offers `Center`, `Start`, `End`
  * and `Stretch`. That is two props where one suffices, and the cross axis is already
@@ -43,7 +40,7 @@ export type PopoverAlign = "center" | "stretch";
 /**
  * Why the popover closed.
  *
- * UI5's `before-close` event carries `{ escPressed: boolean }`
+ * A before-close event often carries `{ escPressed: boolean }`, and
  * (`PopupBeforeCloseEventDetail` in `Popup.d.ts`), and `closePopup(escPressed)` is a public
  * method. Both libraries' reason for distinguishing is the same: a consumer whose popover
  * holds unsaved input has to treat Escape differently from a click outside, and cannot
@@ -76,7 +73,7 @@ export interface PopoverOwnProps {
    * The thunk form is what a consumer needs for an anchor that is not mounted yet, and it is
    * resolved at layout time rather than during render, which is what keeps this SSR safe.
    *
-   * The rect form is MUI's `PopoverVirtualElement`: a caret, a chart point or a map pin has no
+   * The rect form is a "virtual element": a caret, a chart point or a map pin has no
    * DOM node of its own, and a popover anchored to one should not need a hidden `<span>` to
    * give it a box.
    *
@@ -90,7 +87,7 @@ export interface PopoverOwnProps {
    * Which side of the anchor to sit on.
    *
    * `bottom` — below the anchor, which is what a dropdown wants — is the default rather
-   * than UI5's `End`, because a popover with no stated placement is nearly always a menu
+   * than `end`, because a popover with no stated placement is nearly always a menu
    * dropping downwards, and `end` means "right" in LTR, which is a surprise.
    *
    * @default "bottom"
@@ -119,7 +116,7 @@ export interface PopoverOwnProps {
    *
    * When the preferred placement does not fit, the component falls back to the opposite
    * side; only when that does not fit either does it shift along the cross axis. This is
-   * the same rule UI5 applies with its `VIEWPORT_MARGIN` and
+   * the same rule applies with a viewport margin and
    * `shouldCloseDueToOverflow`.
    *
    * @default 8
@@ -154,7 +151,7 @@ export interface PopoverOwnProps {
   /**
    * Closes when the anchor scrolls out of view.
    *
-   * UI5 watches the opener with an `IntersectionObserver` and closes when it is no longer
+   * The opener is watched with an `IntersectionObserver` and the surface closes when it is no longer
    * visible (`_onOpenerIntersection` in `Popover.d.ts`). A popover pinned to an anchor that
    * has scrolled away is a surface floating over unrelated content.
    *
@@ -211,8 +208,7 @@ export interface PopoverOwnProps {
   /**
    * Rendered at the end of the surface, in a footer row.
    *
-   * Both `header` and `footer` come from UI5's `@csspart header` / `footer` on
-   * `ui5-popover`.
+   * A surface can carry a header and a footer without either being mandatory.
    */
   header?: ReactNode | undefined;
 
@@ -223,7 +219,7 @@ export interface PopoverOwnProps {
    * Draws a small triangle pointing at the anchor.
    *
    * A visual affordance only; it is `aria-hidden` and carries no meaning a screen reader
-   * needs. `hideArrow` on `ui5-popover` is the negative of this.
+   * needs.
    */
   arrow?: boolean | undefined;
 
@@ -257,7 +253,7 @@ export interface PopoverOwnProps {
  * A rectangle a popover can be positioned against, for anchoring to something that is not
  * an element.
  *
- * Mirrors MUI's `PopoverVirtualElement`, which is likewise a bare
+ * The same shape a comparable library calls a `PopoverVirtualElement`: a bare
  * `{ getBoundingClientRect }` and nothing more, so a consumer can pass any object that
  * reports a rect.
  */

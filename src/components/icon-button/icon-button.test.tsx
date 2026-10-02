@@ -109,8 +109,8 @@ describe("IconButton: rendering", () => {
      * because a direct flex child is centred by `align-items: center` on `.uir-button`
      * and a label descendant is not.
      *
-     * MUI (`IconButton.js`) renders `children` straight into the button root and Fiori
-     * (`ButtonTemplate.js`) puts the icon beside `ui5-button-text`, never inside it.
+     * One renders `children` straight into the button root and the other puts the icon
+     * beside the label, never inside it.
      */
     expect(slot?.closest(".uir-button__icon")).not.toBeNull();
     expect(slot?.closest(".uir-button__label")).toBeNull();

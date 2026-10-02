@@ -1,10 +1,7 @@
 /**
  * Button prop types.
  *
- * API decomposition taken from MUI's `ButtonOwnProps`
- * (`@mui/material/Button/Button.d.ts`); behavioural notes from UI5's
- * `ui5-button` (`@ui5/webcomponents/dist/Button.d.ts`). Reconciliation and the full
- * citation list are in `README.md`.
+ * The reasoning behind each choice is in `README.md`.
  */
 
 import type { ButtonHTMLAttributes, ReactNode, Ref } from "react";
@@ -19,8 +16,9 @@ import type { Size, Tone, Variant } from "../../foundations";
  * - `href` / `component` / `asChild` — v1 renders a real `<button>` only. A link
  *   button needs either `asChild` composition or a second code path for
  *   `disabled` on an anchor; both are planned, neither is in v1.
- * - `loadingPosition` — Material-specific. Fiori overlays a centred busy indicator,
- *   which is what this does.
+ * - `loadingPosition` — repositioning the label around the indicator. The busy indicator
+ *   is centred instead, which is
+ *   what this does.
  * - `loadingDelay` — see `docs/foundations.md` section 5.4.
  * - `disableElevation`, `disableRipple`, `disableFocusRipple` — Material machinery.
  *   Elevation and ripples are not part of this library's surface, and focus rings are
@@ -62,7 +60,7 @@ export interface ButtonOwnProps {
    * The accessible name is preserved, so a loading button still announces what it is
    * doing. The indicator's wrapper is always in the DOM and toggled with CSS, because
    * conditionally inserting it crashes Google Translate
-   * (mui/material-ui#27853).
+   * (material-ui#27853).
    */
   loading?: boolean | undefined;
 
@@ -84,8 +82,7 @@ export interface ButtonOwnProps {
   /**
    * Element placed after the label.
    *
-   * Fiori recommends against using `endIcon` with neither `icon` nor text
-   * (`@ui5/webcomponents/dist/Button.d.ts`, `endIcon` JSDoc). Same guidance here.
+   * A trailing icon on a label-less button is meaningless, so it is not supported.
    */
   endIcon?: ReactNode | undefined;
 
@@ -105,7 +102,7 @@ export interface ButtonOwnProps {
 
 /**
  * `type` is constrained to the three values a button can have, rather than left as
- * `string` as MUI's ButtonBase does. This is a real narrowing: a typo becomes a type
+ * `string`. This is a real narrowing: a typo becomes a type
  * error instead of an inert attribute.
  */
 export type ButtonType = "button" | "submit" | "reset";

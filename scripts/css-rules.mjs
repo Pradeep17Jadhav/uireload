@@ -79,7 +79,7 @@ export const CLASS_PREFIX = "uir-";
  * This has to run over the whole file rather than per line. A block comment that opens
  * on one line and closes on another cannot be matched line by line, so its prose gets
  * parsed as code. That produced a real false positive on the first component
- * stylesheet, whose comment quoted Fiori's generated CSS.
+ * stylesheet, whose comment quoted an external design system's generated CSS.
  *
  * @param {string} css
  * @returns {string}

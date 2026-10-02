@@ -26,7 +26,7 @@ describe("Button: rendering", () => {
 
   it("defaults to type=button so it cannot submit a form by accident", () => {
     render(<Button>Save</Button>);
-    // MUI's ButtonBase documents `@default 'button'`; the same applies here.
+    // `@default 'button'` on a `<button>`; the same applies here.
     expect(screen.getByRole("button")).toHaveAttribute("type", "button");
   });
 
@@ -267,7 +267,7 @@ describe("Button: loading", () => {
   });
 
   it("keeps the loading wrapper in the DOM when not loading", () => {
-    // Removing it mid-flight crashes Google Translate (mui/material-ui#27853).
+    // Removing it mid-flight crashes Google Translate (material-ui#27853).
     render(<Button data-testid="root">Save</Button>);
 
     expect(screen.getByTestId("root").querySelector(".uir-button__loading")).not.toBeNull();

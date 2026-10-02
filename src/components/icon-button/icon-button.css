@@ -9,8 +9,8 @@
 @layer uireload.components {
   /*
    * Square, and sized by the control height so it lines up with a `Button` of the
-   * same size. Fiori collapses a button's min-width and padding when it is
-   * icon-only: `:host([icon-only]:not([has-end-icon])) .ui5-button-root{min-width:auto;
+   * same size. A button's min-width and padding are collapsed when it is
+   * icon-only, so the box is square rather than a wide rectangle with a glyph centred inside it:
    * padding:0}`.
    */
   .uir-icon-button {
@@ -86,7 +86,7 @@
   /* ---- Edge ---------------------------------------------------------- */
 
   /*
-   * Logical `start` / `end`, so the offset mirrors in RTL. MUI calls this `edge` and
+   * Logical `start` / `end`, so the offset mirrors in RTL. `edge` is a Material
    * implements it with a negative margin; the same mechanism, same name.
    */
   .uir-icon-button[data-edge="start"] {

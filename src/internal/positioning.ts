@@ -29,7 +29,7 @@
  *
  * Everything is in logical terms (`start` / `end`) and resolved to physical coordinates only
  * at the very end, from the direction read off the DOM. That keeps RTL out of the
- * algorithm instead of patching it afterwards, which is what UI5 has to do with
+ * algorithm instead of patching it afterwards, which is what a fixed-position surface has to do with
  * `getRTLCorrectionLeft()`.
  */
 
@@ -162,14 +162,14 @@ export function computeOverlayPosition({
    * Written with `left` rather than a logical start edge because the result goes straight
    * to the `left` style property of a `position: fixed` element, and `dir` does not mirror
    * that property. All the direction-dependent arithmetic happens in the two places that ask
-   * for it, rather than being patched up afterwards the way `ui5-popover` has to do with
+   * for it, rather than being patched up afterwards the way a fixed-position surface has to do with
    * `getRTLCorrectionLeft()`.
    */
   const candidate = (side: PhysicalSide): { top: number; left: number } => {
     /*
      * The cross axis is implied by the side: a surface above or below its anchor is aligned
      * along the inline axis, and one beside it along the block axis. Deriving the axis rather
-     * than passing it in is what makes `align` a single prop instead of UI5's two enums
+     * than passing it in is what makes `align` a single prop instead of two per-axis enums
      * (`PopoverVerticalAlign` and `PopoverHorizontalAlign`).
      */
     if (side === "top" || side === "bottom") {

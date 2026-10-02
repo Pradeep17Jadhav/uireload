@@ -474,7 +474,8 @@ behaviour outright.
 Three axes are separated rather than conflated, which is the main divergence from both
 reference libraries: **emphasis** (`variant`: `ghost` / `outline` / `solid`), **intent**
 (`tone`: `neutral` / `accent` / `positive` / `danger`) and **size** (`sm` / `md` / `lg`).
-MUI folds intent into `color` and emphasis into `variant`; UI5 folds both into `design`.
+One common shape folds intent into `color` and emphasis into `variant`; the other folds both
+into a single `design` property.
 Separating them is what makes `variant="solid" tone="danger"` expressible — a destructive
 primary action — instead of needing a ninth design value.
 

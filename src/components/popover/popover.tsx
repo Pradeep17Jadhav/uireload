@@ -81,7 +81,7 @@ function resolveAnchor(anchor: PopoverAnchor): Element | PopoverVirtualAnchor | 
  *
  * Structural rather than `instanceof Element`, so it works across realms — an anchor from an
  * iframe, or from a different jsdom instance in a micro-frontend, is not this realm's
- * `Element`. UI5 goes further and duck-types its own elements with `isUI5AbstractElement` for
+ * `Element`. A comparable design goes further and duck-types its own elements for
  * the same reason.
  */
 function isPositionSource(value: unknown): value is Element | PopoverVirtualAnchor {

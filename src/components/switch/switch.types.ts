@@ -1,11 +1,7 @@
 /**
  * Switch prop types.
  *
- * API decomposition from MUI's `SwitchProps` and `SwitchBaseProps`
- * (`@mui/material/Switch/Switch.d.ts`, `@mui/material/internal/SwitchBase.d.ts`);
- * documented behaviour, `@csspart` parts and the design enum from UI5's `ui5-switch`
- * (`@ui5/webcomponents/dist/Switch.d.ts`). Reconciliation and the full citation list are
- * in `README.md`.
+ * The reasoning behind each choice is in `README.md`.
  */
 
 import type { CSSProperties, InputHTMLAttributes, ReactNode, Ref } from "react";
@@ -17,16 +13,16 @@ import type { Size, Tone } from "../../foundations";
  * Deliberately absent, with reasons recorded in `README.md`:
  *
  * - `color` — `tone` instead; there is no palette to key into.
- * - `icon` / `checkedIcon` (MUI) — a glyph inside the handle. `role="switch"` with
+ * - `icon` / `checkedIcon` — a glyph inside the handle. `role="switch"` with
  *   `aria-checked` already announces the state, so an icon beside it is a second,
- *   contradictory signal. UI5's `SwitchDesign.Graphical` puts check/cross icons there for
+ *   contradictory signal. A graphical design puts check/cross icons there for
  *   the same purpose; see the rejected list.
- * - `design` (UI5) — `Textual` vs `Graphical`. Rejected: the second is a Material/Fiori
+ * - `design` — `Textual` vs `Graphical`. Rejected: the second is a
  *   flourish whose meaning duplicates `aria-checked`, and its text mode truncates at three
- *   characters, which is a documented Fiori limitation rather than a design.
- * - `textOn` / `textOff` (UI5) — see the rejected list. The label is the consumer's.
- * - `edge` (MUI) — a Material ripple-layout affordance; this library has no ripples.
- * - `tooltip` (UI5) — a tooltip on a labelled control is noise. UI5's own JSDoc says an
+ *   characters, which is a documented limitation of that design rather than a design.
+ * - `textOn` / `textOff` — see the rejected list. The label is the consumer's.
+ * - `edge` — a ripple-layout affordance; this library has no ripples.
+ * - `tooltip` — a tooltip on a labelled control is noise. Its own documentation says an
  *   external label reference is always preferable.
  * - `disableRipple`, `disableFocusRipple` — Material machinery; a focus ring is never
  *   optional.
@@ -71,7 +67,7 @@ export interface SwitchOwnProps {
   /**
    * **Not implemented. Deliberately absent rather than broken.**
    *
-   * UI5 has it (`readonly`, since 2.21.0) and pairs it with `effectiveAriaReadonly`. It is not
+   * A comparable component has it (`readonly`) and pairs it with an effective-read-only state. It is not
    * here because `readonly` has no effect on a checkbox in the HTML spec, so implementing it means
    * refusing a toggle the browser has already performed — and three separate implementations were
    * measured against React 19, all ending with the control visually checked while announcing
@@ -90,7 +86,7 @@ export interface SwitchOwnProps {
   /**
    * Size. See `docs/foundations.md` section 2.
    *
-   * MUI only ships `small | medium`; the shared three-tier scale is used here so a switch
+   * Some libraries ship only `small | medium`; the shared three-tier scale is used here so a switch
    * can line up with an `sm` or `lg` field.
    *
    * @default "md"
@@ -126,7 +122,7 @@ export interface SwitchOwnProps {
   /**
    * Forwarded to the `<input>`.
    *
-   * Named `ref` rather than MUI's `inputRef` because there is no proxy element to
+   * Named `ref` rather than `inputRef` because there is no proxy element to
    * disambiguate from.
    */
   ref?: Ref<HTMLInputElement> | undefined;

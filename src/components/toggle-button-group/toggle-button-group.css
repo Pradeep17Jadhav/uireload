@@ -2,7 +2,7 @@
  * ToggleButtonGroup styles.
  *
  * The group is a container; its members come from `Button` and are joined edge to
- * edge. Fiori does the same on `ui5-segmented-button-item`:
+ * edge. Segmented-control designs do the same:
  * `:host(:not(:first-child))` collapses one side.
  */
 

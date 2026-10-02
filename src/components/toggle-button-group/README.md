@@ -2,28 +2,23 @@
 
 Groups toggle buttons into one control.
 
-## Reference libraries
+## Design notes
 
-| Concern            | Source                                                                                         |
-| ------------------ | ---------------------------------------------------------------------------------------------- |
-| Selection mode     | `@ui5/webcomponents/dist/SegmentedButton.d.ts` — `selectionMode`, `@default "Single"`          |
-| Mode enum values   | `@ui5/webcomponents/dist/types/SegmentedButtonSelectionMode.d.ts` — `Single \| Multiple`       |
-| Group event        | Same file: `"selection-change"` with `selectedItems: Array<ISegmentedButtonItem>`              |
-| Arrow-key movement | Same file: `_itemNavigation: ItemNavigation`                                                   |
-| Fit behaviour      | Same file: `itemsFitContent`, `@default false` (items are equal width when false)              |
-| Accessible name    | Same file: `accessibleName`, `accessibleNameRef`, `accessibleDescription`                      |
-| Prop surface       | `@mui/material/ToggleButtonGroup/ToggleButtonGroup.d.ts` — `exclusive`, `value`, `orientation` |
-| **Role**           | **Neither library declares one.** See below.                                                   |
+The provenance for this component — which reference implementation backed each non-obvious
+choice — is recorded in `docs/references.md`, which is not published.
+
+**Neither reference implementation declares a role.** See below — that absence is the reason this
+component exists.
 
 ## Why this component exists
 
-MUI's `ToggleButtonGroup` renders a `<div>` with **no role at all**:
-`ToggleButtonGroupProps` extends `StandardProps<React.HTMLAttributes<HTMLDivElement>>`
-and declares no `role`, and the implementation adds none. A screen reader announces
-the members as a row of loose buttons with no indication that they are one control.
+The common implementation renders a `<div>` with **no role at all**: its props extend the
+plain `HTMLAttributes<HTMLDivElement>` and declare no `role`, and the implementation adds none.
+A screen reader announces the members as a row of loose buttons with no indication that they are
+one control.
 
-UI5 is closer — `ui5-segmented-button` uses `ItemNavigation`, so it _behaves_ like a
-single widget — but its exposed surface does not promise a role either.
+One design is closer — it uses item navigation, so it _behaves_ like a single widget — but its
+exposed surface does not promise a role either.
 
 So UIReload picks the correct role per mode, because the two cases have different
 right answers:
@@ -41,8 +36,8 @@ a single choice.
 
 ## Props
 
-| Prop                                       | Type                             | Default        |
-| ------------------------------------------ | -------------------------------- | -------------- |
+| Prop                                       | Type                             | Default        | Notes                                     |
+| ------------------------------------------ | -------------------------------- | -------------- | ----------------------------------------- |
 | `selectionMode`                            | `"single" \| "multiple"`         | `"single"`     |
 | `label`                                    | `string`                         | —              | Accessible name, applied as `aria-label`. |
 | `orientation`                              | `"horizontal" \| "vertical"`     | `"horizontal"` | Also selects the arrow-key axis.          |

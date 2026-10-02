@@ -1,9 +1,7 @@
 /**
  * ToggleButton prop types.
  *
- * From UI5's `ui5-toggle-button` (`@ui5/webcomponents/dist/ToggleButton.d.ts`, which
- * adds `pressed` to `ui5-button`) and MUI's `ToggleButtonOwnProps`
- * (`@mui/material/ToggleButton/ToggleButton.d.ts`). Reconciliation in `README.md`.
+ * The reasoning behind each choice is in `README.md`.
  */
 
 import type { ButtonHTMLAttributes, ReactNode, Ref } from "react";
@@ -24,7 +22,7 @@ export type ToggleButtonRole = "button" | "radio";
 
 export interface ToggleButtonOwnProps {
   /**
-   * Emphasis. Inherited from `Button` for consistency, which MUI's `ToggleButton`
+   * Emphasis. Inherited from `Button` for consistency, which other implementations
    * does not offer.
    *
    * @default "outline"
@@ -51,7 +49,7 @@ export interface ToggleButtonOwnProps {
    * Rendered as `aria-pressed` (or `aria-checked` when `role="radio"`), and as
    * `data-pressed` for styling. `undefined` means uncontrolled.
    *
-   * Named `pressed` rather than MUI's `selected` because it describes the control's
+   * Named `pressed` rather than `selected` because it describes the control's
    * own visual and ARIA state; "selected" is a group concept and is owned by
    * `ToggleButtonGroup`.
    */

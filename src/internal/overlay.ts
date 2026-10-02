@@ -40,7 +40,7 @@ import { isBrowser } from "./use-media-query";
  *   around the trigger are not inherited by the surface, so a consumer who scopes tokens to
  *   a subtree must also apply them to `body` or pass `container`.
  *
- * Both references portal (`Modal`'s `container` prop, UI5's static area) and both inherit
+ * Established implementations all portal (through a `container` prop or a static area) and all
  * the second problem. Recorded rather than worked around.
  */
 export function Portal({
@@ -172,7 +172,7 @@ export function useScrollLock(active: boolean): void {
  * ## Why the reason is reported
  *
  * A consumer whose surface holds unsaved input has to treat Escape differently from a click
- * outside, and cannot tell them apart from a single boolean. UI5 carries the same
+ * outside, and cannot tell them apart from a single boolean. Comparable designs carry the same
  * information in `PopupBeforeCloseEventDetail`'s `escPressed`.
  */
 /** Any element a press can be tested against, so an anchor need not be an `HTMLElement`. */
@@ -255,9 +255,9 @@ export function useDismiss({
 /**
  * Report when the anchor has left the viewport entirely.
  *
- * UI5 watches the opener with an `IntersectionObserver` and closes the popover when it is
+ * The opener is watched with an `IntersectionObserver` and the surface closes when it is
  * no longer visible (`_onOpenerIntersection` in
- * `@ui5/webcomponents/dist/Popover.d.ts`). The reason is not cosmetic: a surface pinned to
+ * viewport). The reason is not cosmetic: a surface pinned to
  * an anchor that has scrolled away floats over unrelated content, still holds focus, and is
  * still announced.
  *

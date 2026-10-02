@@ -3,7 +3,7 @@
  *
  * The centre of gravity is the listbox keyboard contract and the difference between *highlighted*
  * and *selected*, because that is where a select diverges from every other control in the library
- * and where MUI's Select is weakest — it highlights as you arrow over options, so a value changes
+ * and where a select most often goes wrong — highlighting as you arrow over options, so a value changes
  * before the user has committed to it.
  *
  * Positioning is `Popover`'s and is tested there; this file asserts that the composition works, not
@@ -187,7 +187,7 @@ describe("Select: value", () => {
   it("renders the placeholder when the value matches no option", () => {
     render(<Harness value="nonexistent" />);
 
-    // UI5 documents this: "If the given value does not match any existing option, no option will
+    // Documented behaviour: "If the given value does not match any existing option, no option will
     // be selected and the Select component will be displayed as empty."
     expect(trigger()).toHaveTextContent("Select an option");
   });
@@ -245,7 +245,7 @@ describe("Select: form integration", () => {
 
     /*
      * The trigger is a `<button>`, and a button submits nothing. The hidden input is what carries
-     * the value to the server — which is UI5's `@formProperty` and MUI's `name`, reached through
+     * the value to the server, reached through
      * the one element the platform offers.
      */
     const hidden = document.querySelector('input[type="hidden"][name="status"]');
@@ -327,7 +327,7 @@ describe("Select: states", () => {
   it("adds a hidden word, not just a symbol, for required", () => {
     render(<Harness required />);
 
-    // MUI renders the marker as a CSS asterisk from `InputLabel`'s `::after`, which a screen reader
+    // A marker rendered as a CSS asterisk from a `::after`, which a screen reader
     // cannot announce.
     expect(screen.getByRole("button", { name: /Status Required/ })).toBeInTheDocument();
   });
@@ -595,7 +595,7 @@ describe("Select: keyboard on the listbox", () => {
     await user.keyboard("{ArrowDown}");
     await user.keyboard("{Escape}");
 
-    // UI5 documents Escape as "Closes the drop-down without changing the selection", and the
+    // Documented behaviour: "Closes the drop-down without changing the selection", and the
     // highlight is discarded with it.
     expect(onChange).not.toHaveBeenCalled();
     expect(screen.queryByRole("listbox")).not.toBeInTheDocument();

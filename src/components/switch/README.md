@@ -3,23 +3,13 @@
 A binary setting that takes effect immediately, as distinct from a checkbox, which is part
 of a form the user submits later.
 
-## Reference libraries
+## Design notes
 
-| Concern               | Source                                                                                                                                                        |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Prop decomposition    | `@mui/material/Switch/Switch.d.ts` — `SwitchProps` (`color`, `size`, `icon`, `checkedIcon`, `checked`)                                                        |
-| Base props / slots    | `@mui/material/internal/SwitchBase.d.ts` — `SwitchBaseProps` (`checked`, `defaultChecked`, `readOnly`, `required`, `id`, `name`, `value`, `onChange`, `edge`) |
-| Class-name contract   | `@mui/material/internal/switchBaseClasses.d.ts` — `root`, `input`, `thumb`, `track`, `switchBase`, `focusVisible`, `checked`                                  |
-| Behaviour, parts      | `@ui5/webcomponents/dist/Switch.d.ts` — `checked`, `readonly`, `required`, `textOn`/`textOff`; `@csspart slider` / `text-on` / `text-off` / `handle`          |
-| DOM structure         | `@ui5/webcomponents/dist/SwitchTemplate.js` — `role="switch"` on the root, the track/handle nesting, and the separate hidden `<input type="checkbox">`        |
-| Design enum           | `@ui5/webcomponents/dist/types/SwitchDesign.d.ts` — `Textual`, `Graphical`                                                                                    |
-| Aria-readonly pairing | `effectiveAriaReadonly` and `effectiveAriaDisabled` getters, `Switch.d.ts`                                                                                    |
-| Duplicate-text rule   | `_textAriaHidden` getter, `Switch.d.ts` — on/off texts that match the role announcement are `aria-hidden`                                                     |
-| Size tokens           | `--_ui5_switch_track_width` / `_height`, `--_ui5_switch_handle_width` / `_height` in `@ui5/webcomponents/dist/css/themes/Switch.css`                          |
-| Keyboard contract     | WAI-ARIA APG Switch pattern; native `<input type="checkbox">` provides it                                                                                     |
+The provenance for this component — which reference implementation backed each non-obvious
+choice — is recorded in `docs/references.md`, which is not published.
 
-Versions read from `../referenceUILibraries/package.json`: `@mui/material` 9.4.0,
-`@ui5/webcomponents` 2.27.2.
+Keyboard and semantics follow the WAI-ARIA APG Switch pattern, which a native
+`<input type="checkbox">` provides.
 
 ## Props
 
@@ -45,45 +35,44 @@ every `on*` handler behave as on a bare checkbox.
 
 ## Reconciled design
 
-| Decision           | UIReload                        | MUI                         | UI5                                  | Why                                                                                   |
-| ------------------ | ------------------------------- | --------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------- |
-| Role               | `role="switch"`                 | `role="switch"`             | `role="switch"` on a `<div>`         | The APG switch pattern, so a screen-reader user can tell a setting from a form value. |
-| Underlying element | one `<input type="checkbox">`   | `SwitchBase` + `ButtonBase` | `<div role="switch">` + hidden input | One focusable element, native form participation, native Space, native `:checked`.    |
-| Intent             | `tone`                          | `color`                     | `design`                             | Reuses the library's tone set. `design` conflates emphasis with intent.               |
-| Emphasis           | **none**                        | none                        | `design: Textual \| Graphical`       | The ladder describes how loud a _command_ is. A switch is a setting.                  |
-| Read-only          | **absent**                      | `readOnly`                  | `readonly` + `effectiveAriaReadonly` | A checkbox ignores `readonly` natively, so it needs behaviour no DOM write survives.  |
-| Label              | real `<label for>`              | `FormControlLabel`          | `accessibleNameRef`                  | A real label is visible, clickable and needs no JavaScript.                           |
-| Required marker    | hidden word + `aria-hidden` `*` | the same on `Textbox`       | `required` attribute                 | A CSS-generated asterisk cannot be announced.                                         |
-| Ref                | `ref`                           | `inputRef`                  | `getInputDOMRefSync`                 | There is no proxy element to disambiguate from.                                       |
+| Decision           | Choice                          | Why                                                                                             |
+| ------------------ | ------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Role               | `role="switch"`                 | The APG switch pattern, so a screen-reader user can tell a setting from a form value.           |
+| Underlying element | one `<input type="checkbox">`   | One focusable element, native form participation, native Space, native `:checked`.              |
+| Intent             | `tone`                          | Reuses the library's tone set. A single `design`-style property conflates emphasis with intent. |
+| Emphasis           | **none**                        | The ladder describes how loud a _command_ is. A switch is a setting.                            |
+| Read-only          | **absent**                      | A checkbox ignores `readonly` natively, so it needs behaviour no DOM write survives.            |
+| Label              | real `<label for>`              | A real label is visible, clickable and needs no JavaScript.                                     |
+| Required marker    | hidden word + `aria-hidden` `*` | A CSS-generated asterisk cannot be announced.                                                   |
+| Ref                | `ref`                           | There is no proxy element to disambiguate from.                                                 |
 
 ### The one real divergence: Enter does not toggle
 
-UI5's JSDoc says "The state can be changed by pressing the Space and Enter keys". That is
-because `ui5-switch` is a `<div>` with its own `keydown` handler, so it has to implement by
-hand what a real checkbox gets from the platform. APG's switch pattern specifies **Space**,
-and Enter is not part of it. A native `<input type="checkbox">` toggles on Space and ignores
-Enter, so that is the behaviour here, and it is the one MUI gets as well.
+Some switch implementations document "the state can be changed by pressing the Space and Enter
+keys". That is because such a switch is a `<div>` with its own `keydown` handler, so it has to
+implement by hand what a real checkbox gets from the platform. APG's switch pattern specifies
+**Space**, and Enter is not part of it. A native `<input type="checkbox">` toggles on Space and
+ignores Enter, so that is the behaviour here.
 
 ### Rejected, with reasons
 
 - **`variant`.** The shared ladder (`ghost` / `outline` / `solid`) describes how loud a
   command is. A switch has no commands, and a "ghost" switch would be invisible by
   definition. `tone` is the only visual axis.
-- **`icon` / `checkedIcon` (MUI), `design: Graphical` (UI5).** A check or cross inside the
-  handle duplicates what `aria-checked` already announces. UI5 replaces the on/off _texts_
-  with icons in graphical mode, which is the same substitution by another route.
-- **`textOn` / `textOff` (UI5).** Fiori's own JSDoc warns that anything longer than three
-  characters is truncated, and that the component "would not automatically stretch to fit the
-  whole text width". A truncated state label is worse than no state label. UI5 also computes
-  `_textAriaHidden` to hide the texts from assistive technology when they duplicate the role's
-  own announcement — a hint that they were never meant to be the accessible answer. The
-  consumer's own `label` says what the setting is for; `aria-checked` says which way it is.
-- **`edge` (MUI).** A negative-margin affordance for aligning a ripple inside a Material
-  `IconButton`. There are no ripples here.
-- **`tooltip` (UI5).** UI5's own JSDoc says an external label reference "should always be the
-  preferred option to provide context to the ui5-switch component over a tooltip".
-- **`disableRipple`, `disableFocusRipple`.** Material machinery; a focus ring is never
-  optional in this library.
+- **`icon` / `checkedIcon`, `design: Graphical`.** A check or cross inside the handle
+  duplicates what `aria-checked` already announces. A graphical design replaces the on/off _texts_
+  with icons, which is the same substitution by another route.
+- **`textOn` / `textOff`.** Comparable switches document that anything longer than three
+  characters is truncated and that the control "would not automatically stretch to fit the whole
+  text width". A truncated state label is worse than no state label. They also compute an
+  internal flag to hide those texts from assistive technology when they duplicate the role's own
+  announcement — a hint that they were never meant to be the accessible answer. The consumer's own
+  `label` says what the setting is for; `aria-checked` says which way it is.
+- **`edge`.** A negative-margin affordance for aligning a ripple inside an icon button. There are
+  no ripples here.
+- **`tooltip`.** Its own documentation says an external label reference "should always be the
+  preferred option to provide context… over a tooltip".
+- **`disableRipple`, `disableFocusRipple`.** A focus ring is never optional in this library.
 - **`classes` / `slots` / `slotProps`.** Rejected architecture (`AGENTS.md` §4). State is
   `data-*`; the four parts are fixed class names.
 

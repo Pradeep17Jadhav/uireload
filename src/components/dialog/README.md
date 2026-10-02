@@ -3,24 +3,13 @@
 A modal surface that interrupts the page: a confirmation, a form, a message that has to be dealt
 with before anything else.
 
-## Reference libraries
+## Design notes
 
-| Concern              | Source                                                                                                                                                               |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Prop decomposition   | `@mui/material/Dialog/Dialog.d.ts` — `DialogProps` (`open`, `role`, `maxWidth`, `fullScreen`, `fullWidth`, `scroll`, `onClose`, `aria-modal`)                        |
-| Close reasons        | Same file — `onClose(event, reason)` where reason is `"escapeKeyDown" \| "backdropClick"`                                                                            |
-| Behaviour, parts     | `@ui5/webcomponents/dist/Dialog.d.ts` — `headerText`, `state`, `stretch`, `draggable`, `resizable`, `showFullscreenButton`; `@csspart header` / `content` / `footer` |
-| Structure            | Same file — "A `ui5-dialog` consists of a header, content, and a footer for action buttons"                                                                          |
-| Role derivation      | Same file — `_role` getter: `Negative` / `Critical` become `alertdialog`; `isModal` returns true unconditionally                                                     |
-| Modality contract    | `@ui5/webcomponents/dist/Popup.d.ts` — `blockPageScrolling`, `applyInitialFocus`, `resetFocus`, `preventFocusRestore`, `initialFocus`                                |
-| Dismissal reason     | Same file — `PopupBeforeCloseEventDetail`'s `escPressed`                                                                                                             |
-| Value-state enum     | `@ui5/webcomponents-base/dist/types/ValueState.d.ts` — `None`, `Positive`, `Critical`, `Negative`, `Information`                                                     |
-| Region labelling     | `Dialog.d.ts` — `_headerAriaLabel`, `_contentAriaLabel`, `_footerAriaLabel`                                                                                          |
-| Phone recommendation | `Dialog.d.ts` — `stretch`: "it's recommended to stretch the dialog to full screen on phone"                                                                          |
-| Keyboard / focus     | WAI-ARIA APG Dialog pattern; `useFocusTrap` in `src/internal/focus.ts`                                                                                               |
+The provenance for this component — which reference implementation backed each non-obvious
+choice — is recorded in `docs/references.md`, which is not published.
 
-Versions read from `../referenceUILibraries/package.json`: `@mui/material` 9.4.0,
-`@ui5/webcomponents` 2.27.2.
+Keyboard and focus follow the WAI-ARIA APG Dialog pattern, implemented by `useFocusTrap` in
+`src/internal/focus.ts`.
 
 ## Props
 
@@ -50,25 +39,25 @@ configurable is a contradiction rather than a feature.
 
 ## Reconciled design
 
-| Decision          | UIReload                       | MUI                                  | UI5                     | Why                                                                                 |
-| ----------------- | ------------------------------ | ------------------------------------ | ----------------------- | ----------------------------------------------------------------------------------- |
-| Urgency vs intent | `urgency` **and** `tone`       | `role` + `color` separately          | one `state` for both    | UI5 folds them: `Negative` is both red and assertive whether or not that was meant. |
-| Urgency values    | `"normal" \| "alert"`          | `'dialog' \| 'alertdialog'`          | `ValueState` (5 values) | A name that means urgency rather than a colour that means it.                       |
-| Modal             | always                         | configurable                         | always                  | A non-modal `dialog` role is a contradiction.                                       |
-| Size              | `sm` / `md` / `lg` as a width  | `maxWidth: Breakpoint \| false`      | `stretch` (boolean)     | Shared scale; the ladder is consistent across the family.                           |
-| Close reasons     | `"escape" \| "backdrop-press"` | `"escapeKeyDown" \| "backdropClick"` | `escPressed` boolean    | A named reason beats a boolean, and past tense reads as a report of what happened.  |
-| Close button      | `showCloseButton`              | — (slots only)                       | `showFullscreenButton`  | A real, named, focusable control rather than a slot-only affordance.                |
-| Initial focus     | `initialFocus`                 | —                                    | `initialFocus` (id)     | APG says focus goes where it is most useful, not always to the first control.       |
-| Positioning       | CSS, viewport-centred          | `container` + `Paper`                | `_center()`             | A centred dialog needs no measurement. See below.                                   |
+| Decision          | Choice                         | Why                                                                                                           |
+| ----------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| Urgency vs intent | `urgency` **and** `tone`       | Kept separate: a single `state` makes a negative dialog both red and assertive whether or not that was meant. |
+| Urgency values    | `"normal" \| "alert"`          | A name that means urgency rather than a colour that means it.                                                 |
+| Modal             | always                         | A non-modal `dialog` role is a contradiction.                                                                 |
+| Size              | `sm` / `md` / `lg` as a width  | Shared scale; the ladder is consistent across the family.                                                     |
+| Close reasons     | `"escape" \| "backdrop-press"` | A named reason beats a boolean, and past tense reads as a report of what happened.                            |
+| Close button      | `showCloseButton`              | A real, named, focusable control rather than a slot-only affordance.                                          |
+| Initial focus     | `initialFocus`                 | APG says focus goes where it is most useful, not always to the first control.                                 |
+| Positioning       | CSS, viewport-centred          | A centred dialog needs no measurement. See below.                                                             |
 
 ### The one real divergence: urgency is not tone
 
-UI5 has a single `state` property carrying `ValueState`, and derives the ARIA role from it
-(`_role`: `Negative` and `Critical` become `alertdialog`). That couples two independent decisions
-together, and it does so in the most expensive direction: an `alertdialog` is an **assertive live
-region**, announced as soon as it appears, interrupting whatever the user was doing. So under UI5's
-API there is no way to say "this is a routine positive message" without also saying "interrupt the
-user", and no way to say "this is urgent" without also making it red.
+The obvious alternative design has a single `state` property carrying a value state, and derives
+the ARIA role from it (a negative or critical value becomes `alertdialog`). That couples two
+independent decisions together, and it does so in the most expensive direction: an `alertdialog` is
+an **assertive live region**, announced as soon as it appears, interrupting whatever the user was
+doing. So there would be no way to say "this is a routine positive message" without also saying
+"interrupt the user", and no way to say "this is urgent" without also making it red.
 
 Splitting them into `urgency` and `tone` makes both expressible. `urgency="alert"` is the
 consequential one, and it is opt-in — a dialog is non-assertive unless a consumer says otherwise.
@@ -92,10 +81,10 @@ Forcing it into `Popover` would be reuse for its own sake. What _is_ shared is t
 
 ### Rejected, with reasons
 
-- **`fullScreen` (MUI) / `stretch` (UI5) as a prop.** Handled by CSS instead: below 30rem the
-  surface is already edge-to-edge, and the radius drops because a rounded corner on a full-bleed
-  surface is a lie about its shape. A prop would be a second mechanism for one behaviour.
-- **`scroll="body" | "paper"` (MUI).** One behaviour, fixed. The content region scrolls and the
+- **A full-screen prop.** Handled by CSS instead: below 30rem the surface is already
+  edge-to-edge, and the radius drops because a rounded corner on a full-bleed surface is a lie about
+  its shape. A prop would be a second mechanism for one behaviour.
+- **`scroll="body" | "paper"`.** One behaviour, fixed. The content region scrolls and the
   header and footer do not, because action buttons that scroll away are the reason users cannot
   complete a dialog. `minmax(0, 1fr)` on the content row is what makes it work — a flex item's
   default minimum is its content size, so a long dialog would push the footer off the viewport.

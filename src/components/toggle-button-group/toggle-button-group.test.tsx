@@ -2,7 +2,7 @@
  * ToggleButtonGroup tests.
  *
  * The centre of gravity here is the role and keyboard contract, because that is what
- * the component exists to get right and where MUI's ToggleButtonGroup has none. See
+ * the component exists to get right and where common implementations have none. See
  * `toggle-button-group.tsx` for the reasoning.
  */
 

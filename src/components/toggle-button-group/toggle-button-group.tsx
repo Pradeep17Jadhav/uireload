@@ -1,15 +1,12 @@
 /**
  * ToggleButtonGroup.
  *
- * This component exists to make one accessibility decision correctly, and MUI's
- * ToggleButtonGroup makes it incorrectly: it renders a `<div>` with **no role at
- * all** — `@mui/material/ToggleButtonGroup/ToggleButtonGroup.d.ts` declares no
- * `role` and the implementation adds none. A screen reader announces the members as
- * loose buttons with no indication that they are one control.
+ * This component exists to make one accessibility decision correctly, and it is commonly
+ * made incorrectly: a `<div>` with **no role at all** announces its members as loose buttons with
+ * no indication that they are one control.
  *
- * UI5 is better but stops short: `ui5-segmented-button` uses `ItemNavigation` for
- * arrow-key movement, so it behaves like a single widget, but its exposed surface
- * does not promise a role either.
+ * Other designs are better but stop short: they use item navigation for arrow-key movement, so
+ * the group behaves like a single widget, but their exposed surface does not promise a role either.
  *
  * So UIReload splits by selection mode, because the two cases have genuinely
  * different correct answers:
@@ -192,8 +189,8 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps) {
    * silent and looks like a rendering bug rather than a usage error, so it is made loud.
    *
    * Context would remove the constraint entirely, and is the right answer at some point.
-   * It is not v1: both reference libraries clone their children the same way, and MUI's
-   * `ToggleButtonGroup` silently mishandles a wrapped child in exactly this fashion.
+   * It is not v1: cloning children is the common approach, and it silently mishandles a wrapped
+   * child in exactly this fashion.
    * Recorded in `docs/roadmap.md`.
    */
   if (process.env.NODE_ENV !== "production") {

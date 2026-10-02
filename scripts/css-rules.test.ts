@@ -47,10 +47,10 @@ describe("stripBlockComments", () => {
   it("removes prose that spans several lines", () => {
     // Regression: per-line stripping cannot match a comment that opens on one line and
     // closes on another, so its contents were parsed as code. This is exactly the shape
-    // of a component stylesheet quoting Fiori's generated CSS.
+    // of a component stylesheet quoting an external design system's generated CSS.
     const source = [
       "/*",
-      " * Fiori does:",
+      " * A generated system does:",
       " *   :host([icon-only]) { padding: 0 }",
       " */",
       ".uir-a {}",

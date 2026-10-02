@@ -3,25 +3,16 @@
 A single-line or multi-line text field with a visible label, an announced description and
 a validation state.
 
-## Reference libraries
+## Design notes
 
-| Concern                 | Source                                                                                                                                                                           |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Prop decomposition      | `@mui/material/TextField/TextField.d.ts` — `BaseTextFieldProps`, `TextFieldVariants`                                                                                             |
-| Control-level props     | `@mui/material/InputBase/InputBase.d.ts` — `InputBaseProps` (`startAdornment`, `endAdornment`, `readOnly`, `inputRef`, `margin`)                                                 |
-| Class-name contract     | `@mui/material/TextField/textFieldClasses.d.ts` — `TextFieldClasses` (a single `root` slot; the parts here come from the `InputBase` tree)                                       |
-| Behaviour, parts, slots | `@ui5/webcomponents/dist/Input.d.ts` — `valueState`, `required`, `readonly`, `maxlength`, `showClearIcon`, `valueStateMessage`, `icon`; `@csspart root` / `input` / `clear-icon` |
-| DOM structure           | `@ui5/webcomponents/dist/InputTemplate.js` — the `root` > content > `input` nesting, and the `focused` attribute the focus ring keys off                                         |
-| Input type enum         | `@ui5/webcomponents/dist/types/InputType.d.ts` — `Text`, `Email`, `Number`, `Password`, `Tel`, `URL`, `Search`                                                                   |
-| Value-state enum        | `@ui5/webcomponents-base/dist/types/ValueState.d.ts` — `None`, `Positive`, `Critical`, `Negative`, `Information`                                                                 |
-| Focus ring model        | `@ui5/webcomponents/dist/css/themes/Input.css` — `.ui5-input-focusable-element:after` drawn from `:host([focused])`, i.e. on the wrapper, not the input                          |
-| Focus ring placement    | `@mui/material/OutlinedInput/OutlinedInput.js` — `.Mui-focused .MuiOutlinedInput-notchedOutline { border-width: 2 }`, i.e. the field's own border, not the input                 |
-| Height / padding tokens | `--_ui5_input_base_height` / `--_ui5_input_base_padding` in `@ui5/webcomponents/dist/generated/themes/sap_horizon/parameters-bundle.css.js`                                      |
-| Label association       | `@ui5/webcomponents-base/dist/util/AccessibilityTextsHelper.js` — `getAssociatedLabelForTexts`, which reads a real `<label for>`                                                 |
-| Pattern                 | WAI-ARIA APG Textbox; the native `<label for>` and `<input>` supply role, name and validation                                                                                    |
+The provenance for this component — which reference implementation backed each non-obvious
+choice — is recorded in `docs/references.md`, which is not published.
 
-Versions read from `../referenceUILibraries/package.json`: `@mui/material` 9.4.0,
-`@ui5/webcomponents` 2.27.2.
+The pattern is the WAI-ARIA APG Textbox, with the native `<label for>` and `<input>` supplying
+role, name and validation.
+
+The `type` union is the seven values every enterprise input publishes: `Text`, `Email`, `Number`,
+`Password`, `Tel`, `URL` and `Search`.
 
 ## Props
 
@@ -66,31 +57,29 @@ the documented exception, and they always land on the root.
 
 ## Reconciled design
 
-| Decision        | UIReload                         | MUI                             | UI5                               | Why                                                                                       |
-| --------------- | -------------------------------- | ------------------------------- | --------------------------------- | ----------------------------------------------------------------------------------------- |
-| Emphasis axis   | shared `ghost`/`outline`/`solid` | `standard`/`filled`/`outlined`  | one design (`--_ui5_input_*`)     | Keeps one ladder across the family; a field and a button cannot disagree about `outline`. |
-| Validation      | `invalid` boolean                | `error` boolean                 | folded into `valueState`          | Validation and intent are separate decisions. Named for `aria-invalid` and `:invalid`.    |
-| Advisory state  | `tone`                           | `color`                         | `valueState`                      | Reuses the library's tone set rather than inventing a second vocabulary.                  |
-| `invalid` wins  | overrides `tone`                 | `error` overrides `color`       | `Negative` overrides `valueState` | A green field above a red message is worse than no colour.                                |
-| Label           | real `<label for>`               | floating `InputLabel`           | real `<label for>`, per           | A floating label is Material machinery. `getAssociatedLabelForTexts` shows UI5 uses a     |
-|                 |                                  |                                 | `AccessibilityTextsHelper`        | plain label, and a real one is clickable and needs no JavaScript.                         |
-| Description     | `helperText` + automatic wiring  | `helperText` + `FormHelperText` | `valueStateMessage` slot          | Auto-wired, because an unannounced message is the usual way this goes wrong.              |
-| Required marker | hidden "Required" word + `*`     | CSS `*` from `InputLabel`       | `required` attribute              | A CSS asterisk tells a screen reader nothing (`docs/foundations.md` §8).                  |
-| Native `type`   | narrowed to seven values         | pass-through `string`           | `InputType` enum, seven values    | A typo becomes a compile error, as `ButtonType` already does.                             |
-| Ref target      | the `<input>`/`<textarea>`       | `inputRef`                      | `getInputDOMRefSync`              | The element with focus is the thing worth a ref. `ref` rather than `inputRef` because the |
-|                 |                                  |                                 |                                   | component is not an `InputBase` wrapper.                                                  |
+| Decision        | UIReload                         | Why                                                                                                                  |
+| --------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Emphasis axis   | shared `ghost`/`outline`/`solid` | Keeps one ladder across the family; a field and a button cannot disagree about `outline`.                            |
+| Validation      | `invalid` boolean                | Validation and intent are separate decisions. Named for `aria-invalid` and `:invalid`.                               |
+| Advisory state  | `tone`                           | Reuses the library's tone set rather than inventing a second vocabulary.                                             |
+| `invalid` wins  | overrides `tone`                 | A green field above a red message is worse than no colour.                                                           |
+| Label           | real `<label for>`               | A real label is clickable and needs no JavaScript; a floating label is a design idiom with its own contrast problem. |
+| Description     | `helperText` + automatic wiring  | Auto-wired, because an unannounced message is the usual way this goes wrong.                                         |
+| Required marker | hidden "Required" word + `*`     | A CSS asterisk tells a screen reader nothing (`docs/foundations.md` §8).                                             |
+| Native `type`   | narrowed to seven values         | A typo becomes a compile error, as `ButtonType` already does.                                                        |
+| Ref target      | the `<input>`/`<textarea>`       | The element with focus is the thing worth a ref, and `ref` beats `inputRef` because this component is not a wrapper. |
 
 ### Rejected, with reasons
 
 - **`inputRef` in addition to `ref`.** Two ways to reach the same node is two ways to
   disagree. The component is not a wrapper around somebody else's input, so the ordinary
   `ref` is the whole contract.
-- **Floating label.** MUI's `InputLabel` shrinks into the border and only then does the
-  empty field show a placeholder. It is a Material behaviour with its own animation and
-  its own contrast problem, and `ui5-input` does not do it.
-- **`FormControl` context.** MUI threads `error`, `disabled`, `size` and `margin` down
-  through React context from a `FormControl` wrapper. This library has no provider
-  (`docs/roadmap.md`), and a context is a runtime cost for something two props do.
+- **Floating label.** A shrinking label sits inside the border and only then does the empty
+  field show a placeholder. It carries its own animation and its own contrast problem, and it is
+  a design idiom rather than an accessibility improvement.
+- **`FormControl` context.** Threading `error`, `disabled`, `size` and `margin` down through React
+  context from a wrapper is common. This library has no provider (`docs/roadmap.md`), and a
+  context is a runtime cost for something two props do.
 - **`margin: 'dense' | 'none'`.** Density here is `[data-uir-density]` in
   `src/theme/tokens.css`, applied to a subtree, not a per-field prop.
 - **`showSuggestions` / `suggestionItems` (UI5) / `select` (MUI).** A combobox is the
@@ -187,8 +176,8 @@ boilerplate: an engine that cannot parse the wrapper selector drops the rule abo
 without the gate it would also drop the suppression and the field would have **no** focus
 indicator at all. Inside the gate the two are always in agreement.
 
-Both references put the indication on the field rather than on the input: MUI widens the
-field's own border, and Fiori draws `_ui5-input-focus-outline` on the wrapper via `::after`.
+Both established approaches put the indication on the field rather than on the input: one widens
+the field's own border, and the other draws an outline on the wrapper via `::after`.
 The offset is the library-wide `--uir-focus-ring-offset`, the same value `Button` and
 `Switch` use, so a field and a button in one row agree.
 

@@ -67,7 +67,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       {/*
         The wrapper is always present. Google Translate re-translates the subtree when
         it changes, and removing the node mid-flight crashes it
-        (mui/material-ui#27853). Visibility is CSS, driven by `data-loading`.
+        (material-ui#27853). Visibility is CSS, driven by `data-loading`.
       */}
       <span className="uir-button__loading" aria-hidden="true">
         {loadingIndicator ?? <span className="uir-button__spinner" />}

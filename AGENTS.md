@@ -264,9 +264,23 @@ The standard list from `CONTRIBUTING.md`, all enforced in CI:
 
 Additionally, because of the rule in section 1:
 
-9. The component's `README.md` names the counterpart component consulted in **each**
-   reference library, and cites the file and symbol behind each non-obvious API
-   choice.
+9. The component's provenance is recorded in **`docs/references.md`**, not in
+   the component's `README.md` or in any source comment. `docs/references.md`
+   names the counterpart component consulted in **each** reference library and
+   cites the file and symbol behind each non-obvious API choice.
+
+10. **Nothing published may name a reference library.** `dist/**`, `README.md`,
+    `CHANGELOG.md` and every source comment reachable from them — including the
+    JSDoc that becomes the published `.d.ts`, the CSS that becomes
+    `dist/index.css`, and the `sourcesContent` of every published source map —
+    must be free of `MUI`, `UI5`, `Fiori`, `@mui/*`, `@ui5/*` and
+    `referenceUILibraries`.
+
+    A comment explains **why**, stated in terms of the widget, the ARIA pattern,
+    WCAG or platform behaviour: "every hover rule here is gated on
+    `pointer: fine`", not "the reference library gates `:hover` the same way".
+    Attribution moves to `docs/references.md`; the reasoning stays and is
+    de-attributed, never deleted. `tests/published-content.test.ts` enforces it.
 
 ---
 

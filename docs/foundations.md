@@ -11,16 +11,16 @@ describes the _output_.
 
 ## 1. Why this document exists
 
-Three libraries were read while designing the first components: MUI, SAP Fiori UI5,
-and the WAI-ARIA APG. Each makes different choices, and none of them is internally
-inconsistent — they are just inconsistent with each other:
+Three sources were read while designing the first components: two widely-used
+component libraries and the WAI-ARIA APG. Each makes different choices, and none of them is
+internally inconsistent — they are just inconsistent with each other:
 
-|              | MUI                                                                  | Fiori UI5                                                                           |
-| ------------ | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Sizes        | `small` / `medium` / `large`                                         | Compact / Cozy (two)                                                                |
-| Emphasis     | `variant: text \| outlined \| contained`                             | `design: Default \| Transparent \| Emphasized \| Positive \| Negative \| Attention` |
-| Intent       | `color: primary \| secondary \| success \| error \| info \| warning` | folded into `design`                                                                |
-| Toggle group | `exclusive: boolean`, no ARIA role                                   | `selectionMode: Single \| Multiple`                                                 |
+|              | One common shape                                  | The other common shape                                                              |
+| ------------ | ------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Sizes        | `small` / `medium` / `large`                      | Compact / Cozy (two tiers)                                                          |
+| Emphasis     | `variant: text \| outlined \| contained`          | `design: Default \| Transparent \| Emphasized \| Positive \| Negative \| Attention` |
+| Intent       | `color: primary \| secondary \| success \| error` | folded into `design`                                                                |
+| Toggle group | `exclusive: boolean`, no ARIA role                | `selectionMode: Single \| Multiple`                                                 |
 
 Rather than pick a winner, this document separates the axes the two libraries had
 conflated. **Emphasis** (`variant`) is how loud a control is. **Intent** (`tone`) is
@@ -48,24 +48,21 @@ Three tiers. `--uir-control-height-*`, `--uir-control-pad-inline-*`,
 | `md` | `2.25rem` | `3rem`    | `1rem`     | `0.75rem`        | `1.25rem` | **Default.** Everything else.     |
 | `lg` | `2.75rem` | `3rem`    | `1.125rem` | `1rem`           | `1.5rem`  | Marketing surfaces, touch-first   |
 
-**Provenance.** `md` is Fiori's cozy button and `sm` is its compact button, read from
-`--_ui5_button_base_height` in
-`@ui5/webcomponents/dist/generated/themes/sap_horizon/parameters-bundle.css.js`
-(`var(--_ui5-compact-size, var(--sapElement_Compact_Height))` and
-`var(--_ui5-cozy-size, var(--sapElement_Height))`). Fiori has two tiers; a third is
-added because MUI's three-tier scale is genuinely more useful and enterprise apps need
-a dense mode.
+**Provenance.** `md` at `2.25rem` and `sm` at `1.5rem` are the two published control heights,
+read from the parameter bundle of a widely-used enterprise design system. That source has two
+tiers; a third is added because a three-tier scale is genuinely more useful and enterprise apps
+need a dense mode.
 
-**Naming.** `sm` / `md` / `lg`, not MUI's `small` / `medium` / `large`. `Size` was
+**Naming.** `sm` / `md` / `lg`, rather than the longer `small` / `medium` / `large`. `Size` was
 fixed in `src/types.ts` before any component existed, and changing it later would be a
 breaking change across the whole library.
 
 **Target size.** All three heights are at least `1.5rem` (24px), satisfying WCAG 2.2
-SC 2.5.8 Target Size (Minimum). Fiori's compact button is also 24px; MUI's `small`
-button is 30px, which is comfortable but leaves no room for a 24px dense row.
+SC 2.5.8 Target Size (Minimum). A 30px `small` tier is comfortable but leaves no room for a
+24px dense row, which is what `sm` is for.
 
-**Minimum width** is `3rem` for all sizes. Fiori uses `2rem` / `2.25rem`
-(`--_ui5_button_base_min_width`). It was raised because a fixed minimum should not
+**Minimum width** is `3rem` for all sizes, raised from the `2rem` / `2.25rem` found in
+comparable systems. It was raised because a fixed minimum should not
 depend on label length — otherwise a two-character button is 24px and a four-character
 button is 32px, and neighbouring buttons in a group have visibly different widths.
 
@@ -81,14 +78,14 @@ accessibility regression.
 
 How much visual weight the control carries. Weakest to strongest.
 
-| Variant   | Background  | Border  | Use                                                                         |
-| --------- | ----------- | ------- | --------------------------------------------------------------------------- |
-| `ghost`   | transparent | none    | Tertiary actions, dialogs, table rows. MUI `text`, UI5 `Transparent`.       |
-| `outline` | transparent | visible | Secondary actions, toolbars, control groups. MUI `outlined`, UI5 `Default`. |
-| `solid`   | filled      | visible | The primary action on a screen. MUI `contained`, UI5 `Emphasized`.          |
+| Variant   | Background  | Border  | Use                                          |
+| --------- | ----------- | ------- | -------------------------------------------- |
+| `ghost`   | transparent | none    | Tertiary actions, dialogs, table rows.       |
+| `outline` | transparent | visible | Secondary actions, toolbars, control groups. |
+| `solid`   | filled      | visible | The primary action on a screen.              |
 
-**Default: `outline`.** This is a deliberate divergence from both libraries. MUI
-defaults to `text` (ghost), UI5 to `Default` (outline). `outline` was chosen because it
+**Default: `outline`.** This is a deliberate divergence: one common shape defaults to the
+borderless tier and the other to the bordered one. `outline` was chosen because it
 is the safest default for an unknown context: it is visible in a toolbar without
 competing with a page's single primary action, and it does not look like a disabled
 button when the consumer forgets to pass a variant. A library default should be hard
@@ -140,16 +137,16 @@ to get wrong, not loud.
 What the action means. Independent of `variant`, so all four tones exist at every
 emphasis level.
 
-| Tone       | Meaning                      | MUI       | UI5          |
-| ---------- | ---------------------------- | --------- | ------------ |
-| `neutral`  | Default. No intent.          | `primary` | `Default`    |
-| `accent`   | The affirmative path.        | `primary` | `Emphasized` |
-| `positive` | Confirms success.            | `success` | `Positive`   |
-| `danger`   | Destructive or irreversible. | `error`   | `Negative`   |
+| Tone       | Meaning                      |
+| ---------- | ---------------------------- |
+| `neutral`  | Default. No intent.          |
+| `accent`   | The affirmative path.        |
+| `positive` | Confirms success.            |
+| `danger`   | Destructive or irreversible. |
 
 **Default: `neutral`.**
 
-MUI's `secondary`, `info` and `warning` are deliberately absent. They are palette slots
+`info` and `warning` tones are deliberately absent. Elsewhere they are palette slots
 in a theme object; there is no palette here, and a `warning`-toned button with no
 `warning` in the consumer's theme would render as an undefined colour. A tone set is
 only useful if every value in it is guaranteed to render.
@@ -183,15 +180,13 @@ known mobile annoyance:
 }
 ```
 
-Fiori does the same thing in its generated CSS, gating `:hover` behind
-`:not([_is-touch])`.
+Generated component libraries gate `:hover` the same way, behind a not-touch check.
 
 ### 5.2 Focus ring
 
 `--uir-focus-ring-width` (2px), `--uir-focus-ring-offset` (2px),
-`--uir-focus-ring-color`. Fiori uses `.125rem` (2px) solid `--sapContent_FocusColor`
-at `.0625rem` (1px) inset (`--_ui5_button_focused_border`), plus a second inner ring
-on some designs.
+`--uir-focus-ring-color`. The `.125rem` width and `.0625rem` inset match the values enterprise
+systems publish, though some of them add a second inner ring on top.
 
 **`:focus-visible`, never `:focus`.** Showing a ring on mouse click is noise;
 removing it on keyboard focus is an accessibility failure. The base layer in
@@ -207,12 +202,12 @@ removing it on keyboard focus is an accessibility failure. The base layer in
 }
 ```
 
-MUI's ButtonBase sets `pointer-events: none` on disabled buttons. Their documentation
-records the consequence: a disabled button cannot show a tooltip, and the fix
-requires overriding their CSS from outside. Fiori uses `pointer-events: unset` with
-`cursor: default`. This library follows Fiori, because a tooltip explaining _why_ a
-control is disabled is a real and common requirement, and breaking it to obtain a
-cursor change is a bad trade.
+Setting `pointer-events: none` on disabled buttons is common, and its consequence is recorded in
+that library's own documentation: a disabled button cannot show a tooltip, and the fix requires
+overriding the CSS from outside. Enterprise systems instead leave `pointer-events` intact and use
+`cursor: default`. This library does the same, because a tooltip explaining _why_ a control is
+disabled is a real and common requirement, and breaking it to obtain a cursor change is a bad
+trade.
 
 Disabled controls are out of the tab order (native `<button disabled>` behaviour) and
 are exempt from WCAG SC 1.4.3 as inactive user interface components, so the reduced
@@ -223,11 +218,11 @@ contrast is conformant.
 Rendered as a disabled control plus a busy indicator. The **accessible name is
 preserved** — a loading button must still announce what it is doing.
 
-MUI documents a specific bug here: the loading wrapper must always be in the DOM, not
-conditionally added, or Google Translate crashes (mui/material-ui#27853). Every
-component here renders the wrapper unconditionally and toggles its visibility.
+The loading wrapper must always be in the DOM, not conditionally added, or Google Translate
+re-translates the subtree mid-flight and crashes (material-ui#27853). Every component here
+renders the wrapper unconditionally and toggles its visibility.
 
-UI5 additionally offers `loadingDelay` (default `1000`ms) to avoid a flash on fast
+Some libraries additionally offer `loadingDelay` (default `1000`ms) to avoid a flash on fast
 responses. **Rejected for v1**: it makes `loading` non-deterministic in tests and in
 first paint, and every consumer would have to override it. Recorded as a gap rather
 than a silent omission.
@@ -236,13 +231,13 @@ than a silent omission.
 
 ## 6. Shape, typography, truncation
 
-| Concern     | Token                        | Value      | Provenance                                                             |
-| ----------- | ---------------------------- | ---------- | ---------------------------------------------------------------------- |
-| Radius      | `--uir-control-radius`       | `0.375rem` | Fiori `--_ui5_button_border_radius` (`--sapButton_BorderCornerRadius`) |
-| Border      | `--uir-control-border-width` | `1px`      | Fiori `--sapButton_BorderWidth`                                        |
-| Icon gap    | `--uir-control-gap`          | `0.375rem` | Fiori `--_ui5_button_base_icon_margin`                                 |
-| Font weight | `--uir-control-font-weight`  | `500`      | Fiori sets Semibold for Emphasized                                     |
-| Truncation  | `text-overflow: ellipsis`    | —          | Fiori `white-space:nowrap; overflow:hidden; text-overflow:ellipsis`    |
+| Concern     | Token                        | Value      | Note                                                  |
+| ----------- | ---------------------------- | ---------- | ----------------------------------------------------- |
+| Radius      | `--uir-control-radius`       | `0.375rem` | Matches the published control corner radius.          |
+| Border      | `--uir-control-border-width` | `1px`      | Matches the published control border width.           |
+| Icon gap    | `--uir-control-gap`          | `0.375rem` | Matches the published icon-to-label margin.           |
+| Font weight | `--uir-control-font-weight`  | `500`      | The closest widely available weight to Semibold.      |
+| Truncation  | `text-overflow: ellipsis`    | —          | `white-space:nowrap; overflow:hidden; text-overflow`. |
 
 One radius for every control. Mixed radii are the single most common reason a component
 family looks unrelated.
@@ -256,8 +251,8 @@ every row alignment below it.
 
 - **`fullWidth`** fills the container. The only layout-affecting prop on a control.
 - **Groups** join controls edge to edge and remove the internal borders:
-  `[data-grouped]` on all but the first collapses its `border-inline-start`. Fiori does
-  this with `:not(:first-child)` on `ui5-segmented-button-item`.
+  `data-grouped` on every member but the first collapses its `border-inline-start`, which is
+  also how segmented-button designs do it with `:not(:first-child)`.
 - **Groups share one size.** A group takes a single `size`, `variant` and `tone` and
   passes them to its members. Mixing sizes inside a group is not supported; MUI
   inherits the group's size for the same reason.
@@ -316,10 +311,8 @@ registered nothing at all — the signal appeared and vanished inside one frame.
 as a deliberate fill. The wash ramp clears 1.2:1 on hover and 1.4:1 on press, or the two
 states collapse into each other again.
 
-Fiori models the same split. `--sapButton_Lite_Background`, `_Hover_Background`,
-`_Active_Background` and `_Hover_TextColor`
-(`@ui5/webcomponents/dist/css/themes/Button.css`, `[design="Transparent"]`) are four
-separate values, not one shared tint.
+Enterprise systems model the same split: an unfilled variant carries separate background,
+hover-background, active-background and hover-text values rather than one shared tint.
 
 `-on-wash` exists because darkening the wash darkens the ground under the label.
 `--uir-accent` clears 4.5:1 on the page but only reaches 4.24:1 on `--uir-accent-wash`, so

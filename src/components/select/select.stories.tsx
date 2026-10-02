@@ -174,7 +174,8 @@ export const Invalid: Story = {
  * Required.
  *
  * The asterisk is `aria-hidden` and the word "Required" is visually hidden, so the requirement is
- * announced rather than drawn. MUI renders the marker from a CSS `::after`, which no screen reader
+ * announced rather than drawn. A marker drawn from a CSS `::after` cannot be announced by a
+ * screen reader
  * can see.
  */
 export const Required: Story = {
@@ -229,7 +230,8 @@ export const VariantsAndTones: Story = {
  * Disabled.
  *
  * The native `disabled` attribute, so the trigger is out of the tab order and does not open. The
- * opacity is the only visual change and `pointer-events` is deliberately left intact: MUI's
+ * opacity is the only visual change and `pointer-events` is deliberately left intact: the
+ * common
  * `pointer-events: none` makes the control unclickable to a tooltip, and with it the explanation of
  * why it is disabled.
  */
@@ -246,8 +248,7 @@ export const Disabled: Story = {
  * Inside a form, which is where the hidden input earns its place.
  *
  * The trigger is a `<button>`, and a button submits nothing. The hidden `<input name>` carries the
- * value to the server — UI5's `@formProperty` and MUI's `name`, reached through the one element the
- * platform offers.
+ * value to the server, reached through the one element the platform offers.
  */
 export const InAForm: Story = {
   args: { name: "region", defaultValue: "dub", label: "Region", required: true },

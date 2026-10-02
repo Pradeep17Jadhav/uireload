@@ -244,7 +244,7 @@ describe("Switch: states", () => {
 
   it("has no readOnly prop, because it could not be implemented honestly", () => {
     /*
-     * UI5 has `readonly` (2.21.0) and this component deliberately does not.
+     * A comparable component has `readonly` and this one deliberately does not.
      *
      * `readonly` has no effect on a checkbox in the HTML spec, so implementing it means refusing a
      * toggle the browser has already performed. Three implementations were measured against React
@@ -359,10 +359,10 @@ describe("Switch: keyboard", () => {
     expect(control).not.toBeChecked();
   });
 
-  it("does not toggle with Enter, unlike UI5", async () => {
+  it("does not toggle with Enter, unlike a div-based switch", async () => {
     /*
-     * UI5's JSDoc says "the state can be changed by pressing the Space and Enter keys",
-     * because `ui5-switch` is a `<div>` with a `keydown` handler and therefore has to
+     * Some documentation says "the state can be changed by pressing the Space and Enter keys",
+     * because such a switch is a `<div>` with a `keydown` handler and therefore has to
      * implement what a real checkbox gets for free. APG's switch pattern specifies Space.
      */
     const user = userEvent.setup();

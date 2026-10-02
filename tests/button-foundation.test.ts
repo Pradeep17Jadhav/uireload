@@ -167,7 +167,7 @@ describe("state rules", () => {
   });
 
   it("does not set pointer-events: none on disabled", () => {
-    // MUI's ButtonBase does, which breaks tooltips on disabled controls. Follows Fiori.
+    // a disabled control cannot be hovered to explain why. `cursor` gives the affordance without it.
     expect(css).not.toMatch(/pointer-events:\s*none/);
   });
 
@@ -177,7 +177,7 @@ describe("state rules", () => {
   });
 
   it("keeps the loading wrapper in the DOM and toggles it with CSS", () => {
-    // Conditional insertion crashes Google Translate (mui/material-ui#27853).
+    // Conditional insertion crashes Google Translate (material-ui#27853).
     expect(css).toMatch(/\.uir-button__loading\s*\{[\s\S]*?display:\s*none/);
     expect(css).toMatch(/\[data-loading\]\s+\.uir-button__loading\s*\{[\s\S]*?display:\s*flex/);
   });

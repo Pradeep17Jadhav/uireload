@@ -1,10 +1,7 @@
 /**
  * Dialog prop types.
  *
- * API decomposition from MUI's `DialogProps` (`@mui/material/Dialog/Dialog.d.ts`);
- * documented behaviour, `@csspart` parts, `ValueState` and the `alertdialog` rule from UI5's
- * `ui5-dialog` (`@ui5/webcomponents/dist/Dialog.d.ts`). Reconciliation and the full citation
- * list are in `README.md`.
+ * The reasoning behind each choice is in `README.md`.
  */
 
 import type { CSSProperties, HTMLAttributes, ReactNode, Ref } from "react";
@@ -13,10 +10,8 @@ import type { Size, Tone } from "../../foundations";
 /**
  * How urgent the dialog is, and therefore what role it takes.
  *
- * MUI's `role?: 'dialog' | 'alertdialog'` is the better decomposition of UI5's `state`, because
- * UI5 derives the role from the value state (`_role` in `Dialog.d.ts`:
- * `Negative`/`Critical` become `alertdialog`) while exposing `state` as the thing the consumer
- * actually sets.
+ * Urgency is a separate axis rather than a value state, because deriving the role from the
+ * colour couples two independent decisions together.
  *
  * Splitting them means a consumer can say "this is urgent" with a name that means urgency rather
  * than with a colour that means it, and can say "positive" without accidentally becoming an
@@ -32,8 +27,9 @@ export type DialogUrgency = "normal" | "alert";
 /**
  * Why the dialog asked to close.
  *
- * MUI's `onClose` receives `(event, reason)` where reason is `"escapeKeyDown" | "backdropClick"`.
- * UI5 carries the same information as a boolean (`PopupBeforeCloseEventDetail`'s `escPressed`).
+ * The reason is a named value rather than a boolean, because "the user pressed Escape" and
+ * "the user pressed the backdrop" are different things to react to and a boolean cannot tell them
+ * apart.
  *
  * Named here in the past tense, like `Popover`'s, so the callback reads as a description of what
  * happened rather than as an instruction.
@@ -94,9 +90,10 @@ export interface DialogOwnProps {
   /**
    * Intent of the surface's border and the footer.
    *
-   * This is the *visual* tone and is deliberately separate from {@link urgency}. UI5 folds them
-   * together (`state` changes the role), so a negative dialog is both red and assertive whether
-   * or not that is what was meant. Splitting them is the point of having read both libraries.
+   * This is the *visual* tone and is deliberately separate from {@link urgency}. A single
+   * `state` value that drives both the role and the colour makes a negative dialog red *and*
+   * assertive whether or not that was meant. Splitting them is the point of the two axes existing
+   * at all.
    *
    * @default "neutral"
    */
@@ -106,9 +103,9 @@ export interface DialogOwnProps {
    * Maximum width.
    *
    * A dialog's size is a content decision, not an emphasis one, so this is the shared `Size`
-   * scale read as a width rather than a height — and it is why there is no `variant`. Fiori
-   * describes a dialog as "approximately 90% of the viewport" on desktop and full-screen on a
-   * phone, and `lg` is the number behind that.
+   * scale read as a width rather than a height — and it is why there is no `variant`.
+   * `lg` is wide enough for a form; below 30rem the surface goes edge to edge instead, which is
+   * what a phone user expects from a modal.
    *
    * The size does not change the padding, type scale or control sizes: a dialog containing one
    * field and a dialog containing a form should use the same controls, so the two read as one
@@ -166,7 +163,7 @@ export interface DialogOwnProps {
   /**
    * Rendered at the bottom, in a footer row.
    *
-   * UI5's `@csspart footer`, where action buttons belong. The footer is not sticky by default; it
+   * Where action buttons belong. The footer is not sticky by default; it
    * scrolls with the content, which is right for a short dialog and wrong for a long one.
    */
   footer?: ReactNode | undefined;

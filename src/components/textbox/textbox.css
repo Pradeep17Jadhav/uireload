@@ -224,7 +224,7 @@
 
   /*
    * Gated on a fine pointer with hover, for the same reason as `Button`: a hover state
-   * that persists after a tap is a known mobile annoyance, and Fiori's generated CSS
+   * that persists after a tap is a known mobile annoyance, so every hover rule here is
    * gates `:hover` the same way with `:not([_is-touch])`.
    *
    * A read-only field is excluded, because there is nothing to do about its hover.
@@ -253,10 +253,8 @@
    * keeps the ring keyboard-only, and `:has()` is what puts that state on the wrapper.
    *
    * This is also what both references do, and they both put the indication on the field
-   * rather than on the input: MUI widens the field's own border via
-   * `@mui/material/OutlinedInput/OutlinedInput.js` `.Mui-focused`, and Fiori draws
-   * `_ui5-input-focus-outline` on the wrapper via `::after`
-   * (`@ui5/webcomponents/dist/css/themes/Input.css`).
+   * rather than on the input: one design widens the field's own border via a
+   * a `:focus`-state class, and the other draws an outline on the wrapper via `::after`.
    *
    * The offset is the library-wide `--uir-focus-ring-offset`, so the ring lands in the
    * same place relative to the border as it does on `Button` and `Switch` — which is
@@ -415,9 +413,9 @@
   /* ---- Disabled ------------------------------------------------------ */
 
   /*
-   * `opacity` only, with `pointer-events` deliberately left intact. MUI's `ButtonBase`
+   * `opacity` only, with `pointer-events` deliberately left intact. Setting
    * sets `pointer-events: none` on disabled controls, which breaks the tooltip that
-   * explains why they are disabled; MUI documents that as a limitation. Fiori uses
+   * explains why they are disabled, which is a documented limitation of that approach.
    * `opacity` with `pointer-events: unset`. A `cursor` gives the affordance without the
    * side effect.
    */
@@ -435,8 +433,7 @@
   /*
    * In Windows High Contrast the OS replaces the palette, so a field drawn with only a
    * transparent background and a border colour stops being distinguishable from the page.
-   * Fiori handles the same case in the `forced-colors` block of
-   * `@ui5/webcomponents/dist/css/themes/Input.css`.
+   * The same case is handled in the `forced-colors` block below.
    */
   @media (forced-colors: active) {
     .uir-textbox__control {

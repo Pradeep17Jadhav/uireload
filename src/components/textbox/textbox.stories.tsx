@@ -207,7 +207,7 @@ export const Variants: Story = {
 
 /**
  * An advisory tone. A field whose value is merely unusual is not invalid, which is
- * exactly the distinction UI5 draws with its `valueState`.
+ * exactly the distinction a `valueState` draws.
  */
 export const AdvisoryTones: Story = {
   args: { value: undefined },

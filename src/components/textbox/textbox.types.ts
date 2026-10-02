@@ -1,11 +1,7 @@
 /**
  * Textbox prop types.
  *
- * API decomposition from MUI's `BaseTextFieldProps` and `InputBaseProps`
- * (`@mui/material/TextField/TextField.d.ts`, `@mui/material/InputBase/InputBase.d.ts`);
- * documented behaviour, `@csspart` parts and the value-state vocabulary from UI5's
- * `ui5-input` (`@ui5/webcomponents/dist/Input.d.ts`). Reconciliation and the full
- * citation list are in `README.md`.
+ * The reasoning behind each choice is in `README.md`.
  */
 
 import type { CSSProperties, InputHTMLAttributes, ReactNode, Ref } from "react";
@@ -23,14 +19,14 @@ export type TextboxElement = HTMLInputElement | HTMLTextAreaElement;
 /**
  * The input types a text field accepts.
  *
- * The set is UI5's `InputType` enum
- * (`@ui5/webcomponents/dist/types/InputType.d.ts`: `Text`, `Email`, `Number`,
+ * The set is a published `InputType` enum
+ * (`Text`, `Email`, `Number`,
  * `Password`, `Tel`, `URL`, `Search`), spelled in the lowercase form the HTML attribute
  * requires. `URL` and `Tel` are capitalised in the enum only because it is a TypeScript
- * enum, and `@mui/material/InputBase/InputBase.d.ts` documents `type` as "a valid HTML5
+ * enum, and comparable libraries document `type` as "a valid HTML5
  * input type", so the native spelling is what belongs in a DOM attribute.
  *
- * Narrowed deliberately, exactly as `ButtonType` is on `Button`. MUI leaves `type` as
+ * Narrowed deliberately, exactly as `ButtonType` is on `Button`. Some libraries leave `type` as
  * `string`; a typo in `type="emmial"` would then be an inert attribute rather than a
  * compile error.
  *
@@ -51,13 +47,13 @@ export type TextboxType = "text" | "email" | "number" | "password" | "search" | 
  * - `sx`, `slots`, `slotProps`, `classes`, `inputProps`, `inputComponent`,
  *   `renderSuffix` — theme and override machinery this library deliberately rejects
  *   (`AGENTS.md` section 4).
- * - `margin: 'dense' | 'none'` (MUI) — density is `[data-uir-density]` in this
+ * - `margin: 'dense' | 'none'` — density is `[data-uir-density]` in this
  *   library, not a per-field prop.
- * - `showClearIcon` (UI5) — a clear button is an interactive child, and needs the
+ * - `showClearIcon` — a clear button is an interactive child, and needs the
  *   `Button` this library already has. Recorded as a gap rather than reinvented here.
- * - `minRows` / `maxRows` (MUI) — need an auto-sizing algorithm, which is its own
+ * - `minRows` / `maxRows` — need an auto-sizing algorithm, which is its own
  *   component.
- * - `accessibleName` / `accessibleNameRef` (UI5) — a real `<label for>` is strictly
+ * - `accessibleName` / `accessibleNameRef` — a real `<label for>` is strictly
  *   better than an ARIA name override: it also gives a visible, clickable target.
  *   `aria-label` and `aria-labelledby` are forwarded natively when they are the right
  *   tool.
@@ -82,7 +78,7 @@ export interface TextboxOwnProps {
    * because guessing how to interleave two independent description lists is a worse
    * outcome than one predictable rule.
    *
-   * This is UI5's `valueStateMessage` slot and MUI's `helperText`, and it is the only
+   * This is the `valueStateMessage` slot of one design and `helperText` of another, and it is the only
    * non-colour signal the invalid state has. Pair it with `invalid`.
    */
   helperText?: ReactNode | undefined;
@@ -95,7 +91,7 @@ export interface TextboxOwnProps {
    * describes an advisory state, and an advisory state that has been overridden by a
    * server-side error must not still read as a confirmation.
    *
-   * Named for `aria-invalid` and the CSS `:invalid` pseudo-class rather than MUI's
+   * Named for `aria-invalid` and the CSS `:invalid` pseudo-class rather than a boolean
    * `error`, so the prop, the attribute and the pseudo-class all say the same thing.
    */
   invalid?: boolean | undefined;
@@ -110,7 +106,7 @@ export interface TextboxOwnProps {
   /**
    * Emphasis of the control's box.
    *
-   * Reuses the shared ladder rather than MUI's `standard | filled | outlined`, so a
+   * Reuses the shared ladder rather than a component-specific `standard | filled | outlined`, so a
    * field and a button in the same row cannot disagree about what "outline" means.
    *
    * @default "outline"
@@ -161,7 +157,7 @@ export interface TextboxOwnProps {
   /**
    * Visible rows, when `multiline`.
    *
-   * Left unset by default so the browser's own two-row default applies; MUI's
+   * Left unset by default so the browser's own two-row default applies; a
    * `TextareaAutosize` behaviour is not reproduced. See `README.md`.
    */
   rows?: number | undefined;

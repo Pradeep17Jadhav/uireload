@@ -1,10 +1,7 @@
 /**
  * Select prop types.
  *
- * API decomposition from MUI's `SelectProps` (`@mui/material/Select/Select.d.ts`); documented
- * behaviour, keyboard handling and the option/group model from UI5's `ui5-select`
- * (`@ui5/webcomponents/dist/Select.d.ts`). Reconciliation and the full citation list are in
- * `README.md`.
+ * The reasoning behind each choice is in `README.md`.
  */
 
 import type { ButtonHTMLAttributes, CSSProperties, ReactNode, Ref } from "react";
@@ -13,11 +10,11 @@ import type { Size, Tone, Variant } from "../../foundations";
 /**
  * One option.
  *
- * `value` is required and `label` is what the user reads. UI5 collapses these by using the text
+ * `value` is required and `label` is what the user reads. Collapsing the two, by using the text
  * content as both (`_applySelectionByValue` falls back to matching text content), which means a
  * value can silently change when someone rewords a label — so the two are separate here.
  *
- * Both reference libraries allow `children` on an option (`OptionCustom`, MUI's `renderValue`);
+ * Both `children` and a custom-render escape hatch are common on a comparable select;
  * it is accepted here as content rendered *after* the label, and the label is what names the
  * option. An option whose whole content is arbitrary React would need its own item component and
  * its own announcement contract.
@@ -49,9 +46,8 @@ export interface SelectOption {
  * A labelled group of options.
  *
  * Rendered as a `role="group"` with an `aria-label`, which is the APG listbox grouping rather than
- * a nested listbox. UI5 uses `<ui5-option-group>` with a `headerText` slot and a `_groupCountText`
- * announcement ("3 options"); the count is not reproduced here, and the reason is recorded in
- * `README.md`.
+ * a nested listbox. The group count that some designs announce ("3 options") is not
+ * reproduced here, and the reason is recorded in `README.md`.
  */
 export interface SelectOptionGroup {
   /** Renders the options as a group. Discriminates this from a plain option. */
@@ -93,7 +89,8 @@ export interface SelectOwnProps {
   /**
    * Controlled selected value. `undefined` means uncontrolled.
    *
-   * A value matching no option renders the placeholder, which is UI5's documented behaviour: "If
+   * A value matching no option renders the placeholder, which is the documented behaviour:
+   * "If
    * the given value does not match any existing option, no option will be selected and the Select
    * component will be displayed as empty."
    */
@@ -164,7 +161,7 @@ export interface SelectOwnProps {
    * **Not implemented. Deliberately absent rather than broken.**
    *
    * A listbox that cannot be dismissed with Escape strands a keyboard user inside it, so Escape is
-   * unconditional here and there is no prop to turn it off. UI5 documents Escape as "Closes the
+   * unconditional here and there is no prop to turn it off. Escape closes the
    * drop-down without changing the selection" with no opt-out, and that is the right contract.
    *
    * Escape restores the *highlight* rather than committing it, which is what makes it a dismissal
@@ -205,7 +202,7 @@ export interface SelectOwnProps {
   /**
    * Milliseconds of inactivity that end a typeahead burst.
    *
-   * UI5 does the same with `_typingTimeoutID`, defaulting to 1000ms. Short enough that two
+   * The delay defaults to 1000ms. Short enough that two
    * separate words do not become one search, long enough that a deliberate two-letter search works.
    *
    * @default 1000

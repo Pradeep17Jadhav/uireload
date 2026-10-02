@@ -2,25 +2,13 @@
 
 A surface positioned against an anchor: supplementary content, a small form, a list.
 
-## Reference libraries
+## Design notes
 
-| Concern              | Source                                                                                                                                                                                      |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Prop decomposition   | `@mui/material/Popover/Popover.d.ts` — `PopoverProps` (`anchorEl`, `placement`, `align`, `open`, `modal`, `marginThreshold`, `container`)                                                   |
-| Origin algebra       | Same file — `PopoverOrigin`, `PopoverPosition`, `getOffsetTop` / `getOffsetLeft`, and `PopoverActions.updatePosition()`                                                                     |
-| Virtual anchors      | Same file — `PopoverVirtualElement` (a bare `getBoundingClientRect` and nothing else)                                                                                                       |
-| Behaviour, parts     | `@ui5/webcomponents/dist/Popover.d.ts` — `placement`, `horizontalAlign`, `verticalAlign`, `modal`, `hideArrow`, `allowTargetOverlap`, `resizable`; `@csspart header` / `content` / `footer` |
-| Modality contract    | `@ui5/webcomponents/dist/Popup.d.ts` — `blockPageScrolling`, `applyInitialFocus`, `resetFocus`, `initialFocus`, `preventFocusRestore`                                                       |
-| Dismissal reason     | Same file — `PopupBeforeCloseEventDetail`'s `escPressed`, and `closePopup(escPressed)`                                                                                                      |
-| Placement enum       | `@ui5/webcomponents/dist/types/PopoverPlacement.d.ts` — `Start`, `End`, `Top`, `Bottom`                                                                                                     |
-| Cross-axis enum      | `@ui5/webcomponents/dist/types/PopoverHorizontalAlign.d.ts` and `.../PopoverVerticalAlign.d.ts` — `Center`, `Start`, `End`, `Stretch`                                                       |
-| Anchor visibility    | `_onOpenerIntersection` and `_observeOpenerVisibility` in `Popover.d.ts`                                                                                                                    |
-| RTL correction       | `getRTLCorrectionLeft()` and `isRtl` in `Popover.d.ts`                                                                                                                                      |
-| Regions              | `@ui5/webcomponents/dist/Popover.d.ts` — "three main areas: Header (optional), Content, Footer (optional)"                                                                                  |
-| Keyboard / dismissal | WAI-ARIA APG Dialog pattern; `useFocusTrap` and `useDismiss` in `src/internal/`                                                                                                             |
+The provenance for this component — which reference implementation backed each non-obvious
+choice — is recorded in `docs/references.md`, which is not published.
 
-Versions read from `../referenceUILibraries/package.json`: `@mui/material` 9.4.0,
-`@ui5/webcomponents` 2.27.2.
+Keyboard and dismissal follow the WAI-ARIA APG Dialog pattern, implemented by `useFocusTrap` and
+`useDismiss` in `src/internal/`.
 
 ## Props
 
@@ -51,23 +39,22 @@ Versions read from `../referenceUILibraries/package.json`: `@mui/material` 9.4.0
 
 ## Reconciled design
 
-| Decision                  | UIReload                      | MUI                                | UI5                                            | Why                                                                             |
-| ------------------------- | ----------------------------- | ---------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------- |
-| Placement vocabulary      | `top`/`bottom`/`start`/`end`  | `anchorOrigin` + `transformOrigin` | `placement` (`Top`/`Bottom`/`Start`/`End`)     | Logical, so it mirrors in RTL with no extra rule.                               |
-| Cross-axis                | one `align` prop              | a second origin object             | two enums (`HorizontalAlign`, `VerticalAlign`) | The cross axis is implied by the placement, so two props is one too many.       |
-| `start` / `end` for align | **rejected**                  | `left` / `right` / `center`        | `Start` / `End` / `Center` / `Stretch`         | They duplicate `placement`, and accepting both lets them disagree.              |
-| Modality                  | `modal`, default `false`      | always a `Modal`                   | `modal`, default `false`                       | Follows UI5. A dropdown list must not lock the page.                            |
-| Dismissal reason          | `"escape" \| "outside-press"` | `onClose(event, reason)`           | `escPressed` flag                              | A boolean is not enough for unsaved work; a named reason is.                    |
-| Naming                    | `title` for a visible heading | `TransitionProps`                  | `headerText`                                   | A visible heading names the surface for sighted and assistive technology alike. |
-| No-anchor state           | centred + `data-unpositioned` | not handled                        | not handled                                    | An anchor inside an unmounted conditional is a real state, not an error.        |
-| Overlay                   | none                          | `Paper` + `Backdrop`               | none                                           | The surface is a plain element with a CSS contract.                             |
+| Decision                  | Choice                        | Why                                                                             |
+| ------------------------- | ----------------------------- | ------------------------------------------------------------------------------- |
+| Placement vocabulary      | `top`/`bottom`/`start`/`end`  | Logical, so it mirrors in RTL with no extra rule.                               |
+| Cross-axis                | one `align` prop              | The cross axis is implied by the placement, so two props is one too many.       |
+| `start` / `end` for align | **rejected**                  | They duplicate `placement`, and accepting both lets them disagree.              |
+| Modality                  | `modal`, default `false`      | A dropdown list must not lock the page.                                         |
+| Dismissal reason          | `"escape" \| "outside-press"` | A boolean is not enough for unsaved work; a named reason is.                    |
+| Naming                    | `title` for a visible heading | A visible heading names the surface for sighted and assistive technology alike. |
+| No-anchor state           | centred + `data-unpositioned` | An anchor inside an unmounted conditional is a real state, not an error.        |
+| Overlay                   | none                          | The surface is a plain element with a CSS contract.                             |
 
 ### The one real divergence: `start`/`end` instead of `left`/`right`
 
-UI5's `PopoverPlacement` already offers `Start`/`End`, which is the right vocabulary, and then
-patches the physical case at runtime with `getRTLCorrectionLeft()` and an `isRtl` getter.
-MUI's `PopoverOrigin` takes physical `left`/`right`/`center` and leaves the mirroring to the
-consumer.
+Two shapes are common in existing implementations: one takes physical `left` / `right` /
+`center` and leaves the mirroring to the consumer, and the other offers the logical `Start` / `End`
+vocabulary but then patches the physical case back at runtime with an RTL-correction step.
 
 Here the logical vocabulary is used end to end: the placement prop is logical, the _reported_
 placement stays logical after a flip, and the arrow's offset is a percentage against

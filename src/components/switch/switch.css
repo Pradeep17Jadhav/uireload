@@ -2,8 +2,8 @@
  * Switch styles.
  *
  * Every dimension comes from a `--uir-control-*` token, or from one of the three
- * switch-specific sizes declared on the root. The track-to-handle ratio follows UI5's
- * `--_ui5_switch_track_width` over `--_ui5_switch_handle_width`, because a switch's
+ * switch-specific sizes declared on the root. The track-to-handle ratio follows the
+ * published track width over handle width, because a switch's
  * readability comes from the handle being visibly displaced at both extremes and those are
  * the reference numbers rather than an invention.
  */
@@ -274,7 +274,7 @@
 
   /*
    * Gated on a fine pointer with hover, for the same reason as `Button`: a hover state that
-   * persists after a tap is a known mobile annoyance, and Fiori's generated CSS gates
+   * persists after a tap is a known mobile annoyance, so every hover rule here is gated
    * `:hover` the same way.
    *
    * Read-only is excluded, because there is nothing to do about hovering a control that
@@ -293,7 +293,7 @@
    * the input is the element that receives the press, and the track is its next sibling,
    * so this is the only selector that can react to it without a parenthesised `:has()`.
    *
-   * The transition is cut on the handle for the duration of the press, because Fiori
+   * The transition is cut on the handle for the duration of the press, because pressed
    * switches pressed styling on mousedown and off on mouseup — a transition here would
    * lag the finger.
    */
@@ -312,9 +312,9 @@
   /* ---- Disabled ------------------------------------------------------ */
 
   /*
-   * `opacity` only, with `pointer-events` left intact. MUI's `ButtonBase` sets
+   * `opacity` only, with `pointer-events` left intact. Setting
    * `pointer-events: none` on disabled controls, which breaks the tooltip that explains why
-   * they are disabled. Fiori uses `opacity` with `pointer-events: unset`.
+   * they are disabled.
    */
   .uir-switch[data-disabled] {
     opacity: var(--uir-disabled-opacity);

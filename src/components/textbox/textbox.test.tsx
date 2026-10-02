@@ -299,7 +299,7 @@ describe("Textbox: states", () => {
     expect(field).toBeRequired();
 
     /*
-     * MUI renders the marker as a CSS `*` from `InputLabel`'s `::after`, which a screen
+     * A marker rendered as a CSS `*` from a `::after`, which a screen
      * reader cannot announce. The accessible name is where the difference is observable:
      * the hidden "Required" joins the label text and the `aria-hidden` asterisk does not,
      * so the name is "Name Required" rather than "Name * Required".

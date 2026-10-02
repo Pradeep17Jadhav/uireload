@@ -281,7 +281,7 @@
 
   /*
    * Disabled. `opacity` only, with `pointer-events` intact, for the reason every control in this
-   * library states: MUI's `pointer-events: none` breaks the tooltip that explains why.
+   * library states: `pointer-events: none` breaks the tooltip that explains why.
    */
   .uir-select[data-disabled] .uir-select__trigger {
     cursor: not-allowed;

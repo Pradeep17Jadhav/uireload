@@ -129,7 +129,7 @@ export const Textbox = forwardRef<TextboxElement, TextboxProps>(function Textbox
    * No id is generated. React's `useId` emits identifiers containing `:` (or `«»`,
    * depending on the major version), and either breaks `document.querySelector("#" + id)`
    * in whatever consumer code reads the field back. Requiring an explicit id keeps the
-   * contract honest. This is the same trade MUI makes, and its `id` JSDoc says so.
+   * contract honest. This is a trade every comparable library makes.
    */
   useEffect(() => {
     if (process.env.NODE_ENV === "production" || id !== undefined) return;
@@ -213,7 +213,7 @@ export const Textbox = forwardRef<TextboxElement, TextboxProps>(function Textbox
           {required ? (
             <>
               {/*
-                The symbol is decorative and the word is the signal. MUI renders a bare
+                The symbol is decorative and the word is the signal. A bare
                 `*` from CSS (`InputLabel`'s `::after`), which tells a screen reader
                 nothing; `docs/foundations.md` section 8 requires every state to carry
                 text as well as colour.

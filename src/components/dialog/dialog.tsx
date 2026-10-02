@@ -120,9 +120,10 @@ export function Dialog(props: DialogProps) {
 
   /*
    * A dialog is always modal. That is its entire definition: it interrupts the page, and the rest
-   * of the page cannot be interacted with until it is answered. MUI makes `aria-modal`
-   * configurable even though a non-modal `dialog` role is a contradiction; there is no `modal` prop
-   * here because there is no non-modal mode.
+   * of the page cannot be interacted with until it is answered. `aria-modal` is therefore not
+   * configurable even though it is configurable elsewhere in the ecosystem, because a non-modal
+   * `dialog` role is a contradiction; there is no `modal` prop here because there is no non-modal
+   * mode.
    */
   useScrollLock(open);
   useDismiss({

@@ -16,11 +16,10 @@ import type { IconButtonProps } from "./icon-button.types";
  * A button with no visible label.
  *
  * **An accessible name is required.** There is deliberately no `label` prop that
- * could be forgotten: UI5 states the same requirement in prose ("A tooltip attribute
- * should be provided for icon-only buttons, in order to represent their exact
- * meaning/function", `@ui5/webcomponents/dist/Button.d.ts`, `tooltip`), and MUI
- * relies on the consumer passing `aria-label`. Pass one, or supply visually hidden
- * text as children.
+ * could be forgotten: comparable libraries state the same requirement in prose — a tooltip
+ * attribute must be provided for icon-only buttons so it represents their exact meaning rather
+ * than their function — or they rely on the consumer passing `aria-label`. Pass one, or supply
+ * visually hidden text as children.
  */
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
   {
@@ -60,11 +59,10 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
        * `Button` wraps `children` in `.uir-button__label`, and a label is a line box:
        * an inline-flex icon inside one sits on the text baseline, with the parent's
        * font descent left below it, so the icon lands a few pixels high. Both
-       * references avoid that by keeping the icon out of the text wrapper — MUI
+       * Both comparable libraries avoid that by keeping the icon out of the text wrapper — one
        * renders `children` straight into the button root
-       * (`@mui/material/IconButton/IconButton.js`, `children`), and Fiori renders the
-       * icon as a sibling of `ui5-button-text`, not inside it
-       * (`@ui5/webcomponents/dist/ButtonTemplate.js`). The icon slot is a direct flex
+       * rendering `children` into the root, and the other makes the icon a sibling of the
+       * label rather than a child of it. The icon slot here is a direct flex
        * child of the root, so `align-items: center` on `.uir-button` centres it and
        * the label is left empty for the `:empty` collapse.
        */

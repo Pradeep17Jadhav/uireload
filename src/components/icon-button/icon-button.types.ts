@@ -1,9 +1,6 @@
 /**
  * IconButton prop types.
  *
- * From MUI's `IconButtonOwnProps` (`@mui/material/IconButton/IconButton.d.ts`) and
- * UI5's icon-only button handling (`@ui5/webcomponents/dist/Button.d.ts`, the
- * `[icon-only]` branches in `@ui5/webcomponents/dist/css/themes/Button.css`).
  * Reconciliation in `README.md`.
  */
 
@@ -13,7 +10,7 @@ import type { Size, Tone, Variant } from "../../foundations";
 /**
  * Props specific to `IconButton`.
  *
- * `variant` and `tone` are inherited unchanged from `Button`. `edge` is MUI's and is
+ * `variant` and `tone` are inherited unchanged from `Button`. `edge` is a Material
  * kept because it has no equivalent that a consumer could write for themselves
  * without duplicating the negative-margin rule.
  */

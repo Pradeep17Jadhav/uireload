@@ -2,20 +2,18 @@
 
 A button with two states.
 
-## Reference libraries
+## Design notes
 
-| Concern         | Source                                                                             |
-| --------------- | ---------------------------------------------------------------------------------- |
-| Pressed state   | `@ui5/webcomponents/dist/ToggleButton.d.ts` — `pressed: boolean`, `@default false` |
-| Inheritance     | Same file: `class ToggleButton extends Button` — a toggle _is_ a button            |
-| Prop surface    | `@mui/material/ToggleButton/ToggleButton.d.ts` — `ToggleButtonOwnProps`            |
-| Group value     | Same file: `value: NonNullable<unknown>` (required), `selected?: boolean`          |
-| Size / defaults | Same file: `size` defaults to the parent's when inside a group                     |
+The provenance for this component — which reference implementation backed each non-obvious
+choice — is recorded in `docs/references.md`, which is not published.
+
+A toggle _is_ a button: `pressed: boolean`, defaulting to `false`, and the component inherits its
+whole visual contract from `Button`.
 
 ## Props
 
-| Prop                                           | Type                         | Default     |
-| ---------------------------------------------- | ---------------------------- | ----------- |
+| Prop                                           | Type                         | Default     | Notes                        |
+| ---------------------------------------------- | ---------------------------- | ----------- | ---------------------------- |
 | `pressed`                                      | `boolean`                    | —           | Controlled when defined.     |
 | `defaultPressed`                               | `boolean`                    | `false`     |
 | `onPressedChange`                              | `(pressed: boolean) => void` | —           |
@@ -25,12 +23,12 @@ A button with two states.
 
 ## Reconciled design
 
-| Decision          | UIReload                                      | MUI                  | UI5                  | Why                                                                                                 |
-| ----------------- | --------------------------------------------- | -------------------- | -------------------- | --------------------------------------------------------------------------------------------------- |
-| State prop name   | `pressed`                                     | `selected`           | `pressed`            | Matches the ARIA state. "Selected" is a _group_ concept, owned by `ToggleButtonGroup`.              |
-| ARIA attribute    | `aria-pressed` (or `aria-checked` as a radio) | `aria-pressed`       | none declared        | The state must be exposed; neither library states the attribute in its `.d.ts`.                     |
-| `variant` support | yes                                           | no                   | via `design`         | Added for consistency. A toggle without a `variant` would be the odd one out in a component family. |
-| Composition       | wraps `Button`                                | extends `ButtonBase` | extends `ui5-button` | Both references treat it as a button; so does this.                                                 |
+| Decision          | UIReload                                      | Why                                                                                                  |
+| ----------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| State prop name   | `pressed`                                     | Matches the ARIA state. "Selected" is a _group_ concept, owned by `ToggleButtonGroup`.               |
+| ARIA attribute    | `aria-pressed` (or `aria-checked` as a radio) | The state must be exposed; no comparable implementation states the attribute in its type definition. |
+| `variant` support | yes                                           | Added for consistency. A toggle without a `variant` would be the odd one out in a component family.  |
+| Composition       | wraps `Button`                                | Every implementation treats it as a button; so does this.                                            |
 
 ### `role` and why it exists
 
