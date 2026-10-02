@@ -70,11 +70,16 @@ describe("releaseUnreleased", () => {
       "2026-10-02"
     );
 
+    // `releaseUnreleased` returns null only when there is no `## [Unreleased]` heading, and both
+    // inputs above contain one, so the narrowing is a documentation of the precondition rather
+    // than a runtime possibility.
+    expect(result).not.toBeNull();
+
     expect(result).toContain("## [0.2.0] - 2026-10-02");
     expect(result).toContain("## [0.1.0] - 2026-09-01");
     // Order is the assertion: a release inserted below an older one reads as if
     // it shipped earlier than it did.
-    expect(result.indexOf("[0.2.0]")).toBeLessThan(result.indexOf("[0.1.0]"));
+    expect(result?.indexOf("[0.2.0]")).toBeLessThan(result?.indexOf("[0.1.0]") ?? -1);
   });
 
   it("does not swallow the previous release's entries into the new one", () => {
@@ -84,8 +89,11 @@ describe("releaseUnreleased", () => {
       "2026-10-02"
     );
 
+    // As above: the input contains `## [Unreleased]`, so this cannot be null.
+    expect(result).not.toBeNull();
+
     // Everything after the 0.1.0 heading must be untouched.
-    const tail = result.slice(result.indexOf("## [0.1.0]"));
+    const tail = result?.slice(result.indexOf("## [0.1.0]"));
     expect(tail).toBe("## [0.1.0] - 2026-09-01\n\n- Earlier.\n");
   });
 

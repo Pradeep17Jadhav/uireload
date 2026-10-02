@@ -18,14 +18,14 @@ First release. Infrastructure plus the first four components.
   states, shape, typography and truncation are specified once so components are
   consistent by construction rather than by review.
 - **`Button`, `IconButton`, `ToggleButton`, `ToggleButtonGroup`.** The first four
-  components, each designed against MUI and SAP Fiori UI5 per `AGENTS.md`.
+  components.
 - `VARIANTS` (`ghost` / `outline` / `solid`) and `TONES`
-  (`neutral` / `accent` / `positive` / `danger`) split emphasis from intent, which
-  both reference libraries conflate.
+  (`neutral` / `accent` / `positive` / `danger`) split emphasis from intent, so a
+  control never has to invent a `variant="danger"` that quietly means both louder
+  and destructive.
 - `ToggleButtonGroup` renders `role="radiogroup"` with roving tabindex and
   selection-follows-focus in single mode, and `role="group"` with individually
-  tabbable pressed buttons in multiple mode. MUI's ToggleButtonGroup sets no role at
-  all.
+  tabbable pressed buttons in multiple mode.
 - `useRovingFocus` gained `itemSelector` and `onNavigate`, so selection can follow
   focus without the focus helper assuming it.
 - axe-core as a dev dependency, with `tests/accessibility.test.tsx` asserting zero

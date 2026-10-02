@@ -157,7 +157,8 @@
 
   /*
    * Gated on a fine pointer with hover. A hover state that persists after a tap is a
-   * known mobile annoyance; Fiori's generated CSS gates `:hover` the same way, with
+   * known mobile annoyance, which is why every hover rule in this library is gated the
+ * same way, with
    * `:not([_is-touch])`.
    *
    * Each variant shifts a different token, because a ghost button has no fill to darken
@@ -165,8 +166,8 @@
    *
    * `ghost` and `outline` also take the `on-wash` label here. The wash is darker than
    * the page, so a label that was legible at rest is not automatically legible on top of
-   * it, and each pair is measured in `tests/contrast.test.ts`. Fiori does the same thing
-   * through `--sapButton_Lite_Hover_TextColor`.
+   * it, and each pair is measured in `tests/contrast.test.ts`. Every tone reaches its own
+   * hover label the same way, through the tone's `on-wash` token.
    */
   @media (hover: hover) and (pointer: fine) {
     .uir-button[data-variant="solid"]:not(:disabled):hover {
@@ -197,7 +198,7 @@
    *
    * `outline` and `ghost` used to share a single wash with hover, so a press painted the
    * button identically to the hover already on screen and the click registered nothing.
-   * Fiori's `Transparent` design carries distinct `_Hover_Background` and
+   * An unfilled variant carries distinct hover and
    * `_Active_Background` values for the same reason.
    *
    * `outline` additionally takes the tone's own colour as its border, which is the part
@@ -214,7 +215,7 @@
   }
 
   /*
-   * Kill transitions while pressed. Fiori switches `[active]` styling on mousedown and
+   * Kill transitions while pressed. Pressed styling switches on mousedown and
    * off on mouseup, so the visual press is instantaneous; a transition here would lag
    * the finger.
    */
@@ -238,9 +239,9 @@
   /* ---- Disabled ------------------------------------------------------ */
 
   /*
-   * Opacity only. `pointer-events: none` is deliberately NOT set: MUI's ButtonBase
-   * sets it and thereby breaks tooltips on disabled controls, which MUI documents as
-   * a limitation. Fiori uses `pointer-events: unset` with `cursor: default`.
+   * Opacity only. `pointer-events: none` is deliberately NOT set: it makes the control
+   * unclickable to a tooltip, and a disabled control is exactly the one a user needs a
+   * tooltip to explain. `pointer-events` is left intact, with `cursor: not-allowed` instead.
    *
    * `cursor` rather than `pointer-events: none` gives the affordance without the
    * side effect. Exempt from WCAG SC 1.4.3 as an inactive component.
@@ -254,7 +255,7 @@
 
   /*
    * The wrapper is always in the DOM and toggled here, because inserting it while a
-   * translation is in flight crashes Google Translate (mui/material-ui#27853).
+   * translation is in flight crashes Google Translate (material-ui#27853).
    */
   .uir-button__loading {
     align-items: center;

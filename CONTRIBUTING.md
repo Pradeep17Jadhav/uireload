@@ -48,6 +48,7 @@ These are checked in CI, not left to review:
 | No DOM access during render                      | `tests/ssr.test.tsx`                 |
 | Subpaths resolve from ESM, CJS, node16, bundler  | `tests/published-package.test.ts`    |
 | Export map generator is correct                  | `scripts/build-exports.test.ts`      |
+| Version bump and changelog rewrite are correct   | `scripts/release.test.ts`            |
 | CSS lint rules are correct                       | `scripts/css-rules.test.ts`          |
 | Bundle size budget                               | `npm run size`                       |
 | Every message key namespaced and documented      | `src/i18n/catalog.test.ts`           |
@@ -69,43 +70,67 @@ the `--uir-control-*` token layer is what makes it structural rather than aspira
 
 ## Releasing
 
-Publishing is driven by a git tag, never by a push to `main`. A tag is the only
-artefact that records "this exact commit is 0.1.0"; a push can land after the version
-was chosen and publish the wrong code. `npm versions` are also immutable, so a
-mistake cannot be fixed by publishing again.
+One command, named for the part of the version that changes:
 
 ```bash
-npm version 0.1.0 --no-git-tag-version   # edits package.json only
-# edit CHANGELOG.md: move [Unreleased] under a dated [0.1.0] heading
-git commit -am "release 0.1.0"
-git tag v0.1.0
-git push origin main --follow-tags
+npm run release:patch     # 0.1.2 -> 0.1.3
+npm run release:minor     # 0.1.2 -> 0.2.0
+npm run release:major     # 0.1.2 -> 1.0.0
 ```
 
-`.github/workflows/release.yml` then runs `release:check` (which is `verify`),
-asserts the tag matches `package.json` via `scripts/check-tag.mjs`, and publishes with
-`--provenance`.
+Each does the whole sequence: bump `package.json` and `package-lock.json` via
+`npm version`, move the `[Unreleased]` body in `CHANGELOG.md` under a dated heading for
+the new version and reopen `[Unreleased]` above it, run `verify`, commit, tag
+`v<version>`, and push. Pushing the tag is what publishes.
 
-Two requirements that are not optional:
+```bash
+npm run release:minor -- --dry-run     # print the plan, change nothing
+npm run release:minor -- --no-push     # everything except the push
+npm run release:minor -- --skip-verify # skip the local gate (CI re-runs it)
+```
 
-- **Provenance needs CI.** `publishConfig.provenance` is set, and npm only mints
-  Sigstore attestations from GitHub Actions or GitLab CI on a cloud-hosted runner. A
-  local `npm publish` will not produce provenance. This is why the workflow exists
-  rather than a documented local command.
-- **`repository` in `package.json` must match where you publish from**, case-sensitive.
-  npm verifies the two match before it will attest to a build.
+The bump kind is not cosmetic. Per `docs/roadmap.md`, adding a component or an optional
+prop is a minor release, and changing or removing a prop, renaming a token or changing a
+message namespace is a major one.
 
-Setup, once: create an npm automation token (not a personal token) and add it as the
+Write the `CHANGELOG.md` entries first. The command refuses to release an empty
+`[Unreleased]`, because a release with nothing under it documents nothing.
+
+Before the first release: an npm automation token (not a personal token) as the
 `NPM_TOKEN` repository secret. The workflow declares no GitHub environment, so that is
-the only credential required. Trusted publishing via OIDC removes the token entirely if
-you would rather not keep one.
+the only credential. Trusted publishing via OIDC replaces the token if you would rather
+not hold one.
 
-To gate the upload behind reviewers later, add `environment: npm` to the `publish` job
-and create the environment. GitHub fails a job whose environment does not exist, which
-is why it is absent rather than present and broken.
+### Why the command does not call `npm publish`
 
-`package.json` version and the `CHANGELOG.md` heading are the only two things that
-have to agree. Nothing derives the version from git tags.
+`publishConfig.provenance` is set, and npm only mints Sigstore attestations from GitHub
+Actions or GitLab CI on a cloud-hosted runner. A local `npm publish` cannot produce
+provenance, so it would either fail or silently ship an unattested package.
+`.github/workflows/release.yml` publishes instead, after re-running `release:check` and
+asserting the tag matches `package.json` via `scripts/check-tag.mjs`.
+
+This also means `repository` in `package.json` must match where you publish from,
+case-sensitive. npm verifies the two before it will attest to a build.
+
+To gate the upload behind reviewers, add `environment: npm` to the `publish` job and
+create the environment. GitHub fails a job whose environment does not exist, which is
+why it is absent rather than present and broken.
+
+### What the command refuses to do
+
+npm versions are immutable. Once published, a version can only be deprecated or
+unpublished, and both are worse than not shipping. So every check that can catch a
+mistake runs before the tag is pushed:
+
+| Refuses when                                   | Why                                                                                 |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------- |
+| The working tree is dirty                      | The tag would describe a commit that is more than the release.                      |
+| Not on `main`                                  | Releases are cut from one branch.                                                   |
+| `v<version>` already exists                    | Re-pushing a moved tag publishes code that does not match the resolved version.     |
+| The version is on the registry                 | The publish would fail and the changelog would claim a release that did not happen. |
+| `[Unreleased]` is empty                        | Nothing to document.                                                                |
+| The current version is documented but untagged | An earlier run stopped partway; it tells you the exact commands to finish.          |
+| The version is not `MAJOR.MINOR.PATCH`         | A prerelease has its own rules, and a guess is not one of them.                     |
 
 ## Adding a runtime dependency
 

@@ -29,7 +29,7 @@
  */
 
 import { execFileSync, execSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const BUMP_KINDS = ["patch", "minor", "major"];
@@ -108,18 +108,40 @@ export function releaseUnreleased(changelog, version, date) {
 
 const step = (message) => console.log(`\n[1m> ${message}[0m`);
 const info = (message) => console.log(`  ${message}`);
+/*
+ * `shell: true` is required on Windows for npm, npx and git to resolve, but it
+ * means the argument vector is re-parsed by the shell: an argument containing a
+ * space arrives as two words. `git commit -m "release 0.1.1"` became `-m release
+ * 0.1.1`, and git took `0.1.1` as a pathspec. Quoting arguments with whitespace
+ * restores the intended grouping on the platforms that need it.
+ */
 const shell = process.platform === "win32";
 
-/** Runs a command, aborting the release if it fails. Streamed so progress is visible. */
+/** Quotes an argument for the shell layer, leaving everything else untouched. */
+function quote(arg) {
+  return shell && /\s/.test(arg) ? `"${arg.replace(/"/g, '\\"')}"` : arg;
+}
+
+/** Runs a command, aborting the release with a readable message if it fails. Streamed so progress is visible. */
 function run(command, args, cwd) {
-  info(`$ ${command} ${args.join(" ")}`);
-  execFileSync(command, args, { cwd, stdio: "inherit", shell });
+  info(`$ ${command} ${args.map(quote).join(" ")}`);
+
+  try {
+    execFileSync(command, args.map(quote), { cwd, stdio: "inherit", shell });
+  } catch {
+    // Without this the user gets a raw child_process stack trace. The command
+    // line is already echoed above, so the message only needs to say what to do.
+    abort(
+      `\`${command} ${args.map(quote).join(" ")}\` failed.\n` +
+        "  Nothing was published. Fix the cause above and rerun the same command."
+    );
+  }
 }
 
 /** Captures stdout, or returns `null` if the command fails. For probes that may legitimately fail. */
 function tryRun(command, args, cwd) {
   try {
-    return execFileSync(command, args, {
+    return execFileSync(command, args.map(quote), {
       cwd,
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
@@ -215,15 +237,50 @@ function main() {
     abort(`${pkg.name}@${next} is already published to the registry.`);
   }
 
-  // Refuse to ship a changelog entry that documents nothing.
+  /*
+   * Refuse to ship a changelog entry that documents nothing.
+   *
+   * An empty `[Unreleased]` has two causes and they need different answers. The
+   * common one is a contributor who has not written the entry yet: add it. The
+   * other is an earlier run that got as far as rewriting the changelog and then
+   * failed before tagging, which leaves the version bumped with no tag. That one
+   * says so explicitly, because "add an entry" is the wrong advice for it and the
+   * user would be left with no way to tell the two apart.
+   */
   const changelog = readFileSync(changelogPath, "utf8");
   const updated = releaseUnreleased(changelog, next, new Date().toISOString().slice(0, 10));
+
   if (!updated) {
+    if (!/^## \[Unreleased\]/m.test(changelog)) {
+      abort("CHANGELOG.md has no `## [Unreleased]` heading to release from.");
+    }
+
+    /*
+     * The current version is already documented but carries no tag, so a release
+     * run got as far as rewriting the changelog and stopped. Checking the tag is
+     * what distinguishes this from the ordinary case: after a successful release
+     * `[Unreleased]` is empty too, but the version is tagged, and the advice is
+     * simply to write the next entry.
+     */
+    const currentIsDocumented = new RegExp(
+      `^## \\[${pkg.version.replace(/\./g, "\\.")}\\]`,
+      "m"
+    ).test(changelog);
+
+    if (currentIsDocumented && !git(`tag --list v${pkg.version}`, ROOT)) {
+      abort(
+        `CHANGELOG.md already documents ${pkg.version}, but no tag v${pkg.version} exists.\n` +
+          "  A previous release run stopped partway. Finish it:\n\n" +
+          `    git add package.json package-lock.json CHANGELOG.md\n` +
+          `    git commit -m "release ${pkg.version}"\n` +
+          `    git tag -a v${pkg.version} -m ${pkg.version}\n` +
+          "    git push origin main --follow-tags"
+      );
+    }
+
     abort(
-      /## \[Unreleased\]/.test(changelog)
-        ? "`## [Unreleased]` is empty. A release with nothing under it documents nothing.\n" +
-            "  Add the entries for this release, then run the command again."
-        : "CHANGELOG.md has no `## [Unreleased]` heading to release from."
+      "`## [Unreleased]` is empty. A release with nothing under it documents nothing.\n" +
+        "  Add the entries for this release, then run the command again."
     );
   }
 
@@ -268,7 +325,17 @@ function main() {
 
   // 5. Commit and tag.
   step(`Committing and tagging ${tag}`);
-  run("git", ["add", "package.json", "package-lock.json", "CHANGELOG.md"], ROOT);
+
+  /*
+   * Only the three files this script wrote, and `--` so a path is never read as
+   * an option. Built from what exists: `git add` on a missing pathspec is a fatal
+   * error, and package-lock.json is absent in a repo that has never installed.
+   */
+  const changed = ["package.json", "package-lock.json", "CHANGELOG.md"].filter((file) =>
+    existsSync(new URL(`../${file}`, import.meta.url))
+  );
+
+  run("git", ["add", "--", ...changed], ROOT);
   run("git", ["commit", "-m", `release ${next}`], ROOT);
   run("git", ["tag", "-a", tag, "-m", next], ROOT);
   info(`${tag} -> ${git("rev-parse HEAD", ROOT)}`);
@@ -293,6 +360,20 @@ function main() {
 
 // Only when invoked as a script. Importing it, as the tests do, must not bump a
 // version or push a tag.
+/*
+ * Only when invoked as a script. Importing it, as the tests do, must not bump a
+ * version or push a tag.
+ *
+ * `pathToFileURL` rather than a string compare, because on Windows the two
+ * disagree: `import.meta.url` is a `file:///D:/...` URL while `process.argv[1]`
+ * is `D:\...`. Comparing them directly would mean the script silently does
+ * nothing on Windows, which is exactly where a release must not be a no-op.
+ */
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main();
+} else if (process.argv[1] && !process.env.VITEST) {
+  console.warn(
+    `[release] ${pathToFileURL(process.argv[1]).href} != ${import.meta.url}\n` +
+      "  Not running. This is a path-comparison problem, not a release problem."
+  );
 }

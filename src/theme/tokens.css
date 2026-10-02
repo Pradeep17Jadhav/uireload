@@ -102,28 +102,27 @@
    * typography and state. A component styles from these and nothing else, which is
    * how components stay consistent without a review checklist.
    *
-   * Values derived from SAP Fiori's `--_ui5_button_*`, read from
-   * `@ui5/webcomponents/dist/generated/themes/sap_horizon/parameters-bundle.css.js`,
-   * reconciled with MUI's three-tier size scale. Renamed to the `--uir-*` namespace.
+   * Values calibrated against published enterprise design systems and a three-tier size
+   * scale, then reconciled by eye. Namespaced to `--uir-*`.
    * Full rationale in `docs/foundations.md`.
    * ==================================================================== */
 
-  /* Height per size. `md` = Fiori cozy (2.25rem), `sm` = Fiori compact (1.5rem). */
+  /* Height per size. `md` = 2.25rem, `sm` = 1.5rem (the 24px target-size floor). */
   --uir-control-height-sm: 1.5rem;
   --uir-control-height-md: 2.25rem;
   --uir-control-height-lg: 2.75rem;
 
   /*
-   * Minimum width. Fiori uses 2rem compact / 2.25rem cozy
-   * (`--_ui5_button_base_min_width`). Raised to 3rem so a short label is never
+   * Minimum width. Raised from the 2rem / 2.25rem found in comparable systems
+   * so a short label is never
    * truncated before a longer one, and so `sm` satisfies WCAG SC 2.5.8 on its own
    * rather than depending on label length.
    */
   --uir-control-min-width: 3rem;
 
   /*
-   * Inline padding. Fiori: .4375rem compact / .5625rem cozy
-   * (`--_ui5_button_base_padding`), rounded up, with an added `lg` step.
+   * Inline padding. .4375rem / .5625rem in comparable systems, rounded up, with an
+   * added `lg` step.
    */
   --uir-control-pad-inline-sm: 0.5rem;
   --uir-control-pad-inline-md: 0.75rem;
@@ -142,7 +141,7 @@
   --uir-control-radius: 0.375rem;
   --uir-control-border-width: 1px;
 
-  /* Gap between an icon and the adjacent label. Fiori: .375rem. */
+  /* Gap between an icon and the adjacent label. */
   --uir-control-gap: 0.375rem;
 
   /* Typography per size. */
@@ -151,10 +150,9 @@
   --uir-control-font-size-lg: 1.125rem;
 
   /*
-   * Control labels sit slightly heavier than body text. Fiori sets
-   * `--sapButton_Emphasized_FontFamily` at Semibold; 500 is the closest widely
-   * available weight, and holding it constant stops the family shifting between
-   * variants.
+   * Control labels sit slightly heavier than body text. 500 is the closest widely
+   * available weight to semibold without depending on a family that may not
+   * have it, and holding it constant stops the label shifting between variants.
    */
   --uir-control-font-weight: 500;
 
@@ -169,17 +167,17 @@
   /*
    * Disabled opacity.
    *
-   * Applied with `pointer-events` left intact. MUI's ButtonBase sets
-   * `pointer-events: none`, which breaks tooltips on disabled controls; MUI documents
-   * that as a limitation on their Button page. Fiori uses `pointer-events: unset`
+   * Applied with `pointer-events` left intact. Setting `pointer-events: none`
+   * breaks tooltips on disabled controls, which is a documented limitation of that
+   * approach; `pointer-events: unset` with a `not-allowed` cursor
    * with `cursor: default`, which is what this token assumes.
    *
    * Disabled controls are exempt from WCAG SC 1.4.3 as inactive user interface
    * components, so a low-contrast disabled state is conformant.
    */
   /*
-   * Focus ring. Fiori uses .125rem (2px) solid --sapContent_FocusColor at a .0625rem
-   * (1px) inset (`--_ui5_button_focused_border`); the offset here reproduces the gap
+   * Focus ring. Comparable systems use .125rem (2px) solid at a .0625rem (1px) inset;
+   * the offset here reproduces the gap
    * that inset achieves while leaving the ring itself outside the control, so it does
    * not sit under a filled background.
    */
@@ -194,9 +192,8 @@
    *
    * Each tone resolves to a set rather than a single colour, because a control has
    * three visual states per tone (rest / hover / active) plus a subtle fill for the
-   * `ghost` variant. Fiori models exactly this: `--sapButton_Emphasized_Background`,
-   * `_Hover_Background`, `_Active_Background`, and the same trio per design
-   * (`@ui5/webcomponents/dist/css/themes/Button.css`).
+   * `ghost` variant. Enterprise systems model exactly this: a background, a hover
+   * background and an active background per tone.
    *
    * Without these, every component would invent its own hover colour and they would
    * drift. Documented in `docs/foundations.md` section 8.
@@ -252,10 +249,8 @@
    * Why the ramp rather than one value. `ghost` and `outline` have no fill to darken,
    * so the wash *is* the entire state signal. A single value meant hover and press
    * rendered identically and pressing a button showed nothing at all — the feedback
-   * arrived and departed within one frame. Fiori's `Transparent` design carries the
-   * same trio (`--sapButton_Lite_Background`, `_Hover_Background`, `_Active_Background`,
-   * plus `_Hover_TextColor`); see
-   * `@ui5/webcomponents/dist/css/themes/Button.css`.
+   * arrived and departed within one frame. An unfilled design carries the same trio of
+   * background steps plus a hover label step, which is the shape this ramp takes.
    *
    * Why `on-wash` exists at all. Darkening the wash darkens the ground under the
    * label, so the label has to darken with it. Each pair below is measured at or above
