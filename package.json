@@ -205,7 +205,10 @@
     "pack:check": "npm pack --dry-run",
     "verify": "npm run format:check && npm run lint && npm run lint:css && npm run typecheck && npm run build && npm run test && npm run size && npm run check:pkg && npm run pack:check",
     "release:check": "npm run verify",
-    "release:tag": "node scripts/check-tag.mjs"
+    "release:tag": "node scripts/check-tag.mjs",
+    "release:patch": "node scripts/release.mjs patch",
+    "release:minor": "node scripts/release.mjs minor",
+    "release:major": "node scripts/release.mjs major"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
