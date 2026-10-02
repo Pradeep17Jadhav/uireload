@@ -1,6 +1,6 @@
 {
   "name": "uireload",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Small, composable, accessible React primitives with zero-runtime styling, consumer-owned theming and first-class RTL/i18n support.",
   "keywords": [
     "react",
