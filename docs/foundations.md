@@ -237,7 +237,44 @@ than a silent omission.
 | Border      | `--uir-control-border-width` | `1px`      | Matches the published control border width.           |
 | Icon gap    | `--uir-control-gap`          | `0.375rem` | Matches the published icon-to-label margin.           |
 | Font weight | `--uir-control-font-weight`  | `500`      | The closest widely available weight to Semibold.      |
-| Truncation  | `text-overflow: ellipsis`    | —          | `white-space:nowrap; overflow:hidden; text-overflow`. |
+| Truncation  | `text-overflow: ellipsis`    | -          | `white-space:nowrap; overflow:hidden; text-overflow`. |
+
+### Body text and headings
+
+The control ladder above is for _controls_. Body text and headings are a separate scale, because a
+control that is 16px tall and a paragraph that is 16px tall are different objects and sharing a scale
+between them is how a design ends up with controls that are too loud to sit beside prose.
+
+**Body text.** `--uir-font-size` and `--uir-line-height`, both of which vary by colour scheme
+(`1rem / 1.6` light, `0.9375rem / 1.45` dark — a dark scheme needs a slightly smaller size at a
+slightly tighter leading to read as the same optical weight). This is what `Text` renders at its
+default.
+
+**Headings.** Six levels, `h1` to `h6`, on a descending scale. Two rules:
+
+1. **The level is the heading rank.** `variant="h2"` renders an `<h2>`. The visual size and the
+   document outline are the same fact, so they cannot disagree — which is the failure a `<div>` with a
+   big font produces: a page whose visual hierarchy says one thing and whose heading structure says
+   another, and a screen reader navigating by heading gets the wrong outline.
+2. **The scale descends, the weights do not jump.** Every level below `h1` uses the same weight;
+   size alone carries the hierarchy. Weight that oscillates — 700, 500, 700 — makes a level look
+   more important than the one above it.
+
+| Level | Element | Font size   | Weight | Line height |
+| ----- | ------- | ----------- | ------ | ----------- |
+| `h1`  | `<h1>`  | `2rem`      | `700`  | `1.2`       |
+| `h2`  | `<h2>`  | `1.5rem`    | `600`  | `1.25`      |
+| `h3`  | `<h3>`  | `1.25rem`   | `600`  | `1.3`       |
+| `h4`  | `<h4>`  | `1rem`      | `600`  | `1.4`       |
+| `h5`  | `<h5>`  | `0.875rem`  | `600`  | `1.45`      |
+| `h6`  | `<h6>`  | `0.8125rem` | `600`  | `1.5`       |
+
+`h6` is smaller than `h5` but still heavier, so the last two levels do not swap their apparent
+importance when a colour scheme tightens the body size.
+
+**Heading line height is tighter than body line height at every level.** A heading is one or two
+lines and its leading is only visible as space around it; a body line's leading is what makes the
+paragraph readable. Sharing one number between them is why large text in a UI often looks loosely set.
 
 One radius for every control. Mixed radii are the single most common reason a component
 family looks unrelated.

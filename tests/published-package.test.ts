@@ -102,6 +102,31 @@ const RESERVED_WORDS = new Set([
   "yield",
 ]);
 
+/**
+ * Globals declared by the DOM lib that shadow an import name.
+ *
+ * A narrower cousin of `RESERVED_WORDS`, found by the first component whose name collided with one:
+ * `text`, added as `src/components/text`. The generated probe did
+ * `import * as text from "uireload/components/text"` and every `moduleResolution` mode failed with
+ * TS2440 — "Import declaration conflicts with local declaration" — because `lib.dom.d.ts` declares a
+ * global `function text()`. Again a probe artefact that reads as a packaging problem and is not one.
+ *
+ * Kept as a list rather than derived from `lib.dom.d.ts` at test time: the point of this function is
+ * to make the probe valid, and a set that silently grew with the TypeScript version would make a
+ * failure depend on which TS happens to be installed.
+ */
+const DOM_GLOBALS = new Set([
+  "blur",
+  "close",
+  "find",
+  "focus",
+  "open",
+  "print",
+  "scroll",
+  "stop",
+  "text",
+]);
+
 /** A component name is not always a valid JS identifier. */
 function identifier(name: string): string {
   const flat = name.replace(/-/g, "_");
@@ -109,7 +134,7 @@ function identifier(name: string): string {
   // Prefixed rather than suffixed, so `switch` reads as `component_switch` and not
   // `switch_component`, which could itself collide with a real component named
   // `switch-component`.
-  return RESERVED_WORDS.has(flat) ? `component_${flat}` : flat;
+  return RESERVED_WORDS.has(flat) || DOM_GLOBALS.has(flat) ? `component_${flat}` : flat;
 }
 
 /** Run node in the scratch consumer, returning trimmed stdout. */
@@ -197,13 +222,23 @@ describeIfBuilt("export map", () => {
     expect(existsSync(cssPath)).toBe(true);
   });
 
-  it("resolves every built component subpath from ESM and CommonJS", () => {
-    for (const name of builtComponents()) {
-      const specifier = `uireload/components/${name}`;
-      expect(resolve(specifier, "esm"), `${specifier} (esm)`).toBe(true);
-      expect(resolve(specifier, "cjs"), `${specifier} (cjs)`).toBe(true);
-    }
-  });
+  it(
+    "resolves every built component subpath from ESM and CommonJS",
+    () => {
+      for (const name of builtComponents()) {
+        const specifier = `uireload/components/${name}`;
+        expect(resolve(specifier, "esm"), `${specifier} (esm)`).toBe(true);
+        expect(resolve(specifier, "cjs"), `${specifier} (cjs)`).toBe(true);
+      }
+      /*
+       * Scaled to the component count, because the cost is one `node` spawn per component per format
+       * and nothing else. The default 5s was enough for nine components and not for fourteen, which
+       * made the failure a timeout — a reading that says "your package is too slow" about a test that is
+       * simply doing more subprocess work.
+       */
+    },
+    1000 + builtComponents().length * 400
+  );
 
   it("ships a declaration file for every built component", () => {
     for (const name of builtComponents()) {

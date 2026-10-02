@@ -1,0 +1,219 @@
+/*
+ * Text styles.
+ *
+ * The type scale from `docs/foundations.md` §6. Sizes are literals rather than tokens, deliberately:
+ * a heading scale is a fixed relationship between six sizes, and expressing it as six tokens would add
+ * a layer of indirection with nothing to configure — there is no consumer who wants "make my h4 the
+ * size of my h3".
+ *
+ * `--uir-font-size` and `--uir-line-height` *are* tokens, because body text does vary by colour scheme.
+ */
+
+@layer uireload.components {
+  .uir-text {
+    box-sizing: border-box;
+    font-family: var(--uir-font-family);
+    margin: 0;
+    /* Logical, so text aligns to the reading direction rather than to a physical edge. */
+    text-align: start;
+  }
+
+  /* ---- Tone ---------------------------------------------------------- */
+
+  /*
+   * Four roles, and `inherit` is the default.
+   *
+   * A text component whose default is a specific colour has decided something about contrast it
+   * cannot see, and imposes that decision on every call site. `inherit` defers to the parent's
+   * context, which is the only context that knows what the text sits on.
+   */
+  .uir-text[data-tone="inherit"] {
+    color: inherit;
+  }
+
+  .uir-text[data-tone="default"] {
+    color: var(--uir-text);
+  }
+
+  .uir-text[data-tone="muted"] {
+    color: var(--uir-text-muted);
+  }
+
+  .uir-text[data-tone="subtle"] {
+    color: var(--uir-text-disabled);
+  }
+
+  /* ---- Alignment ----------------------------------------------------- */
+
+  .uir-text[data-align="center"] {
+    text-align: center;
+  }
+
+  .uir-text[data-align="end"] {
+    text-align: end;
+  }
+
+  .uir-text[data-align="justify"] {
+    text-align: justify;
+  }
+
+  /* ---- Body ---------------------------------------------------------- */
+
+  /*
+   * Reads `--uir-font-size` and `--uir-line-height`, both of which differ per colour scheme. A light
+   * scheme needs a slightly larger size and looser leading than a dark one to read as the same optical
+   * weight.
+   */
+  .uir-text[data-variant="body"] {
+    font-size: var(--uir-font-size);
+    font-weight: var(--uir-font-weight);
+    line-height: var(--uir-line-height);
+  }
+
+  /* ---- Headings ------------------------------------------------------ */
+
+  /*
+   * One rule per level, each rendering its own element.
+   *
+   * Two properties carry the hierarchy: a descending font size, and a leading that is *tighter* than
+   * the body's at every level. A heading is one or two lines and its leading is only visible as space
+   * around it; a body line's leading is what makes a paragraph readable. Sharing one number between
+   * them is why large text in an interface often looks loosely set.
+   *
+   * The weight goes 700 then 600 and stays there. Weight that oscillates down the scale makes a level
+   * look more important than the one above it, which is the failure this avoids.
+   */
+  .uir-text[data-variant="h1"] {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .uir-text[data-variant="h2"] {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+
+  .uir-text[data-variant="h3"] {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .uir-text[data-variant="h4"] {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  /*
+   * `h5` and `h6` are both body-adjacent, and they must not swap their apparent importance when a
+   * colour scheme tightens the body size: `h6` is smaller but equally heavy.
+   */
+  .uir-text[data-variant="h5"] {
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.45;
+  }
+
+  .uir-text[data-variant="h6"] {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  /* ---- Overline ------------------------------------------------------ */
+
+  /*
+   * Small, spaced, uppercased — the label above a heading or a field group.
+   *
+   * `letter-spacing` rather than `word-spacing`, because an overline is a single short word and it is
+   * the tracking that makes small capitals legible, not the gaps between them.
+   */
+  .uir-text[data-overline] {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    line-height: 1.4;
+    text-transform: uppercase;
+  }
+
+  /*
+   * An overline heading also needs its size reduced.
+   *
+   * Without this, `overline` on an `h2` renders 1.5rem uppercase, which is neither small nor
+   * readable — the tracking that helps 12px text makes 24px text look like a mistake.
+   */
+  .uir-text[data-overline][data-variant="h1"],
+  .uir-text[data-overline][data-variant="h2"],
+  .uir-text[data-overline][data-variant="h3"],
+  .uir-text[data-overline][data-variant="h4"],
+  .uir-text[data-overline][data-variant="h5"],
+  .uir-text[data-overline][data-variant="h6"] {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* ---- Measure ------------------------------------------------------- */
+
+  /*
+   * `ch`, not `px` or `rem`.
+   *
+   * The readability of a line is a function of how many characters it holds, so a measure has to be
+   * expressed in characters. A pixel cap means a different character count at every font size, and a
+   * different count again in every language — which is how a "65-character" line becomes 90 characters
+   * in a script with wider glyphs.
+   *
+   * `max-inline-size` rather than `width`, so the text still shrinks in a narrow container instead of
+   * overflowing it.
+   */
+  .uir-text[data-measure="short"] {
+    max-inline-size: 45ch;
+  }
+
+  .uir-text[data-measure="long"] {
+    max-inline-size: 75ch;
+  }
+
+  /* ---- Truncation ---------------------------------------------------- */
+
+  /*
+   * The published truncation contract from `docs/foundations.md` §6, verbatim.
+   *
+   * `min-inline-size: 0` is required and easy to miss: a flex or grid item defaults to
+   * `min-width: auto`, which refuses to shrink below its content, so the ellipsis never engages and the
+   * text overflows instead.
+   */
+  .uir-text[data-nowrap] {
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ---- Spacing ------------------------------------------------------- */
+
+  /*
+   * `margin-block` rather than `margin-bottom`, so a consumer writing in a vertical-rtl script gets
+   * the space below in the place below.
+   */
+  .uir-text[data-gutter] {
+    margin-block-end: var(--uir-space);
+  }
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * Nothing to do.
+   *
+   * Text inherits its colour from its context in every forced-colours theme, and every tone in this
+   * file resolves to a token the theme already redefines. The rule is recorded here so its absence is
+   * a decision rather than an omission — the same reason `chip.css` and `checkbox.css` do handle the
+   * theme explicitly.
+   *
+   * `data-tone="subtle"` is the exception in spirit: it maps to the disabled token, which a
+   * forced-colours theme does redefine, so it follows along.
+   */
+}

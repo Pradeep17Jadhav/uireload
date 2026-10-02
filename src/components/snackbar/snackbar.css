@@ -1,0 +1,320 @@
+/*
+ * Snackbar styles.
+ *
+ * Fixed to the viewport, so it is not a document-flow element and cannot be pushed off the bottom of
+ * the page by a long form. The placement rules are six `inset` pairs keyed on `data-placement`, and
+ * every one of them is logical so the whole set mirrors in RTL without a second rule.
+ */
+
+@layer uireload.components {
+  .uir-snackbar,
+  .uir-snackbar__message,
+  .uir-snackbar__action,
+  .uir-snackbar__icon,
+  .uir-snackbar__glyph,
+  .uir-snackbar__close,
+  .uir-snackbar__close-glyph {
+    box-sizing: border-box;
+  }
+
+  /* ---- Root ---------------------------------------------------------- */
+
+  .uir-snackbar {
+    --uir-snackbar-gap: var(--uir-control-gap);
+    --uir-snackbar-pad: var(--uir-control-pad-block-md) var(--uir-control-pad-inline-md);
+
+    align-items: center;
+    background-color: var(--uir-snackbar-fill);
+    border: var(--uir-control-border-width) solid var(--uir-snackbar-border);
+    border-radius: var(--uir-radius);
+    box-shadow: var(--uir-shadow-large);
+    color: var(--uir-snackbar-text);
+    display: flex;
+    font-family: var(--uir-font-family);
+    font-size: var(--uir-control-font-size-md);
+    gap: var(--uir-snackbar-gap);
+    /*
+     * A boundary the user can see.
+     *
+     * A message floating over content with no edge is hard to tell from the content it covers. The
+     * shadow does that work in the normal case and the border does it in a forced-colours theme, where
+     * the shadow is gone.
+     */
+    line-height: var(--uir-line-height);
+    max-inline-size: min(28rem, calc(100vw - 2 * var(--uir-space)));
+    padding: var(--uir-snackbar-pad);
+    position: fixed;
+    z-index: var(--uir-z-index-overlay);
+  }
+
+  /*
+   * Hidden, not unmounted.
+   *
+   * The live region has to exist before its content changes, or the announcement is frequently lost
+   * entirely — assistive technology observes changes inside a region it already knows about. Removing
+   * the element and adding it back is a new region, which is exactly the thing that loses the message.
+   *
+   * `visibility: hidden` takes it out of the accessibility tree and the tab order while leaving the
+   * element in the DOM, so the region survives to receive the next message.
+   */
+  .uir-snackbar:not([data-open]) {
+    visibility: hidden;
+  }
+
+  /* ---- Placement ----------------------------------------------------- */
+
+  /*
+   * Six corners, logical.
+   *
+   * `inset-inline-start` / `inset-inline-end` rather than `left` / `right`, so `bottom-end` is the
+   * bottom of the reading direction's trailing edge and a single rule serves both directions. A
+   * `left: 1rem` snackbar in an RTL page sits on the wrong side of the reading flow.
+   */
+  .uir-snackbar[data-placement^="top-"] {
+    inset-block-start: var(--uir-space);
+  }
+
+  .uir-snackbar[data-placement^="bottom-"] {
+    inset-block-end: var(--uir-space);
+  }
+
+  .uir-snackbar[data-placement$="-start"] {
+    inset-inline-start: var(--uir-space);
+  }
+
+  .uir-snackbar[data-placement$="-end"] {
+    inset-inline-end: var(--uir-space);
+  }
+
+  .uir-snackbar[data-placement$="-center"] {
+    inset-inline-start: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* ---- Tone ---------------------------------------------------------- */
+
+  /*
+   * A dark surface for every tone, deliberately.
+   *
+   * A message appears over whatever the user is doing, so its own background has to work over an
+   * arbitrary one. A tinted fill cannot promise contrast against unknown content; a dark, opaque
+   * surface can promise it against everything, and that is what a transient message needs. The tone is
+   * carried by the glyph and the border rather than by the fill.
+   */
+  .uir-snackbar[data-tone="neutral"] {
+    --uir-snackbar-fill: var(--uir-snackbar-surface);
+    --uir-snackbar-text: var(--uir-snackbar-surface-text);
+    --uir-snackbar-border: transparent;
+    --uir-snackbar-accent: transparent;
+    --uir-snackbar-close-hover: rgb(255 255 255 / 12%);
+    --uir-snackbar-close-active: rgb(255 255 255 / 22%);
+  }
+
+  .uir-snackbar[data-tone="accent"] {
+    --uir-snackbar-border: var(--uir-accent);
+    --uir-snackbar-accent: var(--uir-accent);
+  }
+
+  .uir-snackbar[data-tone="positive"] {
+    --uir-snackbar-border: var(--uir-success);
+    --uir-snackbar-accent: var(--uir-success);
+  }
+
+  .uir-snackbar[data-tone="danger"] {
+    --uir-snackbar-border: var(--uir-danger);
+    --uir-snackbar-accent: var(--uir-danger);
+  }
+
+  /*
+   * The surface roles, declared once on the root.
+   *
+   * `--uir-snackbar-surface` is deliberately not a scheme token: it is the same in light and dark,
+   * because a message that changes colour with the theme is a message that changes contrast with
+   * whatever it covers. It is declared on the component so a consumer can override it for a brand.
+   */
+  .uir-snackbar {
+    --uir-snackbar-surface: #1e293b;
+    --uir-snackbar-surface-text: #f8fafc;
+    --uir-snackbar-fill: var(--uir-snackbar-surface);
+    --uir-snackbar-text: var(--uir-snackbar-surface-text);
+    --uir-snackbar-border: transparent;
+    --uir-snackbar-accent: transparent;
+  }
+
+  /* ---- Glyph --------------------------------------------------------- */
+
+  /*
+   * The tone marker.
+   *
+   * A ring rather than an imported icon, so there is nothing to fetch and nothing to theme. It sits in
+   * the surface colour with the tone as its border, which is what keeps it legible on the dark surface
+   * without a second set of icon assets.
+   */
+  .uir-snackbar__glyph {
+    border: 2px solid var(--uir-snackbar-accent);
+    border-radius: 50%;
+    flex-shrink: 0;
+    block-size: 1.25em;
+    inline-size: 1.25em;
+  }
+
+  .uir-snackbar__glyph[data-tone="danger"] {
+    /*
+     * The one glyph that is not a ring.
+     *
+     * A ring is read as "information" whatever colour it is, and a failure that looks like a
+     * notification is a failure nobody acts on. Filling it and crossing it is the shape that says
+     * "stop".
+     */
+    background-color: var(--uir-snackbar-accent);
+    position: relative;
+  }
+
+  .uir-snackbar__glyph[data-tone="danger"]::after {
+    block-size: 2px;
+    background-color: var(--uir-snackbar-surface);
+    content: "";
+    inline-size: 60%;
+    position: absolute;
+    inset-block-start: calc(50% - 1px);
+    inset-inline-start: 20%;
+  }
+
+  .uir-snackbar__icon {
+    align-items: center;
+    display: inline-flex;
+    flex-shrink: 0;
+    justify-content: center;
+    block-size: 1.25em;
+    inline-size: 1.25em;
+  }
+
+  /* ---- Message and action -------------------------------------------- */
+
+  /*
+   * The message takes the space it needs and the action does not grow.
+   *
+   * `min-inline-size: 0` on the message so a long unbroken string can wrap rather than forcing the
+   * action off the edge, which is the failure a toast with an action is most prone to.
+   */
+  .uir-snackbar__message {
+    flex: 1;
+    min-inline-size: 0;
+    overflow-wrap: break-word;
+  }
+
+  .uir-snackbar__action {
+    flex-shrink: 0;
+  }
+
+  /* ---- Close control ------------------------------------------------- */
+
+  .uir-snackbar__close {
+    align-items: center;
+    background: none;
+    border: 0;
+    border-radius: 50%;
+    color: currentcolor;
+    cursor: pointer;
+    display: inline-flex;
+    flex-shrink: 0;
+    justify-content: center;
+    /*
+     * A 24px target.
+     *
+     * The snackbar's own padding is not a hit area — a close control sized to its glyph is about 12px
+     * and fails the target minimum on a control users aim at in a hurry.
+     */
+    block-size: var(--uir-control-height-sm);
+    inline-size: var(--uir-control-height-sm);
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Two rotated bars, so the cross is `currentcolor` and needs nothing in forced colours. */
+  .uir-snackbar__close-glyph {
+    block-size: 0.6em;
+    border-block-start: 1.5px solid currentcolor;
+    border-inline-start: 1.5px solid currentcolor;
+    display: block;
+    inline-size: 0.6em;
+    transform: rotate(45deg) translateY(-1px);
+  }
+
+  /* ---- States -------------------------------------------------------- */
+
+  /*
+   * Hover is gated on a fine pointer, for the reason every other component in this library states.
+   *
+   * Applied to the close control only. Hovering the *message* must not change it: the message is text,
+   * and a surface that shifts under text while the pointer crosses it is text the user cannot read.
+   */
+  @media (hover: hover) and (pointer: fine) {
+    .uir-snackbar__close:hover {
+      background-color: var(--uir-snackbar-close-hover);
+    }
+  }
+
+  .uir-snackbar__close:active {
+    background-color: var(--uir-snackbar-close-active);
+  }
+
+  .uir-snackbar__close:focus-visible {
+    outline: var(--uir-focus-ring-width) solid var(--uir-focus-ring-color);
+    outline-offset: 1px;
+  }
+
+  /* ---- Reduced motion ------------------------------------------------ */
+
+  /*
+   * Nothing to do.
+   *
+   * The message appears and disappears with no transition at all. An entrance animation on a live
+   * region means the text is still moving when it is announced, and a sliding toast reads as arriving
+   * late even when it is not. Recorded so the absence is a decision rather than an omission.
+   */
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * The surface is the part that needs help.
+   *
+   * An arbitrary dark fill is almost certainly not a colour a forced-colours theme knows, and a toast
+   * whose text colour is computed from it can end up unreadable. `Canvas` and `CanvasText` are the two
+   * colours guaranteed to exist in every one of these themes, so the message goes to those and the
+   * distinction between tones moves entirely to the border and the glyph.
+   */
+  @media (forced-colors: active) {
+    .uir-snackbar {
+      background-color: Canvas;
+      border-color: CanvasText;
+      color: CanvasText;
+      forced-color-adjust: none;
+    }
+
+    .uir-snackbar[data-tone="accent"] {
+      border-color: LinkText;
+    }
+
+    .uir-snackbar[data-tone="positive"],
+    .uir-snackbar[data-tone="danger"] {
+      border-width: 2px;
+    }
+
+    .uir-snackbar__glyph {
+      border-color: CanvasText;
+    }
+
+    .uir-snackbar__glyph[data-tone="danger"] {
+      background-color: Canvas;
+    }
+
+    .uir-snackbar__glyph[data-tone="danger"]::after {
+      background-color: CanvasText;
+    }
+
+    .uir-snackbar__close:focus-visible {
+      outline-color: Highlight;
+    }
+  }
+}

@@ -1,0 +1,292 @@
+/*
+ * Checkbox styles.
+ *
+ * Reads the same `--uir-control-*` tokens as `Switch`, deliberately: a checkbox and a switch side
+ * by side in a settings list have to be the same size, the same radius and the same type scale,
+ * and that is only guaranteed if both read the same numbers.
+ *
+ * Every dimension comes from a token. Nothing here is a literal measurement except the tick, which
+ * is drawn from two borders meeting at a point.
+ */
+
+@layer uireload.components {
+  .uir-checkbox,
+  .uir-checkbox__input,
+  .uir-checkbox__box,
+  .uir-checkbox__label,
+  .uir-checkbox__helper {
+    box-sizing: border-box;
+  }
+
+  /* ---- Root ---------------------------------------------------------- */
+
+  .uir-checkbox {
+    align-items: center;
+    display: inline-flex;
+    font-family: var(--uir-font-family);
+    /*
+     * `position: relative` is what lets the invisible input cover the whole control. One focusable
+     * element rather than a focusable box and a clickable label that have to be kept in agreement.
+     */
+    max-inline-size: 100%;
+    position: relative;
+  }
+
+  /*
+   * The three checkbox-specific dimensions, declared once on the root so nothing downstream
+   * repeats them. The box is square and sized off the control height, so `sm` / `md` / `lg` scale
+   * the box, the tick and the label together.
+   */
+  .uir-checkbox {
+    --uir-checkbox-box: var(--uir-control-height-sm);
+    --uir-checkbox-tick: calc(var(--uir-checkbox-box) * 0.34);
+  }
+
+  .uir-checkbox[data-size="md"] {
+    --uir-checkbox-box: var(--uir-control-height-md);
+  }
+
+  .uir-checkbox[data-size="lg"] {
+    --uir-checkbox-box: var(--uir-control-height-lg);
+  }
+
+  /* ---- Input --------------------------------------------------------- */
+
+  /*
+   * Stretched over the whole control and transparent.
+   *
+   * `appearance: none` removes the platform's own box so exactly one box is drawn — the CSS one,
+   * which can then honour `data-tone`. `:focus` is deliberately **not** suppressed: the platform's
+   * focus ring still applies to the input, and the rule below re-points it at the control's box.
+   */
+  .uir-checkbox__input {
+    block-size: 100%;
+    cursor: pointer;
+    inline-size: 100%;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    position: absolute;
+  }
+
+  .uir-checkbox[data-disabled] .uir-checkbox__input {
+    cursor: not-allowed;
+  }
+
+  /* ---- Box ----------------------------------------------------------- */
+
+  .uir-checkbox__box {
+    align-items: center;
+    background-color: var(--uir-checkbox-fill);
+    border: var(--uir-control-border-width) solid var(--uir-checkbox-border);
+    border-radius: calc(var(--uir-control-radius) * 0.66);
+    color: var(--uir-checkbox-on-fill);
+    display: flex;
+    flex-shrink: 0;
+    inline-size: var(--uir-checkbox-box);
+    block-size: var(--uir-checkbox-box);
+    justify-content: center;
+    transition:
+      background-color var(--uir-duration) var(--uir-easing),
+      border-color var(--uir-duration) var(--uir-easing);
+  }
+
+  /*
+   * The tick: a rotated square with two borders.
+   *
+   * `border-block-end` plus `border-inline-start` is one rotated corner rather than a glyph or a
+   * mask, so it scales with `--uir-checkbox-tick`, needs no request, and inherits `currentColor`
+   * — which is why the box sets `color` and the tick never names a colour of its own.
+   */
+  .uir-checkbox[data-checked] .uir-checkbox__box::after,
+  .uir-checkbox[data-indeterminate] .uir-checkbox__box::after {
+    border-block-end: 2px solid currentcolor;
+    border-inline-start: 2px solid currentcolor;
+    block-size: calc(var(--uir-checkbox-tick) * 0.6);
+    inline-size: calc(var(--uir-checkbox-tick) * 0.9);
+    content: "";
+    /*
+     * 45° is what turns an "L" into a tick. `-45deg` would produce a check pointing the wrong way.
+     */
+    transform: translateY(-8%) rotate(-45deg);
+  }
+
+  /*
+   * The indeterminate dash is horizontal, so the same two borders are turned rather than rotated.
+   * A dash that leaned at 45° would read as a tick at a bad angle.
+   */
+  .uir-checkbox[data-indeterminate] .uir-checkbox__box::after {
+    block-size: 0;
+    inline-size: calc(var(--uir-checkbox-box) * 0.44);
+    transform: none;
+  }
+
+  /* ---- Intent -------------------------------------------------------- */
+
+  /*
+   * Four roles per tone, so a new tone is four declarations here and nothing else changes.
+   *
+   * The off-state border and fill are tone-neutral on purpose. A red box on a checkbox the user has
+   * *not* ticked paints a warning where there is nothing to warn about; tone is carried by the
+   * checked state, which is the one the user acted on.
+   */
+  .uir-checkbox[data-tone="neutral"] {
+    --uir-checkbox-border: var(--uir-border-strong);
+    --uir-checkbox-fill: var(--uir-surface);
+    --uir-checkbox-on-fill: var(--uir-surface);
+    --uir-checkbox-ring: var(--uir-focus-ring-color);
+    --uir-checkbox-hover: var(--uir-neutral-fill-active);
+  }
+
+  .uir-checkbox[data-tone="accent"] {
+    --uir-checkbox-border: var(--uir-accent);
+    --uir-checkbox-fill: var(--uir-surface);
+    --uir-checkbox-on-fill: var(--uir-surface);
+    --uir-checkbox-ring: var(--uir-accent);
+    --uir-checkbox-hover: var(--uir-accent-subtle);
+  }
+
+  .uir-checkbox[data-tone="positive"] {
+    --uir-checkbox-border: var(--uir-success);
+    --uir-checkbox-fill: var(--uir-surface);
+    --uir-checkbox-on-fill: var(--uir-surface);
+    --uir-checkbox-ring: var(--uir-success);
+    --uir-checkbox-hover: var(--uir-success-subtle);
+  }
+
+  .uir-checkbox[data-tone="danger"] {
+    --uir-checkbox-border: var(--uir-danger);
+    --uir-checkbox-fill: var(--uir-surface);
+    --uir-checkbox-on-fill: var(--uir-surface);
+    --uir-checkbox-ring: var(--uir-danger);
+    --uir-checkbox-hover: var(--uir-danger-subtle);
+  }
+
+  /* ---- Label and description ----------------------------------------- */
+
+  .uir-checkbox__label {
+    color: var(--uir-text);
+    cursor: pointer;
+    font-size: var(--uir-control-font-size-md);
+    font-weight: var(--uir-control-font-weight);
+    line-height: var(--uir-line-height);
+  }
+
+  .uir-checkbox[data-size="sm"] .uir-checkbox__label {
+    font-size: var(--uir-control-font-size-sm);
+  }
+
+  .uir-checkbox[data-size="lg"] .uir-checkbox__label {
+    font-size: var(--uir-control-font-size-lg);
+  }
+
+  /*
+   * The label before the box. Uses `order` rather than a second DOM shape so the markup and the
+   * accessible name are identical in both directions — a reordered DOM would make the label the
+   * first thing a screen reader reads for one variant and not the other.
+   */
+  .uir-checkbox[data-label-position="start"] .uir-checkbox__label {
+    order: -1;
+  }
+
+  /*
+   * The helper sits on its own line below the row, so a long explanation does not push the label
+   * and the box apart.
+   */
+  .uir-checkbox__helper {
+    color: var(--uir-text-muted);
+    flex-basis: 100%;
+    font-size: var(--uir-control-font-size-sm);
+    line-height: var(--uir-line-height);
+    /*
+     * The root is a single-line flex row; a full-width helper needs to wrap onto a second line.
+     */
+    order: 1;
+  }
+
+  .uir-checkbox:has(.uir-checkbox__helper) {
+    flex-wrap: wrap;
+  }
+
+  /* ---- States -------------------------------------------------------- */
+
+  /*
+   * Hover is gated on a fine pointer, for the reason every other control in this library states: a
+   * hover state that persists after a tap is a known mobile annoyance.
+   */
+  @media (hover: hover) and (pointer: fine) {
+    .uir-checkbox:not([data-disabled]):not([data-checked]):not([data-indeterminate])
+      .uir-checkbox__box {
+      background-color: var(--uir-checkbox-hover);
+    }
+  }
+
+  /*
+   * Checked and indeterminate both fill. `data-checked` is suppressed while indeterminate, so
+   * "partially checked" never paints as fully checked.
+   */
+  .uir-checkbox[data-checked] .uir-checkbox__box,
+  .uir-checkbox[data-indeterminate] .uir-checkbox__box {
+    background-color: var(--uir-checkbox-border);
+    border-color: var(--uir-checkbox-border);
+  }
+
+  /*
+   * The ring is drawn by the input, which is the element that actually has focus. It is the only
+   * focusable element, so this is the whole focus story — there is no second ring to keep in step.
+   */
+  .uir-checkbox__input:focus-visible {
+    outline: var(--uir-focus-ring-width) solid var(--uir-checkbox-ring);
+    outline-offset: var(--uir-focus-ring-offset);
+  }
+
+  /*
+   * Disabled. `opacity` only, with `pointer-events` left intact: `pointer-events: none` would make
+   * the control unclickable to a tooltip, and a disabled control is exactly the one a user needs a
+   * tooltip to explain.
+   */
+  .uir-checkbox[data-disabled] .uir-checkbox__box,
+  .uir-checkbox[data-disabled] .uir-checkbox__label {
+    cursor: not-allowed;
+    opacity: var(--uir-disabled-opacity);
+  }
+
+  /* ---- Reduced motion ------------------------------------------------ */
+
+  /*
+   * The fill still changes on check, it just stops taking `--uir-duration`. The change is not
+   * decoration — it is the whole state signal — so it is made instantaneous rather than removed.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .uir-checkbox__box {
+      transition-duration: 0ms;
+    }
+  }
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * The tick is `currentColor`, so it follows the system text colour with nothing extra. The fill
+   * is the part that needs help: `Canvas` and `CanvasText` are the two colours guaranteed to exist
+   * in every forced-colours theme.
+   */
+  @media (forced-colors: active) {
+    .uir-checkbox__box {
+      background-color: Canvas;
+      border-color: CanvasText;
+      color: CanvasText;
+    }
+
+    .uir-checkbox[data-checked] .uir-checkbox__box,
+    .uir-checkbox[data-indeterminate] .uir-checkbox__box {
+      background-color: Highlight;
+      border-color: Highlight;
+      color: HighlightText;
+      forced-color-adjust: none;
+    }
+
+    .uir-checkbox__input:focus-visible {
+      outline-color: Highlight;
+    }
+  }
+}

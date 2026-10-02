@@ -1,0 +1,299 @@
+/*
+ * Chip styles.
+ *
+ * Reads the same control tokens as `Checkbox`, `RadioGroup` and `Switch`, so a row of chips lines up
+ * with a row of controls beside it. The chip is the smallest of them: its height comes from the
+ * control ladder but its padding is tighter, because a chip is a label rather than a control.
+ *
+ * Every dimension comes from a token. The only literal is the remove cross, which is drawn from two
+ * rotated bars.
+ */
+
+@layer uireload.components {
+  .uir-chip,
+  .uir-chip__label,
+  .uir-chip__icon,
+  .uir-chip__remove,
+  .uir-chip__remove-glyph {
+    box-sizing: border-box;
+  }
+
+  /* ---- Root ---------------------------------------------------------- */
+
+  .uir-chip {
+    align-items: center;
+    /*
+     * The three chip-specific dimensions, declared once so nothing downstream repeats them.
+     *
+     * The height is the `sm` control height exactly, not a fraction of it. A chip *is* a target when
+     * `intent="button"` or `intent="remove"`, so it sits on the 24px floor like every other control —
+     * and a chip shorter than that is not denser, it is unreachable.
+     */
+    --uir-chip-height: var(--uir-control-height-sm);
+    --uir-chip-pad-inline: var(--uir-control-pad-inline-sm);
+    --uir-chip-gap: var(--uir-control-gap);
+
+    /*
+     * The border is declared here but left transparent, so `variant="outlined"` has something to
+     * reveal rather than having to add a border where the filled variant has none — a border added
+     * only in the outlined rule would shift every outlined chip by its own border width.
+     */
+    border: var(--uir-control-border-width) solid transparent;
+    background-color: var(--uir-chip-fill);
+    color: var(--uir-chip-text);
+    display: inline-flex;
+    font-family: var(--uir-font-family);
+    font-size: var(--uir-control-font-size-sm);
+    font-weight: var(--uir-control-font-weight);
+    gap: var(--uir-chip-gap);
+    line-height: var(--uir-line-height);
+    /* A chip is a pill, not a rounded rectangle: fully rounded on a shape this short reads as a tag. */
+    border-radius: calc(var(--uir-chip-height) / 2);
+    max-inline-size: 100%;
+    min-block-size: var(--uir-chip-height);
+    padding-block: 0;
+    padding-inline: var(--uir-chip-pad-inline);
+    /*
+     * Nothing here is user-selectable: a chip is a label, and dragging across a row of them to select
+     * a sentence should not highlight a dozen words.
+     */
+    user-select: none;
+  }
+
+  .uir-chip[data-size="md"] {
+    --uir-chip-height: var(--uir-control-height-md);
+    --uir-chip-pad-inline: var(--uir-control-pad-inline-md);
+    font-size: var(--uir-control-font-size-md);
+  }
+
+  .uir-chip[data-size="lg"] {
+    --uir-chip-height: var(--uir-control-height-lg);
+    --uir-chip-pad-inline: var(--uir-control-pad-inline-lg);
+    font-size: var(--uir-control-font-size-lg);
+  }
+
+  /*
+   * The remove control eats into the padding on its own side, so the trailing edge of the chip holds
+   * the same visual inset whether or not there is a cross in it.
+   */
+  .uir-chip[data-intent="remove"] {
+    padding-inline-end: calc(var(--uir-chip-gap) * 0.5);
+  }
+
+  /* ---- Label --------------------------------------------------------- */
+
+  /*
+   * Truncated rather than wrapped.
+   *
+   * A chip is one line by definition — a two-line chip reads as a different component — and a chip
+   * that wraps inside a flex row pushes everything below it out of alignment. `min-width: 0` lets the
+   * ellipsis actually engage inside a flex or grid parent.
+   */
+  .uir-chip__label {
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ---- Leading icon -------------------------------------------------- */
+
+  .uir-chip__icon {
+    align-items: center;
+    display: inline-flex;
+    flex-shrink: 0;
+    /* A square flex box, so a glyph of any size centres the same way. */
+    block-size: 1em;
+    inline-size: 1em;
+    justify-content: center;
+  }
+
+  /* ---- Remove control ------------------------------------------------ */
+
+  /*
+   * A real `<button>`, and the only focusable element in a `remove` chip.
+   *
+   * Sized off the chip's own height rather than a token of its own: the target has to stay inside the
+   * chip's visual bounds, and a chip 24px tall cannot hold a 24px button plus its padding.
+   */
+  .uir-chip__remove {
+    align-items: center;
+    background: none;
+    border: 0;
+    border-radius: 50%;
+    color: currentcolor;
+    cursor: pointer;
+    display: inline-flex;
+    flex-shrink: 0;
+    justify-content: center;
+    /* Transparent, so the chip's own fill shows through and the chip stays one object. */
+    background-color: transparent;
+    block-size: calc(var(--uir-chip-height) * 0.75);
+    inline-size: calc(var(--uir-chip-height) * 0.75);
+    margin: 0;
+    padding: 0;
+  }
+
+  /*
+   * The cross: a square with two opposite borders, rotated 45°.
+   *
+   * Two borders rather than an SVG or a glyph, so there is nothing to import, no request, and the
+   * shape inherits `currentcolor` — which is why the forced-colours rule below needs to say nothing
+   * about it.
+   */
+  .uir-chip__remove-glyph {
+    block-size: 0.5em;
+    border-block-start: 1.5px solid currentcolor;
+    border-inline-start: 1.5px solid currentcolor;
+    display: block;
+    inline-size: 0.5em;
+    transform: rotate(45deg) translateY(-1px);
+  }
+
+  /* ---- Intent -------------------------------------------------------- */
+
+  /*
+   * Four roles per tone, so a new tone is four declarations here and nothing else changes.
+   *
+   * A *wash* of the tone with the tone's own dark text, rather than the tone at full strength. A chip
+   * is a small object seen in a group; a solid saturated fill per chip turns a row of filters into a
+   * colour chart, and the wash keeps the text at full contrast while still reading as the tone.
+   */
+  .uir-chip[data-tone="neutral"] {
+    --uir-chip-fill: var(--uir-neutral-wash);
+    --uir-chip-text: var(--uir-neutral-on-wash);
+    --uir-chip-ring: var(--uir-focus-ring-color);
+    --uir-chip-hover: var(--uir-neutral-fill-hover);
+    --uir-chip-active: var(--uir-neutral-wash-active);
+  }
+
+  .uir-chip[data-tone="accent"] {
+    --uir-chip-fill: var(--uir-accent-wash);
+    --uir-chip-text: var(--uir-accent-on-wash);
+    --uir-chip-ring: var(--uir-accent);
+    --uir-chip-hover: var(--uir-accent-wash-active);
+    --uir-chip-active: var(--uir-accent-wash-active);
+  }
+
+  .uir-chip[data-tone="positive"] {
+    --uir-chip-fill: var(--uir-success-wash);
+    --uir-chip-text: var(--uir-success-on-wash);
+    --uir-chip-ring: var(--uir-success);
+    --uir-chip-hover: var(--uir-success-wash-active);
+    --uir-chip-active: var(--uir-success-wash-active);
+  }
+
+  .uir-chip[data-tone="danger"] {
+    --uir-chip-fill: var(--uir-danger-wash);
+    --uir-chip-text: var(--uir-danger-on-wash);
+    --uir-chip-ring: var(--uir-danger);
+    --uir-chip-hover: var(--uir-danger-wash-active);
+    --uir-chip-active: var(--uir-danger-wash-active);
+  }
+
+  /* ---- Variant ------------------------------------------------------- */
+
+  /*
+   * Outlined: a border of the tone's text colour on the surface, rather than a wash.
+   *
+   * The border uses `--uir-chip-text` rather than the raw tone so the outline carries the same
+   * contrast as the filled version's text — a border in a lighter tone than the label beside it is a
+   * shape a low-vision user can see and a label they cannot read.
+   */
+  .uir-chip[data-variant="outlined"] {
+    background-color: var(--uir-surface-raised);
+    border-color: var(--uir-chip-text);
+  }
+
+  /* ---- States -------------------------------------------------------- */
+
+  /*
+   * Hover is gated on a fine pointer, for the reason every other component in this library states: a
+   * hover state that persists after a tap is a known mobile annoyance.
+   *
+   * Gated on `intent="button"` as well as on not-disabled, because a static chip has nothing to hover
+   * *for*. Hovering a label that does nothing tells the user it is clickable, which it is not.
+   */
+  @media (hover: hover) and (pointer: fine) {
+    .uir-chip[data-intent="button"]:not([data-disabled]):hover {
+      background-color: var(--uir-chip-hover);
+    }
+
+    .uir-chip:not([data-disabled]) .uir-chip__remove:hover {
+      background-color: var(--uir-chip-hover);
+    }
+  }
+
+  /*
+   * Pressed, for the same reason. `--uir-chip-active` rather than the wash token, because a press is
+   * one step further than a hover and reading it as a hover makes the two indistinguishable.
+   */
+  .uir-chip[data-intent="button"]:not([data-disabled]):active,
+  .uir-chip:not([data-disabled]) .uir-chip__remove:active {
+    background-color: var(--uir-chip-active);
+  }
+
+  /*
+   * The focus ring is drawn by whichever element actually has focus: the chip itself for
+   * `intent="button"`, the cross for `intent="remove"`.
+   */
+  .uir-chip[data-intent="button"]:focus-visible,
+  .uir-chip__remove:focus-visible {
+    outline: var(--uir-focus-ring-width) solid var(--uir-chip-ring);
+    outline-offset: var(--uir-focus-ring-offset);
+  }
+
+  /*
+   * Disabled. `opacity` only, with `pointer-events` left intact: `pointer-events: none` would make
+   * the chip unclickable to a tooltip, and a disabled chip is often exactly the one a user needs a
+   * tooltip to explain.
+   *
+   * The native `disabled` attribute still applies, so a disabled chip leaves the tab order and cannot
+   * be activated. `opacity` is purely the visual half of that.
+   */
+  .uir-chip[data-disabled] {
+    cursor: not-allowed;
+    opacity: var(--uir-disabled-opacity);
+  }
+
+  .uir-chip[data-disabled] .uir-chip__remove {
+    cursor: not-allowed;
+  }
+
+  /* ---- Reduced motion ------------------------------------------------ */
+
+  /*
+   * A chip has no motion. The reduced-motion block exists only to state that: nothing above sets a
+   * `transition`, so nothing has to be undone here, and adding an empty rule would imply otherwise.
+   */
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * The chip is the part that needs help.
+   *
+   * A wash fill is a light tint, and a light tint in a forced-colours theme is very likely to be
+   * indistinguishable from the page — so the fill goes to `Canvas` and the border, which the
+   * component draws anyway in tinted form, becomes the system text colour. The chip is then outlined
+   * rather than filled, which is how a high-contrast theme shows a selected or marked item.
+   *
+   * The cross is `currentcolor` and needs nothing.
+   */
+  @media (forced-colors: active) {
+    .uir-chip {
+      background-color: Canvas;
+      border-color: CanvasText;
+      color: CanvasText;
+      forced-color-adjust: none;
+    }
+
+    .uir-chip[data-variant="filled"] {
+      border-color: CanvasText;
+    }
+
+    .uir-chip[data-intent="button"]:focus-visible,
+    .uir-chip__remove:focus-visible {
+      outline-color: Highlight;
+    }
+  }
+}

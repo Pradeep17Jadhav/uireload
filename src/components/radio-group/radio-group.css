@@ -1,0 +1,336 @@
+/*
+ * Radio group styles.
+ *
+ * Reads the same `--uir-control-*` tokens as `Switch` and `Checkbox`, deliberately: the three sit
+ * side by side in a settings form and have to agree on height, radius and type scale, and that is
+ * only guaranteed if all three read the same numbers.
+ *
+ * Every dimension comes from a token. Nothing here is a literal measurement except the dot, which
+ * is drawn from a border and an inset.
+ */
+
+@layer uireload.components {
+  .uir-radio-group,
+  .uir-radio-group__options,
+  .uir-radio-group__option,
+  .uir-radio-group__input,
+  .uir-radio-group__dot,
+  .uir-radio-group__option-label,
+  .uir-radio-group__label,
+  .uir-radio-group__helper {
+    box-sizing: border-box;
+  }
+
+  /* ---- Root ---------------------------------------------------------- */
+
+  /*
+   * A fieldset, so the platform's own reset is undone here: the default `margin`, `padding`,
+   * `border` and `min-inline-size` would otherwise surround every group. `min-inline-size: 0`
+   * stops a flex or grid child from refusing to shrink below its content width.
+   */
+  .uir-radio-group {
+    border: 0;
+    display: block;
+    font-family: var(--uir-font-family);
+    margin: 0;
+    min-inline-size: 0;
+    padding: 0;
+  }
+
+  /*
+   * The two radio-specific dimensions, declared once on the root so nothing downstream repeats
+   * them. The dot is sized off the control height, so `sm` / `md` / `lg` scale dot, label and row
+   * height together — the same derivation `checkbox.css` uses.
+   */
+  .uir-radio-group {
+    --uir-radio-dot: var(--uir-control-height-sm);
+    --uir-radio-mark: calc(var(--uir-radio-dot) * 0.5);
+  }
+
+  .uir-radio-group[data-size="md"] {
+    --uir-radio-dot: var(--uir-control-height-md);
+  }
+
+  .uir-radio-group[data-size="lg"] {
+    --uir-radio-dot: var(--uir-control-height-lg);
+  }
+
+  /* ---- Legend and description ----------------------------------------- */
+
+  /*
+   * A real `<legend>`, not a styled div. `float` is the standard trick for making a legend sit
+   * inline with the first line of content in a way browsers agree on; without it the legend keeps
+   * its own band above the options, which is fine but inconsistent across engines.
+   */
+  .uir-radio-group__label {
+    color: var(--uir-text);
+    float: inline-start;
+    font-size: var(--uir-control-font-size-sm);
+    font-weight: var(--uir-control-font-weight);
+    line-height: var(--uir-line-height);
+    margin-block-end: calc(var(--uir-space) * 0.5);
+    padding: 0;
+  }
+
+  /*
+   * Clears the float. Without it the helper can be pulled up beside the legend by the first option
+   * row, and a long description ends up on the wrong side of the options.
+   */
+  .uir-radio-group__options {
+    clear: both;
+  }
+
+  .uir-radio-group__helper {
+    color: var(--uir-text-muted);
+    font-size: var(--uir-control-font-size-sm);
+    line-height: var(--uir-line-height);
+    margin-block-start: calc(var(--uir-space) * 0.5);
+  }
+
+  /* ---- Options ------------------------------------------------------- */
+
+  .uir-radio-group__options {
+    display: flex;
+    gap: var(--uir-control-gap);
+  }
+
+  /*
+   * The axis is `orientation`-driven, so the two directions are one declaration rather than two
+   * rules that have to be kept in step.
+   */
+  .uir-radio-group[data-orientation="vertical"] .uir-radio-group__options {
+    flex-direction: column;
+  }
+
+  .uir-radio-group[data-orientation="horizontal"] .uir-radio-group__options {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  /*
+   * One row: a stretched, transparent input over a CSS-drawn dot and the label. The input covers
+   * the whole row, so the entire row is the hit target and there is one focusable element rather
+   * than a dot and a label that have to be kept in agreement.
+   */
+  .uir-radio-group__option {
+    align-items: center;
+    display: inline-flex;
+    max-inline-size: 100%;
+    position: relative;
+  }
+
+  .uir-radio-group__input {
+    block-size: 100%;
+    cursor: pointer;
+    inline-size: 100%;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    position: absolute;
+  }
+
+  .uir-radio-group[data-disabled] .uir-radio-group__input,
+  .uir-radio-group__option[data-disabled] .uir-radio-group__input {
+    cursor: not-allowed;
+  }
+
+  /* ---- Dot ----------------------------------------------------------- */
+
+  .uir-radio-group__dot {
+    align-items: center;
+    background-color: var(--uir-radio-fill);
+    border: var(--uir-control-border-width) solid var(--uir-radio-border);
+    border-radius: 50%;
+    color: var(--uir-radio-on-fill);
+    display: flex;
+    flex-shrink: 0;
+    inline-size: var(--uir-radio-dot);
+    block-size: var(--uir-radio-dot);
+    justify-content: center;
+    transition:
+      background-color var(--uir-duration) var(--uir-easing),
+      border-color var(--uir-duration) var(--uir-easing);
+  }
+
+  /*
+   * The mark: a filled circle, inset from the dot.
+   *
+   * An inset pseudo-element rather than a glyph, a mask or an SVG, so it scales with
+   * `--uir-radio-mark`, needs no request, and inherits `currentColor` — which is why the dot sets
+   * `color` and the mark never names a colour of its own.
+   */
+  .uir-radio-group__option[data-checked] .uir-radio-group__dot::after {
+    background-color: currentcolor;
+    border-radius: 50%;
+    block-size: var(--uir-radio-mark);
+    content: "";
+    inline-size: var(--uir-radio-mark);
+  }
+
+  /* ---- Option label -------------------------------------------------- */
+
+  .uir-radio-group__option-label {
+    color: var(--uir-text);
+    cursor: pointer;
+    font-size: var(--uir-control-font-size-md);
+    font-weight: var(--uir-control-font-weight);
+    line-height: var(--uir-line-height);
+    min-inline-size: 0;
+    /* Matches `--uir-control-gap` on the options row, so the dot and the text read as one unit. */
+    padding-inline-start: var(--uir-control-gap);
+  }
+
+  .uir-radio-group[data-size="sm"] .uir-radio-group__option-label {
+    font-size: var(--uir-control-font-size-sm);
+  }
+
+  .uir-radio-group[data-size="lg"] .uir-radio-group__option-label {
+    font-size: var(--uir-control-font-size-lg);
+  }
+
+  /*
+   * Secondary content inside a row, rendered after the label. Kept on its own line in a vertical
+   * group so an option can carry an explanation without pushing the dot out of alignment.
+   */
+  .uir-radio-group__option-detail {
+    color: var(--uir-text-muted);
+    display: block;
+    font-size: var(--uir-control-font-size-sm);
+    font-weight: var(--uir-font-weight);
+  }
+
+  .uir-radio-group[data-orientation="horizontal"] .uir-radio-group__option-detail {
+    display: inline;
+    margin-inline-start: calc(var(--uir-space) * 0.5);
+  }
+
+  /* ---- Intent -------------------------------------------------------- */
+
+  /*
+   * Four roles per tone, so a new tone is four declarations here and nothing else changes.
+   *
+   * The off-state border and fill are tone-neutral on purpose — identical to `Checkbox` and
+   * `Switch`. A red ring around an option the user has *not* chosen paints a warning where there
+   * is nothing to warn about; tone is carried by the selected state, the one the user acted on.
+   */
+  .uir-radio-group[data-tone="neutral"] {
+    --uir-radio-border: var(--uir-border-strong);
+    --uir-radio-fill: var(--uir-surface-raised);
+    --uir-radio-on-fill: var(--uir-text);
+    --uir-radio-ring: var(--uir-focus-ring-color);
+    --uir-radio-hover: var(--uir-neutral-fill-active);
+  }
+
+  .uir-radio-group[data-tone="accent"] {
+    --uir-radio-border: var(--uir-accent);
+    --uir-radio-fill: var(--uir-surface-raised);
+    --uir-radio-on-fill: var(--uir-accent-contrast);
+    --uir-radio-ring: var(--uir-accent);
+    --uir-radio-hover: var(--uir-accent-subtle);
+  }
+
+  .uir-radio-group[data-tone="positive"] {
+    --uir-radio-border: var(--uir-success);
+    --uir-radio-fill: var(--uir-surface-raised);
+    --uir-radio-on-fill: var(--uir-success-contrast);
+    --uir-radio-ring: var(--uir-success);
+    --uir-radio-hover: var(--uir-success-subtle);
+  }
+
+  .uir-radio-group[data-tone="danger"] {
+    --uir-radio-border: var(--uir-danger);
+    --uir-radio-fill: var(--uir-surface-raised);
+    --uir-radio-on-fill: var(--uir-danger-contrast);
+    --uir-radio-ring: var(--uir-danger);
+    --uir-radio-hover: var(--uir-danger-subtle);
+  }
+
+  /* ---- States -------------------------------------------------------- */
+
+  /*
+   * Hover is gated on a fine pointer, for the reason every other control in this library states: a
+   * hover state that persists after a tap is a known mobile annoyance.
+   */
+  @media (hover: hover) and (pointer: fine) {
+    .uir-radio-group:not([data-disabled])
+      .uir-radio-group__option:not([data-disabled]):not([data-checked])
+      .uir-radio-group__dot {
+      background-color: var(--uir-radio-hover);
+    }
+  }
+
+  /*
+   * The selected row fills, and the mark takes the contrasting colour the tone block assigned to
+   * `--uir-radio-on-fill`.
+   */
+  .uir-radio-group__option[data-checked] .uir-radio-group__dot {
+    background-color: var(--uir-radio-border);
+    border-color: var(--uir-radio-border);
+    color: var(--uir-radio-on-fill);
+  }
+
+  /*
+   * The ring is drawn by the input, which is the element that actually has focus. It is the only
+   * focusable element in the row, so this is the whole focus story.
+   */
+  .uir-radio-group__input:focus-visible {
+    outline: var(--uir-focus-ring-width) solid var(--uir-radio-ring);
+    outline-offset: var(--uir-focus-ring-offset);
+  }
+
+  /*
+   * Disabled. `opacity` only, with `pointer-events` left intact: `pointer-events: none` would make
+   * the control unclickable to a tooltip, and a disabled option is exactly the one a user needs a
+   * tooltip to explain.
+   */
+  .uir-radio-group[data-disabled] .uir-radio-group__label,
+  .uir-radio-group[data-disabled] .uir-radio-group__option-label,
+  .uir-radio-group[data-disabled] .uir-radio-group__dot {
+    cursor: not-allowed;
+    opacity: var(--uir-disabled-opacity);
+  }
+
+  .uir-radio-group__option[data-disabled] .uir-radio-group__dot,
+  .uir-radio-group__option[data-disabled] .uir-radio-group__option-label {
+    cursor: not-allowed;
+    opacity: var(--uir-disabled-opacity);
+  }
+
+  /* ---- Reduced motion ------------------------------------------------ */
+
+  /*
+   * The fill still changes on selection, it just stops taking `--uir-duration`. The change is not
+   * decoration — it is the whole state signal — so it is made instantaneous rather than removed.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .uir-radio-group__dot {
+      transition-duration: 0ms;
+    }
+  }
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * The mark is `currentcolor`, so it follows the system text colour with nothing extra. The fill
+   * is the part that needs help: `Canvas` and `CanvasText` are the two colours guaranteed to exist
+   * in every forced-colours theme.
+   */
+  @media (forced-colors: active) {
+    .uir-radio-group__dot {
+      background-color: Canvas;
+      border-color: CanvasText;
+      color: CanvasText;
+    }
+
+    .uir-radio-group__option[data-checked] .uir-radio-group__dot {
+      background-color: Highlight;
+      border-color: Highlight;
+      color: HighlightText;
+      forced-color-adjust: none;
+    }
+
+    .uir-radio-group__input:focus-visible {
+      outline-color: Highlight;
+    }
+  }
+}

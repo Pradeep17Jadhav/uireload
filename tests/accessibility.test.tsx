@@ -451,6 +451,295 @@ describe("Select", () => {
   });
 });
 
+describe("Checkbox", () => {
+  it("has no accessibility violations in any position", async () => {
+    const { Checkbox } = await import("uireload/components/checkbox");
+
+    const { container } = render(
+      <>
+        <Checkbox id="a" label="Unchecked" />
+        <Checkbox id="b" label="Checked" defaultChecked />
+        <Checkbox id="c" label="Indeterminate" indeterminate />
+        <Checkbox id="d" label="Required" required disabled />
+      </>
+    );
+
+    await expectNoViolations(container);
+  });
+
+  it("has no violations with a description and a label before the box", async () => {
+    const { Checkbox } = await import("uireload/components/checkbox");
+
+    const { container } = render(
+      <Checkbox
+        id="e"
+        label="Subscribe"
+        labelPosition="start"
+        helperText="At most one email a week"
+      />
+    );
+
+    await expectNoViolations(container);
+  });
+});
+
+describe("RadioGroup", () => {
+  const OPTIONS = [
+    { value: "sms", label: "Text message" },
+    { value: "email", label: "Email" },
+    { value: "none", label: "Do not contact me", disabled: true },
+  ];
+
+  it("has no accessibility violations as a vertical group", async () => {
+    const { RadioGroup } = await import("uireload/components/radio-group");
+
+    const { container } = render(
+      <RadioGroup id="contact" label="How should we contact you?" options={OPTIONS} />
+    );
+
+    await expectNoViolations(container);
+  });
+
+  it("has no violations horizontal, required, with a description", async () => {
+    const { RadioGroup } = await import("uireload/components/radio-group");
+
+    const { container } = render(
+      <RadioGroup
+        id="plan"
+        label="Plan"
+        options={OPTIONS}
+        orientation="horizontal"
+        required
+        defaultValue="email"
+        helperText="We never share this"
+      />
+    );
+
+    await expectNoViolations(container);
+  });
+});
+
+describe("Slider", () => {
+  it("has no accessibility violations as a single thumb", async () => {
+    const { Slider } = await import("uireload/components/slider");
+
+    const { container } = render(
+      <Slider id="volume" label="Volume" defaultValue={[40]} helperText="Applies to every device" />
+    );
+
+    await expectNoViolations(container);
+  });
+
+  it("has no violations as a range, with marks and a value text", async () => {
+    const { Slider } = await import("uireload/components/slider");
+
+    const { container } = render(
+      <Slider
+        id="price"
+        label="Price range"
+        defaultValue={[10, 80]}
+        marks={[
+          { value: 0, label: "$0" },
+          { value: 50, label: "$50" },
+          { value: 100, label: "$100" },
+        ]}
+        getAriaValueText={(value, index) => `${index === 0 ? "Minimum" : "Maximum"} $${value}`}
+      />
+    );
+
+    await expectNoViolations(container);
+  });
+
+  it("has no violations inverted, vertical, or disabled", async () => {
+    const { Slider } = await import("uireload/components/slider");
+
+    const { container } = render(
+      <>
+        <Slider id="a" label="Brightness" defaultValue={[50, 90]} track="inverted" />
+        <Slider id="b" label="Vertical" defaultValue={[30]} orientation="vertical" />
+        <Slider id="c" label="Disabled" defaultValue={[30]} disabled />
+      </>
+    );
+
+    await expectNoViolations(container);
+  });
+});
+
+describe("Chip", () => {
+  it("has no accessibility violations in every intent", async () => {
+    const { Chip } = await import("uireload/components/chip");
+
+    const { container } = render(
+      <>
+        <Chip>Static</Chip>
+        <Chip intent="button">Activatable</Chip>
+        <Chip intent="remove" onRemove={() => undefined}>
+          Removable
+        </Chip>
+      </>
+    );
+
+    await expectNoViolations(container);
+  });
+
+  it("has no violations with an icon, a badge, or disabled", async () => {
+    const { Chip } = await import("uireload/components/chip");
+
+    const { container } = render(
+      <>
+        <Chip icon={<span>*</span>} tone="accent">
+          With an icon
+        </Chip>
+        <Chip
+          intent="remove"
+          removeLabel="Remove the Weekly filter"
+          disabled
+          onRemove={() => undefined}
+        >
+          Weekly
+        </Chip>
+      </>
+    );
+
+    await expectNoViolations(container);
+  });
+});
+
+describe("Link", () => {
+  it("has no accessibility violations with and without a destination", async () => {
+    const { Link } = await import("uireload/components/link");
+
+    const { container } = render(
+      <p>
+        A <Link href="/docs">link with a destination</Link>, an{" "}
+        <Link href="https://example.com" external target="_blank" rel="noopener">
+          external one
+        </Link>
+        , and a <Link>link with none</Link>.
+      </p>
+    );
+
+    await expectNoViolations(container);
+  });
+
+  it("has no violations disabled", async () => {
+    const { Link } = await import("uireload/components/link");
+
+    const { container } = render(
+      <Link href="/docs" disabled>
+        Unavailable
+      </Link>
+    );
+
+    await expectNoViolations(container);
+  });
+});
+
+describe("Tile", () => {
+  it("has no accessibility violations in every form", async () => {
+    const { Tile } = await import("uireload/components/tile");
+    const { Button } = await import("uireload/components/button");
+
+    const { container } = render(
+      <>
+        <Tile header={<p>Plain</p>}>Body</Tile>
+        <Tile interactive>Activatable</Tile>
+        <Tile href="/docs">A link</Tile>
+        <Tile tone="danger" footer={<Button size="sm">Undo</Button>}>
+          With a footer
+        </Tile>
+      </>
+    );
+
+    await expectNoViolations(container);
+  });
+
+  it("has no violations loading, or rendered as an article", async () => {
+    const { Tile } = await import("uireload/components/tile");
+
+    const { container } = render(
+      <>
+        <Tile loading>Body</Tile>
+        <Tile as="article">An article</Tile>
+      </>
+    );
+
+    await expectNoViolations(container);
+  });
+});
+
+describe("TabBar", () => {
+  it("has no accessibility violations with panels", async () => {
+    const { TabBar } = await import("uireload/components/tab-bar");
+
+    const { container } = render(
+      <TabBar
+        label="Sections"
+        items={[
+          { value: "a", label: "Overview", panel: "Overview panel" },
+          { value: "b", label: "Errors", badge: "3", tone: "danger", panel: "Errors panel" },
+          { value: "c", label: "Settings", panel: "Settings panel" },
+        ]}
+      />
+    );
+
+    await expectNoViolations(container);
+  });
+
+  it("has no violations vertical, lazy, with a disabled tab and no panel", async () => {
+    const { TabBar } = await import("uireload/components/tab-bar");
+
+    const { container } = render(
+      <>
+        <TabBar
+          label="Sections"
+          orientation="vertical"
+          lazy
+          items={[
+            { value: "a", label: "One", panel: "One panel" },
+            { value: "b", label: "Two", disabled: true, panel: "Two panel" },
+            { value: "c", label: "Three" },
+          ]}
+        />
+        <TabBar label="Panels" items={[{ value: "a", label: "Only a tab" }]} />
+      </>
+    );
+
+    await expectNoViolations(container);
+  });
+});
+
+describe("Snackbar", () => {
+  it("has no accessibility violations when open", async () => {
+    const { Snackbar } = await import("uireload/components/snackbar");
+    const { Button } = await import("uireload/components/button");
+
+    render(
+      <Snackbar open duration={null} action={<Button size="sm">Undo</Button>} tone="positive">
+        Settings saved.
+      </Snackbar>
+    );
+
+    // `document.body`, because the surface is portalled — the same reasoning as `Popover`.
+    await expectNoViolations(document.body);
+  });
+
+  it("has no violations closed, or assertively", async () => {
+    const { Snackbar } = await import("uireload/components/snackbar");
+
+    const { unmount } = render(<Snackbar>Saved</Snackbar>);
+    await expectNoViolations(document.body);
+    unmount();
+
+    render(
+      <Snackbar open duration={null} live="assertive" tone="danger">
+        Payment failed.
+      </Snackbar>
+    );
+    await expectNoViolations(document.body);
+  });
+});
+
 describe("colour schemes", () => {
   it("has no violations in any scheme", async () => {
     const { Button } = await import("uireload/components/button");

@@ -1,0 +1,294 @@
+/*
+ * Tile styles.
+ *
+ * Reads `--uir-radius`, `--uir-shadow` and `--uir-surface-raised`, which are the layout tokens rather
+ * than the control ones: a tile is not a control, and making it read the control ladder would make it
+ * the same size as the buttons it sits beside.
+ */
+
+@layer uireload.components {
+  .uir-tile,
+  .uir-tile__header,
+  .uir-tile__body,
+  .uir-tile__footer {
+    box-sizing: border-box;
+  }
+
+  /* ---- Root ---------------------------------------------------------- */
+
+  .uir-tile {
+    --uir-tile-pad: var(--uir-space);
+    --uir-tile-radius: var(--uir-radius);
+    --uir-tile-shadow: none;
+
+    background-color: var(--uir-tile-fill);
+    border: var(--uir-control-border-width) solid var(--uir-tile-border);
+    border-radius: var(--uir-tile-radius);
+    box-shadow: var(--uir-tile-shadow);
+    color: var(--uir-text);
+    display: flex;
+    flex-direction: column;
+    font-family: var(--uir-font-family);
+    /*
+     * `min-inline-size: 0` so a tile in a flex or grid row can shrink below its content's intrinsic
+     * width. Without it a long unbroken string sets the minimum and the row overflows.
+     */
+    min-inline-size: 0;
+    position: relative;
+    text-align: start;
+  }
+
+  /* ---- Padding ------------------------------------------------------- */
+
+  .uir-tile[data-padding="none"] {
+    --uir-tile-pad: 0;
+  }
+
+  .uir-tile[data-padding="sm"] {
+    --uir-tile-pad: calc(var(--uir-space) * 0.75);
+  }
+
+  .uir-tile[data-padding="lg"] {
+    --uir-tile-pad: calc(var(--uir-space) * 1.5);
+  }
+
+  /*
+   * The padding is applied to the body, not the root.
+   *
+   * A header and a footer want edge-to-edge backgrounds — a header with a tinted fill and padding
+   * inside it looks like a border, not a header. Padding the parts instead means the root's padding
+   * stays zero and each part owns its own inset.
+   */
+  .uir-tile[data-padding="none"] .uir-tile__header,
+  .uir-tile[data-padding="none"] .uir-tile__footer,
+  .uir-tile[data-padding="none"] .uir-tile__body {
+    padding: 0;
+  }
+
+  .uir-tile__body {
+    /* The root is the scroll container, so the body's own padding scrolls with its content. */
+    padding: var(--uir-tile-pad);
+  }
+
+  .uir-tile__header {
+    padding-block-end: calc(var(--uir-tile-pad) * 0.5);
+    padding-inline: var(--uir-tile-pad);
+    /* Only the top, so a header does not double the gap with the body. */
+    padding-block-start: var(--uir-tile-pad);
+  }
+
+  .uir-tile__footer {
+    padding-block-end: var(--uir-tile-pad);
+    padding-inline: var(--uir-tile-pad);
+    /* Only the top; the body's bottom padding supplies the rest. */
+    padding-block-start: calc(var(--uir-tile-pad) * 0.5);
+  }
+
+  /*
+   * Hairlines between the parts rather than more padding.
+   *
+   * A separator the same width as the border keeps the tile looking like one object instead of three
+   * stacked boxes.
+   */
+  .uir-tile[data-has-header][data-has-footer] .uir-tile__body {
+    padding-block: var(--uir-tile-pad);
+  }
+
+  .uir-tile[data-has-header] .uir-tile__footer,
+  .uir-tile[data-has-footer] .uir-tile__body {
+    border-block-start: var(--uir-control-border-width) solid var(--uir-tile-divider);
+  }
+
+  /* ---- Elevation ----------------------------------------------------- */
+
+  /*
+   * Three levels, and `flat` is the default.
+   *
+   * Elevation is the most expensive visual decision in a design system: a page of raised cards reads
+   * as a page of popups, and nothing else on the page is raised. So the default is a border and no
+   * shadow, and `raised` and `floating` have to be asked for.
+   *
+   * `raised` keeps the border *and* adds a shadow. Dropping the border is what makes a shadow read as
+   * elevation rather than as a smudge on a bordered box.
+   */
+  .uir-tile[data-elevation="flat"] {
+    --uir-tile-shadow: none;
+  }
+
+  .uir-tile[data-elevation="raised"] {
+    --uir-tile-shadow: var(--uir-shadow);
+  }
+
+  .uir-tile[data-elevation="floating"] {
+    --uir-tile-shadow: var(--uir-shadow-large);
+    --uir-tile-radius: var(--uir-radius-large);
+    /* A floating tile has no border — the shadow is the edge. */
+    border-color: transparent;
+  }
+
+  /* ---- Intent -------------------------------------------------------- */
+
+  /*
+   * The tone is a bar down the block-start edge, not a tinted fill.
+   *
+   * A tinted background on a large surface is the fastest way to make a page unreadable, and the
+   * block-start edge is where a status is scanned for. The bar sits above everything in the stacking
+   * order so it is never covered by a long body that scrolls.
+   */
+  .uir-tile[data-tone="neutral"] {
+    --uir-tile-edge: transparent;
+  }
+
+  /*
+   * The surface roles, declared once on the root.
+   *
+   * Not per tone: a tile's *surface* carries no meaning in this library — the tone is the edge bar and
+   * the consumer's content, not the background. A tinted tile fill would make a page of them
+   * unreadable, which is the reason the tone is an edge in the first place.
+   */
+  .uir-tile {
+    --uir-tile-fill: var(--uir-surface-raised);
+    --uir-tile-border: var(--uir-border);
+    --uir-tile-divider: var(--uir-border);
+    --uir-tile-hover: var(--uir-neutral-fill-hover);
+    --uir-tile-edge-width: 3px;
+  }
+
+  .uir-tile[data-tone="accent"] {
+    --uir-tile-edge: var(--uir-accent);
+  }
+
+  .uir-tile[data-tone="positive"] {
+    --uir-tile-edge: var(--uir-success);
+  }
+
+  .uir-tile[data-tone="danger"] {
+    --uir-tile-edge: var(--uir-danger);
+  }
+
+  .uir-tile::before {
+    /*
+     * The bar sits on the **root**, not on a part.
+     *
+     * Drawn per-part it has to be suppressed on two of the three, which is two rules and a chance to
+     * get it wrong — and on a tile whose body scrolls, a bar attached to the body scrolls away with
+     * the content, so a long tile loses its status colour exactly when it matters. On the root it
+     * cannot move.
+     */
+    background-color: var(--uir-tile-edge);
+    content: "";
+    inset-block: 0;
+    inset-inline-start: 0;
+    position: absolute;
+    inline-size: var(--uir-tile-edge-width);
+  }
+
+  /*
+   * Hidden for a neutral tile rather than drawn transparent.
+   *
+   * `transparent` still costs a paint and still occupies the inline-start edge, which shifts the
+   * content by the bar's width. `display: none` means a neutral tile's text starts where the padding
+   * says it does, whichever tone a sibling tile happens to use.
+   */
+  .uir-tile[data-tone="neutral"]::before {
+    display: none;
+  }
+
+  /* ---- Interactive --------------------------------------------------- */
+
+  /*
+   * An activatable tile.
+   *
+   * The whole surface is the target, so it takes a pointer and a focus ring. `cursor: pointer` is the
+   * one thing a `<button>` does not give you in CSS — and it is why an activatable tile is rendered
+   * as a `<button>` rather than as a div with a click handler, which would need this rule to fake it.
+   */
+  .uir-tile[data-interactive] {
+    cursor: pointer;
+    font: inherit;
+    text-align: start;
+  }
+
+  /*
+   * The focus ring is on the root, because the root is the only focusable element. A tile with a
+   * button in its header would otherwise have two tab stops, which is why `interactive` and a nested
+   * control are documented as incompatible.
+   */
+  .uir-tile[data-interactive]:focus-visible {
+    outline: var(--uir-focus-ring-width) solid var(--uir-focus-ring-color);
+    outline-offset: var(--uir-focus-ring-offset);
+  }
+
+  /*
+   * Hover is gated on a fine pointer, for the reason every other component in this library states: a
+   * hover state that persists after a tap is a known mobile annoyance.
+   *
+   * Only a wash of the surface, never a tone. Hovering a `danger` tile must not paint it red — that
+   * would read as an error, and hovering is not an error.
+   */
+  @media (hover: hover) and (pointer: fine) {
+    .uir-tile[data-interactive]:not([data-loading]):hover {
+      background-color: var(--uir-tile-hover);
+    }
+  }
+
+  /* ---- Loading ------------------------------------------------------- */
+
+  /*
+   * A skeleton placeholder, drawn from the same wash as the hover state so a loading tile does not
+   * flash a different colour when the real content arrives.
+   *
+   * The body is `aria-hidden` while loading, so nothing in here is read out; the placeholder is
+   * `aria-hidden` too and `aria-busy` on the root is the signal.
+   */
+  .uir-tile[data-loading] {
+    cursor: default;
+  }
+
+  .uir-tile[data-loading] .uir-tile__body {
+    background-color: var(--uir-tile-hover);
+    /* A fixed height, because a skeleton with the real content's height is not a skeleton. */
+    min-block-size: 4rem;
+  }
+
+  /* ---- Reduced motion ------------------------------------------------ */
+
+  /*
+   * The hover and loading states are colour changes, not motion, so nothing needs undoing. There is
+   * no transition anywhere in this file and adding an empty rule would imply otherwise.
+   */
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * A box-shadow is invisible in a forced-colours theme, so an `elevation` that is only a shadow loses
+   * its edge entirely and the tile disappears into the page.
+   *
+   * `Canvas` and `CanvasText` are the two colours guaranteed to exist in every one of these themes, so
+   * the surface and the border are set from them rather than from tokens that may not resolve. The
+   * elevation tiers are kept as border weights rather than shadows: a tier that cannot be seen should
+   * fall back to something that can.
+   */
+  @media (forced-colors: active) {
+    .uir-tile {
+      background-color: Canvas;
+      border-color: CanvasText;
+      box-shadow: none;
+      color: CanvasText;
+      forced-color-adjust: none;
+    }
+
+    .uir-tile[data-elevation="raised"],
+    .uir-tile[data-elevation="floating"] {
+      border-width: 2px;
+    }
+
+    .uir-tile[data-interactive]:focus-visible {
+      outline-color: Highlight;
+    }
+
+    .uir-tile[data-loading] .uir-tile__body {
+      background-color: GrayText;
+    }
+  }
+}

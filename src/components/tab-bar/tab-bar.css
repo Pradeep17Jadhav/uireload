@@ -1,0 +1,336 @@
+/*
+ * Tab bar styles.
+ *
+ * The strip is a flex row (or column) with the tabs in it, and the selection indicator is a
+ * pseudo-element on the selected tab rather than a separate element that would need measuring to stay
+ * aligned. Everything is keyed on `data-orientation` so one set of rules serves both axes.
+ */
+
+@layer uireload.components {
+  .uir-tab-bar,
+  .uir-tab-bar__strip,
+  .uir-tab-bar__tab,
+  .uir-tab-bar__label,
+  .uir-tab-bar__badge,
+  .uir-tab-bar__panel {
+    box-sizing: border-box;
+  }
+
+  /* ---- Root ---------------------------------------------------------- */
+
+  .uir-tab-bar {
+    --uir-tab-pad-inline: var(--uir-control-pad-inline-md);
+    --uir-tab-pad-block: var(--uir-control-pad-block-md);
+    --uir-tab-indicator-size: 2px;
+
+    display: grid;
+    font-family: var(--uir-font-family);
+    /* The strip may scroll horizontally; the bar itself must not. */
+    min-inline-size: 0;
+  }
+
+  /* ---- Strip --------------------------------------------------------- */
+
+  /*
+   * The strip is the scroll container when it is scrollable.
+   *
+   * A strip that wraps puts two tabs on one line and stops being a strip; one that clips puts tabs out
+   * of reach, and hidden tabs are not discoverable. Scrolling is the honest third option, so it is the
+   * default and `scrollable={false}` is the deliberate opt-out.
+   */
+  .uir-tab-bar[data-scrollable] .uir-tab-bar__strip {
+    overflow-x: auto;
+    /*
+     * Hides the scrollbar without hiding the ability to scroll.
+     *
+     * `scrollbar-width: none` for the standards-based engines and `::-webkit-scrollbar` for the rest;
+     * neither removes the keyboard's ability to scroll the region, which is what would actually hurt.
+     */
+    scrollbar-width: none;
+  }
+
+  .uir-tab-bar[data-scrollable] .uir-tab-bar__strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .uir-tab-bar__strip {
+    border-block-end: var(--uir-control-border-width) solid var(--uir-tab-bar-border);
+    display: flex;
+    gap: var(--uir-space-xs, 0.125rem);
+    min-inline-size: 0;
+    position: relative;
+  }
+
+  .uir-tab-bar[data-orientation="vertical"] .uir-tab-bar__strip {
+    border-block-end: 0;
+    border-inline-end: var(--uir-control-border-width) solid var(--uir-tab-bar-border);
+    flex-direction: column;
+  }
+
+  /* ---- Tab ----------------------------------------------------------- */
+
+  .uir-tab-bar__tab {
+    align-items: center;
+    color: var(--uir-tab-text);
+    cursor: pointer;
+    display: inline-flex;
+    font-family: inherit;
+    font-size: var(--uir-control-font-size-md);
+    font-weight: var(--uir-control-font-weight);
+    gap: var(--uir-control-gap);
+    /*
+     * The tab is a button, so its default styling has to be undone explicitly rather than relied on
+     * not existing. `background: none` and `border: 0` are what make it look like a tab.
+     */
+    background: none;
+    border: 0;
+    line-height: var(--uir-line-height);
+    padding-block: var(--uir-tab-pad-block);
+    padding-inline: var(--uir-tab-pad-inline);
+    position: relative;
+    /*
+     * `white-space: nowrap`, because a two-line tab is a different component and a wrapping tab strip
+     * changes height as tabs are selected.
+     */
+    white-space: nowrap;
+  }
+
+  /*
+   * The indicator.
+   *
+   * A pseudo-element on the tab rather than a separate element in the strip, so it is always exactly as
+   * wide as the tab it marks and needs no measuring in JavaScript.
+   *
+   * It is `aria-hidden` by construction — a pseudo-element has no accessibility semantics at all — and
+   * `aria-selected` is what carries the state.
+   */
+  .uir-tab-bar__tab::after {
+    background-color: var(--uir-tab-indicator, transparent);
+    content: "";
+    inset-inline: 0;
+    position: absolute;
+  }
+
+  .uir-tab-bar__tab[data-selected]::after {
+    /*
+     * A full-width block rather than a small centred mark, because a tab is a target and a 12px
+     * underline in a 200px tab is ambiguous about which part is selected.
+     */
+    block-size: var(--uir-tab-indicator-size);
+    inset-block-end: 0;
+  }
+
+  .uir-tab-bar[data-orientation="vertical"] .uir-tab-bar__tab[data-selected]::after {
+    block-size: auto;
+    inline-size: var(--uir-tab-indicator-size);
+    inset-block: 0;
+    inset-inline-end: 0;
+    inset-inline-start: auto;
+  }
+
+  /*
+   * `data-indicator` overrides.
+   *
+   * `auto` is the default and is handled by the orientation rules above; the other three values are a
+   * deliberate override for a design that wants the indicator somewhere other than the edge the tabs
+   * advance toward.
+   */
+  .uir-tab-bar[data-indicator="block-start"] .uir-tab-bar__tab[data-selected]::after {
+    inset-block-end: auto;
+    inset-block-start: 0;
+  }
+
+  .uir-tab-bar[data-indicator="inline-end"] .uir-tab-bar__tab[data-selected]::after {
+    block-size: auto;
+    inline-size: var(--uir-tab-indicator-size);
+    inset-block: 0;
+    inset-inline-end: 0;
+    inset-inline-start: auto;
+  }
+
+  /* ---- Label and badge ----------------------------------------------- */
+
+  .uir-tab-bar__label {
+    min-inline-size: 0;
+    /* A long label truncates rather than pushing the strip wider than its container. */
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /*
+   * The badge.
+   *
+   * Inside the tab's label, so it is part of the accessible name — a count a screen reader cannot
+   * announce is a count only sighted users see, which is the opposite of what a count is for.
+   */
+  .uir-tab-bar__badge {
+    background-color: var(--uir-tab-badge-fill);
+    border-radius: calc(var(--uir-control-height-sm) / 2);
+    color: var(--uir-tab-badge-text);
+    flex-shrink: 0;
+    font-size: var(--uir-control-font-size-sm);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    padding-block: 0.15em;
+    padding-inline: 0.5em;
+  }
+
+  /* ---- Tone ---------------------------------------------------------- */
+
+  /*
+   * Four indicator roles per tone.
+   *
+   * A tab strip routinely mixes states — a "3 errors" tab beside a normal one — so the tone is per-tab.
+   * It paints the indicator and the label only; the tab's background stays the surface, because a row
+   * of coloured tab backgrounds is the failure `data-tone` is supposed to avoid.
+   */
+  .uir-tab-bar__tab[data-tone="neutral"] {
+    --uir-tab-indicator: transparent;
+    --uir-tab-text: var(--uir-text-muted);
+  }
+
+  .uir-tab-bar__tab[data-tone="accent"] {
+    --uir-tab-indicator: var(--uir-accent);
+    --uir-tab-text: var(--uir-accent);
+  }
+
+  .uir-tab-bar__tab[data-tone="positive"] {
+    --uir-tab-indicator: var(--uir-success);
+    --uir-tab-text: var(--uir-success);
+  }
+
+  .uir-tab-bar__tab[data-tone="danger"] {
+    --uir-tab-indicator: var(--uir-danger);
+    --uir-tab-text: var(--uir-danger);
+  }
+
+  /*
+   * The selected tab's text, which is the full-strength colour whatever the tone.
+   *
+   * Stated after the tone blocks so it wins on specificity without `!important`: a selected tab must be
+   * readable as selected, and `--uir-text-muted` on a selected accent tab is a tab nobody can find.
+   */
+  .uir-tab-bar__tab[data-selected] {
+    color: var(--uir-text);
+  }
+
+  /*
+   * The badge roles, declared once.
+   *
+   * `CanvasText` in a forced-colours theme is handled by the rule at the bottom; here the badge is a
+   * neutral fill in every tone, because the badge's job is to be a number and not a colour.
+   */
+  .uir-tab-bar {
+    --uir-tab-bar-border: var(--uir-border);
+    --uir-tab-badge-fill: var(--uir-neutral-wash);
+    --uir-tab-badge-text: var(--uir-neutral-on-wash);
+  }
+
+  /* ---- States -------------------------------------------------------- */
+
+  /*
+   * Hover is gated on a fine pointer, for the reason every other component in this library states.
+   *
+   * A wash rather than a tone: hovering a `danger` tab must not paint it red, which would read as an
+   * error, and hovering is not an error.
+   */
+  @media (hover: hover) and (pointer: fine) {
+    .uir-tab-bar__tab:not(:disabled):hover {
+      background-color: var(--uir-neutral-fill-hover);
+    }
+  }
+
+  /*
+   * `data-focused` rather than `:focus-visible`.
+   *
+   * `:focus-visible` alone is not enough here: under manual activation the focused tab is deliberately
+   * *not* the selected one, and without a visible distinction the two look identical and the keyboard
+   * appears to be doing nothing.
+   */
+  .uir-tab-bar__tab[data-focused] {
+    background-color: var(--uir-neutral-fill-hover);
+  }
+
+  .uir-tab-bar__tab[data-selected][data-focused] {
+    background-color: var(--uir-neutral-fill-active);
+  }
+
+  .uir-tab-bar__tab:focus-visible {
+    outline: var(--uir-focus-ring-width) solid var(--uir-focus-ring-color);
+    outline-offset: calc(-1 * var(--uir-focus-ring-width));
+  }
+
+  .uir-tab-bar__tab:disabled {
+    cursor: not-allowed;
+    opacity: var(--uir-disabled-opacity);
+  }
+
+  /* ---- Panel --------------------------------------------------------- */
+
+  /*
+   * A tab stop on the panel.
+   *
+   * The panel is focusable so a keyboard user can scroll it — a panel with no tab stop is a panel
+   * whose overflow is unreachable from the keyboard. The `hidden` attribute keeps the unselected ones
+   * out of the tree and out of find-in-page.
+   */
+  .uir-tab-bar__panel {
+    color: var(--uir-text);
+    font-family: var(--uir-font-family);
+    font-size: var(--uir-font-size);
+    line-height: var(--uir-line-height);
+    overflow-x: auto;
+    padding-block-start: var(--uir-space);
+  }
+
+  .uir-tab-bar__panel:focus-visible {
+    outline: var(--uir-focus-ring-width) solid var(--uir-focus-ring-color);
+    outline-offset: calc(-1 * var(--uir-focus-ring-width));
+  }
+
+  /* ---- Reduced motion ------------------------------------------------ */
+
+  /*
+   * Nothing to undo. There is no transition in this file: the selection indicator moves because the
+   * selected tab moves, and animating it would make a keyboard user's arrow press look like it did not
+   * register. Recorded so the absence is a decision.
+   */
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * The indicator is the part that needs help.
+   *
+   * A `background-color` on a pseudo-element is replaced by the system palette in a forced-colours
+   * theme, which would leave every selected tab with the same bar and no way to tell which tab is
+   * selected. `forced-color-adjust: none` plus `Highlight` puts it back — `Highlight` is what a selected
+   * item is in every one of these themes.
+   */
+  @media (forced-colors: active) {
+    .uir-tab-bar__strip {
+      border-color: CanvasText;
+    }
+
+    .uir-tab-bar__tab {
+      color: CanvasText;
+      forced-color-adjust: none;
+    }
+
+    .uir-tab-bar__tab[data-selected] {
+      color: Highlight;
+    }
+
+    .uir-tab-bar__tab[data-selected]::after {
+      background-color: Highlight;
+      forced-color-adjust: none;
+    }
+
+    .uir-tab-bar__tab:disabled {
+      color: GrayText;
+    }
+
+    .uir-tab-bar__tab:focus-visible {
+      outline-color: Highlight;
+    }
+  }
+}

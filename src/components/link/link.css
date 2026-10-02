@@ -1,0 +1,257 @@
+/*
+ * Link styles.
+ *
+ * Underline, colour, and the size ladder — nothing else. Everything a link *does* is the platform's,
+ * so this stylesheet deliberately contains no `cursor`, no transition and no hover behaviour that
+ * changes anything a reader would miss.
+ */
+
+@layer uireload.components {
+  .uir-link,
+  .uir-link__end-icon,
+  .uir-link__external {
+    box-sizing: border-box;
+  }
+
+  /* ---- Root ---------------------------------------------------------- */
+
+  .uir-link {
+    /*
+     * An inline element, so a link inside a sentence is a link inside a sentence. `inline-flex` on a
+     * link in running text breaks the line box; the adornments are positioned instead.
+     */
+    display: inline;
+    font-family: var(--uir-font-family);
+    font-size: var(--uir-link-font-size);
+    font-weight: var(--uir-link-font-weight);
+    line-height: inherit;
+    /*
+     * Wraps at the edge of its container rather than overflowing.
+     *
+     * `overflow-wrap: break-word` rather than `anywhere`, which is enough for a long URL used as link
+     * text and does not break ordinary words mid-syllable.
+     */
+    overflow-wrap: break-word;
+  }
+
+  .uir-link[data-size="sm"] {
+    --uir-link-font-size: var(--uir-control-font-size-sm);
+  }
+
+  .uir-link[data-size="lg"] {
+    --uir-link-font-size: var(--uir-control-font-size-lg);
+  }
+
+  /*
+   * The default link weight is the body weight, not the control weight.
+   *
+   * A link is prose. Setting it to `--uir-control-font-weight` would make every link in a paragraph
+   * half a step heavier than the text around it, which is a visible difference in a wall of text and
+   * none at all in a control.
+   */
+  .uir-link {
+    --uir-link-font-size: var(--uir-font-size);
+    --uir-link-font-weight: var(--uir-font-weight);
+  }
+
+  /* ---- Underline ----------------------------------------------------- */
+
+  /*
+   * `text-decoration` rather than a `border-bottom`.
+   *
+   * A border sits outside the text's descenders and gets skipped where the text wraps, so a two-line
+   * link is underlined on one line and not the other. A text decoration underlines both, and follows
+   * the glyphs — which is what "underlined" means.
+   *
+   * `text-underline-offset` gives the line room to breathe; the default offset collides with descenders
+   * on the line below in a tight leading.
+   */
+  .uir-link[data-underline="inline"],
+  .uir-link[data-underline="always"] {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.15em;
+  }
+
+  /*
+   * `hover` underlines on hover **and on focus**.
+   *
+   * The focus case is not optional. A link whose underline appears on hover but not on focus is a link
+   * a keyboard user cannot see — which defeats the point of a `:focus-visible` ring the colour of the
+   * page, since the ring is drawn against a background the link shares.
+   *
+   * The cost of this mode is real and is documented in `link.types.ts`: a keyboard user cannot see
+   * where the links are until they reach them.
+   */
+  .uir-link[data-underline="hover"] {
+    text-decoration: none;
+  }
+
+  @media (hover: hover) {
+    .uir-link[data-underline="hover"]:hover {
+      text-decoration: underline;
+      text-underline-offset: 0.15em;
+    }
+  }
+
+  .uir-link[data-underline="hover"]:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+
+  /* ---- Tone ---------------------------------------------------------- */
+
+  /*
+   * Four roles, matching every other component. `currentColor` for the decoration so the underline
+   * follows the link's own colour rather than being drawn separately.
+   */
+  .uir-link[data-tone="neutral"] {
+    color: var(--uir-accent);
+  }
+
+  .uir-link[data-tone="accent"] {
+    color: var(--uir-accent);
+  }
+
+  .uir-link[data-tone="positive"] {
+    color: var(--uir-success);
+  }
+
+  .uir-link[data-tone="danger"] {
+    color: var(--uir-danger);
+  }
+
+  /* ---- Adornments ---------------------------------------------------- */
+
+  /*
+   * Both adornments are inline, not flex children.
+   *
+   * The root is `display: inline` so that it behaves inside a paragraph, and that rules out a flex row.
+   * The trade is that the external arrow's rotation would rotate its box as well as its shape, so the
+   * glyph is drawn as a rotated *pseudo-element* inside an unrotated span and the span carries only the
+   * layout.
+   */
+  .uir-link__end-icon {
+    display: inline;
+    margin-inline-start: 0.25em;
+    vertical-align: text-bottom;
+  }
+
+  .uir-link__external {
+    display: inline-block;
+    margin-inline-start: 0.25em;
+    vertical-align: text-bottom;
+    /*
+     * A square whose size follows the text, so the arrow is in proportion at every size tier rather
+     * than being one glyph and three sizes of it.
+     */
+    inline-size: 0.5em;
+    block-size: 0.5em;
+  }
+
+  /*
+   * The arrow: two borders meeting at a point, rotated 45°.
+   *
+   * No icon to import and no request, and `currentColor` so it follows the link in every theme
+   * including forced-colours, where the forced rule below needs to say nothing about it.
+   */
+  .uir-link__external::after {
+    border-block-start: 1.5px solid currentcolor;
+    border-inline-end: 1.5px solid currentcolor;
+    content: "";
+    display: block;
+    block-size: 100%;
+    inline-size: 100%;
+    /*
+     * -45° points the corner up and to the right, which is the direction "leaves this page". `45deg`
+     * would point it down and to the right, which reads as a chevron for disclosure instead.
+     *
+     * The rotation is on the pseudo-element and not on the span, so the span's box stays the size the
+     * text asked for.
+     */
+    transform: rotate(-45deg);
+  }
+
+  /* ---- States -------------------------------------------------------- */
+
+  /*
+   * The focus ring.
+   *
+   * Drawn on the root, because the root is the only focusable element here. `outline-offset` is small
+   * rather than the control default: a link sits inside a line of text, and a ring with a control's
+   * padding around it punches a hole through the line above and below.
+   */
+  .uir-link:focus-visible {
+    outline: var(--uir-focus-ring-width) solid var(--uir-focus-ring-color);
+    outline-offset: 1px;
+    /* A ring needs a contrasting edge to sit against, which the page background may not be. */
+    border-radius: 2px;
+  }
+
+  /*
+   * Visited state, deliberately left to the platform.
+   *
+   * A browser's `:visited` styling cannot be overridden by a page for privacy reasons, and a design
+   * system that tries ends up either losing the affordance or shipping a hack. The link colour here is
+   * the unvisited colour; a browser that tracks history will still mark visited links, and that is a
+   * feature rather than an inconsistency to fix.
+   */
+
+  /*
+   * Disabled.
+   *
+   * `opacity` with `pointer-events` intact, for the same reason as every other component: a disabled
+   * control is often exactly the one a user needs a tooltip to explain.
+   *
+   * The link stays focusable and keeps its `href` — see the note in `link.tsx`. The `href` is what
+   * keeps it in the tab order and keeps its link role; navigation is stopped in the click handler
+   * rather than by removing the `href`, which would take the tab stop and the role with it.
+   */
+  .uir-link[data-disabled] {
+    cursor: not-allowed;
+    opacity: var(--uir-disabled-opacity);
+    /* An unavailable link should not look available, even when hovered. */
+    text-decoration: none;
+  }
+
+  /*
+   * Hover suppression for a disabled link.
+   *
+   * A disabled control that gains a hover treatment tells the user it is actionable at exactly the
+   * moment it is not. The root rule cannot express this — `[data-underline="hover"]:hover` is more
+   * specific — so it is undone here.
+   */
+  .uir-link[data-disabled]:hover {
+    text-decoration: none;
+  }
+
+  /* ---- Reduced motion ------------------------------------------------ */
+
+  /*
+   * Nothing to do.
+   *
+   * There is no transition anywhere in this file. A link's hover state is a decoration appearing and
+   * disappearing, which is not motion in the sense that `prefers-reduced-motion` is about, and
+   * animating an underline would make it harder to follow while it moves. Recorded so the absence is
+   * a decision rather than an omission.
+   */
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * Nothing to do, and this is worth stating.
+   *
+   * Every rule here uses `currentColor` or a colour token the theme redefines, and the underline is a
+   * `text-decoration` rather than a border, so it follows the text colour automatically. The one
+   * thing a forced-colours theme does not do is invent a link colour — it uses the system one — and
+   * `currentColor` means the adornments follow whatever that is.
+   *
+   * The focus ring is the exception a theme *does* change, and `Highlight` is what a focused item is in
+   * every one of them, so it is restated below rather than relying on the token surviving.
+   */
+  @media (forced-colors: active) {
+    .uir-link:focus-visible {
+      outline-color: Highlight;
+    }
+  }
+}

@@ -50,6 +50,26 @@
         "default": "./dist/components/button/index.cjs"
       }
     },
+    "./components/checkbox": {
+      "import": {
+        "types": "./dist/components/checkbox/index.d.ts",
+        "default": "./dist/components/checkbox/index.js"
+      },
+      "require": {
+        "types": "./dist/components/checkbox/index.d.cts",
+        "default": "./dist/components/checkbox/index.cjs"
+      }
+    },
+    "./components/chip": {
+      "import": {
+        "types": "./dist/components/chip/index.d.ts",
+        "default": "./dist/components/chip/index.js"
+      },
+      "require": {
+        "types": "./dist/components/chip/index.d.cts",
+        "default": "./dist/components/chip/index.cjs"
+      }
+    },
     "./components/dialog": {
       "import": {
         "types": "./dist/components/dialog/index.d.ts",
@@ -70,6 +90,16 @@
         "default": "./dist/components/icon-button/index.cjs"
       }
     },
+    "./components/link": {
+      "import": {
+        "types": "./dist/components/link/index.d.ts",
+        "default": "./dist/components/link/index.js"
+      },
+      "require": {
+        "types": "./dist/components/link/index.d.cts",
+        "default": "./dist/components/link/index.cjs"
+      }
+    },
     "./components/popover": {
       "import": {
         "types": "./dist/components/popover/index.d.ts",
@@ -78,6 +108,16 @@
       "require": {
         "types": "./dist/components/popover/index.d.cts",
         "default": "./dist/components/popover/index.cjs"
+      }
+    },
+    "./components/radio-group": {
+      "import": {
+        "types": "./dist/components/radio-group/index.d.ts",
+        "default": "./dist/components/radio-group/index.js"
+      },
+      "require": {
+        "types": "./dist/components/radio-group/index.d.cts",
+        "default": "./dist/components/radio-group/index.cjs"
       }
     },
     "./components/select": {
@@ -90,6 +130,26 @@
         "default": "./dist/components/select/index.cjs"
       }
     },
+    "./components/slider": {
+      "import": {
+        "types": "./dist/components/slider/index.d.ts",
+        "default": "./dist/components/slider/index.js"
+      },
+      "require": {
+        "types": "./dist/components/slider/index.d.cts",
+        "default": "./dist/components/slider/index.cjs"
+      }
+    },
+    "./components/snackbar": {
+      "import": {
+        "types": "./dist/components/snackbar/index.d.ts",
+        "default": "./dist/components/snackbar/index.js"
+      },
+      "require": {
+        "types": "./dist/components/snackbar/index.d.cts",
+        "default": "./dist/components/snackbar/index.cjs"
+      }
+    },
     "./components/switch": {
       "import": {
         "types": "./dist/components/switch/index.d.ts",
@@ -100,6 +160,26 @@
         "default": "./dist/components/switch/index.cjs"
       }
     },
+    "./components/tab-bar": {
+      "import": {
+        "types": "./dist/components/tab-bar/index.d.ts",
+        "default": "./dist/components/tab-bar/index.js"
+      },
+      "require": {
+        "types": "./dist/components/tab-bar/index.d.cts",
+        "default": "./dist/components/tab-bar/index.cjs"
+      }
+    },
+    "./components/text": {
+      "import": {
+        "types": "./dist/components/text/index.d.ts",
+        "default": "./dist/components/text/index.js"
+      },
+      "require": {
+        "types": "./dist/components/text/index.d.cts",
+        "default": "./dist/components/text/index.cjs"
+      }
+    },
     "./components/textbox": {
       "import": {
         "types": "./dist/components/textbox/index.d.ts",
@@ -108,6 +188,16 @@
       "require": {
         "types": "./dist/components/textbox/index.d.cts",
         "default": "./dist/components/textbox/index.cjs"
+      }
+    },
+    "./components/tile": {
+      "import": {
+        "types": "./dist/components/tile/index.d.ts",
+        "default": "./dist/components/tile/index.js"
+      },
+      "require": {
+        "types": "./dist/components/tile/index.d.cts",
+        "default": "./dist/components/tile/index.cjs"
       }
     },
     "./components/toggle-button": {
@@ -139,23 +229,50 @@
       "components/button": [
         "./dist/components/button/index.d.ts"
       ],
+      "components/checkbox": [
+        "./dist/components/checkbox/index.d.ts"
+      ],
+      "components/chip": [
+        "./dist/components/chip/index.d.ts"
+      ],
       "components/dialog": [
         "./dist/components/dialog/index.d.ts"
       ],
       "components/icon-button": [
         "./dist/components/icon-button/index.d.ts"
       ],
+      "components/link": [
+        "./dist/components/link/index.d.ts"
+      ],
       "components/popover": [
         "./dist/components/popover/index.d.ts"
+      ],
+      "components/radio-group": [
+        "./dist/components/radio-group/index.d.ts"
       ],
       "components/select": [
         "./dist/components/select/index.d.ts"
       ],
+      "components/slider": [
+        "./dist/components/slider/index.d.ts"
+      ],
+      "components/snackbar": [
+        "./dist/components/snackbar/index.d.ts"
+      ],
       "components/switch": [
         "./dist/components/switch/index.d.ts"
       ],
+      "components/tab-bar": [
+        "./dist/components/tab-bar/index.d.ts"
+      ],
+      "components/text": [
+        "./dist/components/text/index.d.ts"
+      ],
       "components/textbox": [
         "./dist/components/textbox/index.d.ts"
+      ],
+      "components/tile": [
+        "./dist/components/tile/index.d.ts"
       ],
       "components/toggle-button": [
         "./dist/components/toggle-button/index.d.ts"

@@ -1,0 +1,421 @@
+/*
+ * Slider styles.
+ *
+ * The geometry is percentages from two custom properties, `--uir-slider-at` (0..1) and
+ * `--uir-slider-from` / `--uir-slider-to`. Percentages rather than pixels so the same rule serves a
+ * horizontal slider and a vertical one, and so a thumb never has to be measured in JavaScript to
+ * find where to sit.
+ *
+ * The controls are real `<input type="range">`, visually hidden but focusable. Everything drawn here
+ * is a picture of what those inputs already report, which is why the rail is `aria-hidden`.
+ */
+
+@layer uireload.components {
+  .uir-slider,
+  .uir-slider__header,
+  .uir-slider__label,
+  .uir-slider__readout,
+  .uir-slider__rail,
+  .uir-slider__track,
+  .uir-slider__thumb,
+  .uir-slider__inputs,
+  .uir-slider__marks,
+  .uir-slider__mark,
+  .uir-slider__mark-label,
+  .uir-slider__labels,
+  .uir-slider__value-label,
+  .uir-slider__helper {
+    box-sizing: border-box;
+  }
+
+  /* ---- Root ---------------------------------------------------------- */
+
+  .uir-slider {
+    --uir-slider-track-size: 0.25rem;
+    --uir-slider-thumb-size: 1.125rem;
+    display: grid;
+    font-family: var(--uir-font-family);
+    gap: var(--uir-control-gap);
+    /* Room for the thumb to overhang the rail's ends without being clipped. */
+    padding-block: var(--uir-slider-thumb-size);
+    position: relative;
+  }
+
+  .uir-slider[data-size="sm"] {
+    --uir-slider-track-size: 0.1875rem;
+    --uir-slider-thumb-size: 0.875rem;
+  }
+
+  .uir-slider[data-size="lg"] {
+    --uir-slider-track-size: 0.375rem;
+    --uir-slider-thumb-size: 1.5rem;
+  }
+
+  /*
+   * The header row: label on one side, value on the other.
+   *
+   * A grid rather than a flex row with a spacer, because the two cells stay the same height as the
+   * label's line box however long the value gets, and the value is right-aligned without a
+   * `margin-inline-start: auto`.
+   */
+  .uir-slider__header {
+    align-items: baseline;
+    display: grid;
+    grid-template-columns: 1fr auto;
+  }
+
+  .uir-slider__label {
+    color: var(--uir-text);
+    font-size: var(--uir-control-font-size-sm);
+    font-weight: var(--uir-control-font-weight);
+    line-height: var(--uir-line-height);
+  }
+
+  /*
+   * A tabular figure so the readout does not jitter sideways as digits change. A proportional digit
+   * makes the number visibly twitch on every step, which reads as the slider being imprecise.
+   */
+  .uir-slider__readout {
+    color: var(--uir-text-muted);
+    display: flex;
+    font-size: var(--uir-control-font-size-sm);
+    font-variant-numeric: tabular-nums;
+    gap: var(--uir-space);
+    line-height: var(--uir-line-height);
+  }
+
+  /* ---- Rail, track and thumbs ---------------------------------------- */
+
+  .uir-slider__rail {
+    block-size: var(--uir-slider-thumb-size);
+    inline-size: 100%;
+    position: relative;
+  }
+
+  /*
+   * The rail itself and the filled portion share one rule, because they differ only in colour.
+   */
+  .uir-slider__rail,
+  .uir-slider__track {
+    background-color: var(--uir-slider-fill);
+    border-radius: calc(var(--uir-slider-track-size) / 2);
+    block-size: var(--uir-slider-track-size);
+    position: absolute;
+  }
+
+  .uir-slider__rail {
+    inline-size: 100%;
+    /* Vertically centred in the rail box, which is the thumb's height. */
+    inset-block-start: calc((var(--uir-slider-thumb-size) - var(--uir-slider-track-size)) / 2);
+  }
+
+  /*
+   * The filled portion, from `--uir-slider-from` to `--uir-slider-to`.
+   *
+   * `inset-inline-start` plus `inline-size` rather than `left`/`width`, so the whole thing mirrors in
+   * RTL with no second rule. In an inverted track the values straddle the midpoint and the same
+   * arithmetic draws both halves.
+   */
+  .uir-slider__track {
+    background-color: var(--uir-slider-accent);
+    inline-size: calc((var(--uir-slider-to) - var(--uir-slider-from)) * 100%);
+    inset-inline-start: calc(var(--uir-slider-from) * 100%);
+  }
+
+  /*
+   * A thumb.
+   *
+   * Centred on its value with a half-width translate, so `--uir-slider-at` is the thumb's *centre*
+   * rather than its edge — which is what lets `inset-inline-start` be a plain percentage of the
+   * rail with no compensation at the ends.
+   *
+   * `aria-hidden` upstream: the thumb is a picture of the input's own value, and announcing both
+   * would state the same number twice.
+   */
+  .uir-slider__thumb {
+    background-color: var(--uir-surface-raised);
+    border: var(--uir-control-border-width) solid var(--uir-slider-accent);
+    border-radius: 50%;
+    block-size: var(--uir-slider-thumb-size);
+    box-shadow: var(--uir-slider-thumb-shadow, 0 1px 2px rgb(15 23 42 / 0.2));
+    inline-size: var(--uir-slider-thumb-size);
+    inset-block-start: calc((var(--uir-slider-thumb-size) - var(--uir-slider-thumb-size)) / 2);
+    inset-inline-start: calc(var(--uir-slider-at) * 100%);
+    pointer-events: none;
+    position: absolute;
+    transform: translateX(-50%);
+    transition:
+      box-shadow var(--uir-duration) var(--uir-easing),
+      border-color var(--uir-duration) var(--uir-easing);
+  }
+
+  /*
+   * The vertical axis centres with `translateY` instead, so one thumb rule would be wrong on one
+   * orientation and right on the other. Two declarations, stated once each.
+   */
+  .uir-slider[data-orientation="vertical"] .uir-slider__thumb {
+    inset-block-start: calc(100% - var(--uir-slider-at) * 100%);
+    inset-inline-start: calc((var(--uir-slider-thumb-size) - var(--uir-slider-thumb-size)) / 2);
+    transform: translateY(50%);
+  }
+
+  /*
+   * `data-range` marks a two-thumb slider, whose thumbs need to be visually ordered so the one on
+   * top is the one a pointer is about to grab. The later thumb wins the stacking order.
+   */
+  .uir-slider[data-range] .uir-slider__thumb:nth-of-type(2) {
+    z-index: 1;
+  }
+
+  /* ---- The real controls --------------------------------------------- */
+
+  /*
+   * Hidden, not removed.
+   *
+   * The input has to stay in the accessibility tree, in the tab order, and focusable, so this is a
+   * visually-hidden element rather than `display: none` or `visibility: hidden` — both of which
+   * take it out of the tab order and out of the form entirely.
+   *
+   * `pointer-events: none` because the drawn rail and thumbs take the pointer: letting the input take
+   * it too would mean the browser's own thumb-drag maths and ours both writing the same value on
+   * one gesture, and a slider that jumps is the result.
+   */
+  .uir-slider__input {
+    block-size: 100%;
+    inline-size: 100%;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  /*
+   * The focus ring, drawn on whichever thumb's input has focus.
+   *
+   * `:has()` on the root rather than a sibling combinator on the input: the thumbs are rendered
+   * inside `__rail` and the inputs inside `__inputs`, and no sibling combinator crosses that
+   * boundary. `:has()` is the only selector that can express "the focused input is inside this
+   * component, so show a ring on this component's thumbs".
+   *
+   * Every thumb gets the ring, not just the focused one. There is one focused input and several
+   * drawn thumbs, and CSS cannot know which input maps to which thumb — but a ring on all of them
+   * reads correctly: the thumb the user is steering is ringed, and a ring on a neighbour is not
+   * misleading, because the neighbour is at a position the user can see. Narrowing this to one
+   * thumb needs the focus index exposed as a data attribute on the root, which is recorded as a gap.
+   */
+  .uir-slider:has(.uir-slider__input:focus-visible) .uir-slider__thumb {
+    box-shadow: 0 0 0 var(--uir-focus-ring-width) var(--uir-slider-ring);
+  }
+
+  /* ---- Marks --------------------------------------------------------- */
+
+  /*
+   * The marks row is the same grid as the rail, so a mark at 0.5 sits under a thumb at 0.5 without
+   * any measurement. It is `aria-hidden` for the same reason the rail is.
+   */
+  .uir-slider__marks {
+    block-size: auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    inset-block-start: var(--uir-slider-thumb-size);
+    position: absolute;
+  }
+
+  .uir-slider__mark {
+    color: var(--uir-text-muted);
+    font-size: var(--uir-control-font-size-sm);
+    line-height: var(--uir-line-height);
+    position: relative;
+  }
+
+  /*
+   * A tick at the value, and the label under it.
+   *
+   * Centred on the same percentage the thumb uses, so the two cannot disagree about where a value
+   * is — the failure that makes a labelled slider look miscalibrated.
+   */
+  .uir-slider__mark::before {
+    background-color: var(--uir-slider-fill-strong);
+    block-size: 0.375rem;
+    content: "";
+    inline-size: var(--uir-control-border-width);
+    inset-block-start: calc(-1 * var(--uir-slider-thumb-size) - var(--uir-space));
+    inset-inline-start: calc(var(--uir-slider-at) * 100%);
+    position: absolute;
+  }
+
+  .uir-slider__mark-label {
+    display: block;
+    inset-inline-start: calc(var(--uir-slider-at) * 100%);
+    position: absolute;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+
+  /* ---- The value bubble ---------------------------------------------- */
+
+  /*
+   * Positioned above the thumb from the same `--uir-slider-at`, so the bubble and the thumb are
+   * guaranteed to be over the same value rather than two independently-computed positions.
+   */
+  .uir-slider__labels {
+    inset-block-start: calc(-1 * var(--uir-slider-thumb-size));
+    inset-inline: 0;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  .uir-slider__value-label {
+    background-color: var(--uir-slider-bubble);
+    border-radius: var(--uir-control-radius);
+    color: var(--uir-slider-bubble-text);
+    font-size: var(--uir-control-font-size-sm);
+    font-variant-numeric: tabular-nums;
+    inset-inline-start: calc(var(--uir-slider-at) * 100%);
+    padding-block: 0.125rem;
+    padding-inline: var(--uir-space);
+    position: absolute;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+
+  /* ---- Description --------------------------------------------------- */
+
+  .uir-slider__helper {
+    color: var(--uir-text-muted);
+    font-size: var(--uir-control-font-size-sm);
+    line-height: var(--uir-line-height);
+  }
+
+  /* ---- Intent -------------------------------------------------------- */
+
+  /*
+   * Four roles per tone, so a new tone is four declarations here and nothing else changes.
+   */
+  .uir-slider[data-tone="neutral"] {
+    --uir-slider-accent: var(--uir-accent);
+    --uir-slider-ring: var(--uir-focus-ring-color);
+  }
+
+  .uir-slider[data-tone="accent"] {
+    --uir-slider-accent: var(--uir-accent);
+    --uir-slider-ring: var(--uir-accent);
+  }
+
+  .uir-slider[data-tone="positive"] {
+    --uir-slider-accent: var(--uir-success);
+    --uir-slider-ring: var(--uir-success);
+  }
+
+  .uir-slider[data-tone="danger"] {
+    --uir-slider-accent: var(--uir-danger);
+    --uir-slider-ring: var(--uir-danger);
+  }
+
+  /* ---- Vertical ------------------------------------------------------ */
+
+  /*
+   * A vertical slider is laid out by swapping the two axes rather than by transposing every child.
+   *
+   * The header stays above the rail, and the marks stay below it: rotating the whole component would
+   * put the label on its side, which is unreadable. So the axis change is confined to the rail's and
+   * the track's dimensions.
+   */
+  .uir-slider[data-orientation="vertical"] {
+    justify-items: center;
+  }
+
+  .uir-slider[data-orientation="vertical"] .uir-slider__header,
+  .uir-slider[data-orientation="vertical"] .uir-slider__helper {
+    inline-size: 100%;
+  }
+
+  .uir-slider[data-orientation="vertical"] .uir-slider__rail {
+    block-size: 12rem;
+    inline-size: var(--uir-slider-thumb-size);
+  }
+
+  .uir-slider[data-orientation="vertical"] .uir-slider__rail,
+  .uir-slider[data-orientation="vertical"] .uir-slider__track {
+    block-size: 100%;
+    inline-size: var(--uir-slider-track-size);
+    inset-block-start: 0;
+    inset-inline-start: calc((var(--uir-slider-thumb-size) - var(--uir-slider-track-size)) / 2);
+  }
+
+  .uir-slider[data-orientation="vertical"] .uir-slider__track {
+    /*
+     * The bottom is the low end, so the fill grows upwards from it.
+     *
+     * `inset-block-end` is the low end in a vertical slider; `inline-size` becomes the *height* of
+     * the fill only if it is written against the cross axis, which for the main-axis dimension here
+     * means using `block-size` for the fill length instead.
+     */
+    block-size: calc((var(--uir-slider-to) - var(--uir-slider-from)) * 100%);
+    inline-size: var(--uir-slider-track-size);
+    inset-block-end: calc(var(--uir-slider-from) * 100%);
+    inset-inline-start: calc((var(--uir-slider-thumb-size) - var(--uir-slider-track-size)) / 2);
+  }
+
+  /* ---- Disabled ------------------------------------------------------ */
+
+  /*
+   * `opacity` on the root, which dims the label, the readout, the rail, the thumbs and the marks
+   * together. Dimming only the track would leave a fully-legible label attached to a control that
+   * does nothing.
+   */
+  .uir-slider[data-disabled] {
+    opacity: var(--uir-disabled-opacity);
+    cursor: not-allowed;
+  }
+
+  /* ---- Reduced motion ------------------------------------------------ */
+
+  /*
+   * Only the thumb's shadow and border transitions are removed. A slider has no decorative motion to
+   * remove — the thumb following the pointer is the control reporting its own state, and freezing
+   * that would be freezing the interface rather than calming it.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .uir-slider__thumb {
+      transition-duration: 0ms;
+    }
+  }
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * The thumb is the part that needs help. It is a white circle with a coloured border, and in a
+   * forced-colours theme both of those are replaced by the system palette — so the drawn thumb would
+   * vanish against the rail. `forced-color-adjust: none` plus explicit system colours puts it back.
+   *
+   * The focus ring goes to `Highlight`, which is what a selected item is in every one of these themes.
+   */
+  @media (forced-colors: active) {
+    .uir-slider__rail,
+    .uir-slider__track {
+      background-color: Canvas;
+      border: var(--uir-control-border-width) solid CanvasText;
+    }
+
+    .uir-slider__track {
+      background-color: Highlight;
+      forced-color-adjust: none;
+    }
+
+    .uir-slider__thumb {
+      background-color: CanvasText;
+      border-color: Canvas;
+      box-shadow: none;
+      forced-color-adjust: none;
+    }
+
+    .uir-slider:has(.uir-slider__input:focus-visible) .uir-slider__thumb {
+      background-color: Highlight;
+      box-shadow: none;
+      outline: var(--uir-focus-ring-width) solid Canvas;
+      outline-offset: var(--uir-focus-ring-offset);
+    }
+  }
+}

@@ -24,6 +24,8 @@ export const BASE_MESSAGES = {
   "common.error": "Something went wrong",
   "common.required": "Required",
   "common.optional": "Optional",
+  /** The trailing control on a removable chip. Composed with the chip's own text when there is any. */
+  "common.remove": "Remove",
 
   /* Example namespace, showing the convention a first component will follow.
      Not referenced by any shipped component yet. */
@@ -44,6 +46,7 @@ export const MESSAGE_PLACEHOLDERS: Readonly<Record<MessageKey, readonly string[]
   "common.error": [],
   "common.required": [],
   "common.optional": [],
+  "common.remove": [],
   "example.itemSelected": ["count", "total"],
 };
 

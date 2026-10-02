@@ -110,6 +110,33 @@ export type {
   SelectOptionGroup,
 } from "./components/select";
 
+export { Checkbox } from "./components/checkbox";
+export type { CheckboxProps, CheckboxOwnProps } from "./components/checkbox";
+
+export { RadioGroup } from "./components/radio-group";
+export type { RadioGroupProps, RadioGroupOwnProps, RadioOption } from "./components/radio-group";
+
+export { Slider } from "./components/slider";
+export type { SliderProps, SliderOwnProps, SliderMark } from "./components/slider";
+
+export { Chip } from "./components/chip";
+export type { ChipProps, ChipOwnProps } from "./components/chip";
+
+export { Text } from "./components/text";
+export type { TextProps, TextOwnProps, TextVariant, TextTone } from "./components/text";
+
+export { Link } from "./components/link";
+export type { LinkProps, LinkOwnProps } from "./components/link";
+
+export { Tile } from "./components/tile";
+export type { TileProps, TileOwnProps } from "./components/tile";
+
+export { TabBar } from "./components/tab-bar";
+export type { TabBarProps, TabBarOwnProps, TabItem } from "./components/tab-bar";
+
+export { Snackbar } from "./components/snackbar";
+export type { SnackbarProps, SnackbarOwnProps, SnackbarCloseReason } from "./components/snackbar";
+
 /* ---------------------------------------------------------- foundations --- */
 /*
  * The shared design contract. Exported so consumers can type their own abstractions
