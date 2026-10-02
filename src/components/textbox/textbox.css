@@ -1,0 +1,412 @@
+/*
+ * Textbox styles.
+ *
+ * Every dimension comes from a `--uir-control-*` token, so this file has no hardcoded
+ * sizes. The colours come from a per-tone role set declared here, because
+ * `--uir-textbox-*` is used by one component only and `docs/foundations.md` section 11
+ * step 7 says such a token belongs in the component's own stylesheet rather than in
+ * `tokens.css`.
+ */
+
+@layer uireload.components {
+  /*
+   * Scoped rather than global. The library ships no reset, so nothing can be assumed: an
+   * author's own `box-sizing: content-box` would otherwise add 2px to every field's
+   * height, and this control's whole reason for existing is that its height matches the
+   * button beside it. Adornment content belongs to the consumer, so it is deliberately
+   * not listed here.
+   */
+  .uir-textbox,
+  .uir-textbox__label,
+  .uir-textbox__control,
+  .uir-textbox__input,
+  .uir-textbox__helper {
+    box-sizing: border-box;
+  }
+
+  /* ---- Root ---------------------------------------------------------- */
+
+  .uir-textbox {
+    display: inline-flex;
+    flex-direction: column;
+    font-family: var(--uir-font-family);
+    /* A field is as wide as its label or its value, never wider than its container. */
+    max-inline-size: 100%;
+
+    /*
+     * The control's outer height, matching `Button`'s outer height for the same size.
+     *
+     * `Button` sets a content-box `block-size` and adds its own 1px borders, so its total
+     * is the token plus 2px. This control is `border-box` and has block padding, so
+     * without this it would come out 2px shorter than the button in the same row. The
+     * arithmetic is stated once, here, rather than repeated per size.
+     */
+    --uir-textbox-height: calc(var(--uir-control-height-md) + var(--uir-control-border-width) * 2);
+  }
+
+  .uir-textbox[data-size="sm"] {
+    --uir-textbox-height: calc(var(--uir-control-height-sm) + var(--uir-control-border-width) * 2);
+  }
+
+  .uir-textbox[data-size="lg"] {
+    --uir-textbox-height: calc(var(--uir-control-height-lg) + var(--uir-control-border-width) * 2);
+  }
+
+  .uir-textbox[data-full-width] {
+    display: flex;
+    inline-size: 100%;
+  }
+
+  /* ---- Label --------------------------------------------------------- */
+
+  /*
+   * Clickable, because a native `<label for>` is: pressing it focuses the field. `cursor:
+   * default` rather than `pointer`, since it is a label and not a command.
+   */
+  .uir-textbox__label {
+    color: var(--uir-text);
+    cursor: default;
+    font-size: var(--uir-control-font-size-md);
+    font-weight: var(--uir-control-font-weight);
+    line-height: var(--uir-line-height);
+  }
+
+  .uir-textbox[data-size="sm"] .uir-textbox__label {
+    font-size: var(--uir-control-font-size-sm);
+  }
+
+  .uir-textbox[data-size="lg"] .uir-textbox__label {
+    font-size: var(--uir-control-font-size-lg);
+  }
+
+  /* ---- Control ------------------------------------------------------- */
+
+  /*
+   * The control sets the type scale and the input inherits it. Sizing the text on the
+   * wrapper rather than on the input means a consumer overriding font size on
+   * `.uir-textbox` moves the label, the value and the placeholder together.
+   */
+  .uir-textbox__control {
+    align-items: center;
+    background-color: transparent;
+    border: var(--uir-control-border-width) solid var(--uir-textbox-border);
+    border-radius: var(--uir-control-radius);
+    color: var(--uir-text);
+    display: flex;
+    font-size: var(--uir-control-font-size-md);
+    gap: var(--uir-control-gap);
+    justify-content: flex-start;
+    line-height: var(--uir-line-height);
+    /*
+     * `min-block-size`, never `block-size`: a multiline field must be able to grow with
+     * its `rows`, and a single-line field whose content is taller than the minimum
+     * (a long value in a zoomed layout) must be able to grow too.
+     */
+    min-block-size: var(--uir-textbox-height);
+    /*
+     * `min-inline-size` rather than `inline-size`, so `fullWidth` is the flex parent's
+     * job and the inner control stays free to size itself.
+     */
+    min-inline-size: var(--uir-control-min-width);
+    padding-block: var(--uir-control-pad-block-md);
+    padding-inline: var(--uir-control-pad-inline-md);
+    transition:
+      background-color var(--uir-duration) var(--uir-easing),
+      border-color var(--uir-duration) var(--uir-easing);
+  }
+
+  .uir-textbox[data-size="sm"] .uir-textbox__control {
+    font-size: var(--uir-control-font-size-sm);
+    padding-block: var(--uir-control-pad-block-sm);
+    padding-inline: var(--uir-control-pad-inline-sm);
+  }
+
+  .uir-textbox[data-size="lg"] .uir-textbox__control {
+    font-size: var(--uir-control-font-size-lg);
+    padding-block: var(--uir-control-pad-block-lg);
+    padding-inline: var(--uir-control-pad-inline-lg);
+  }
+
+  /* ---- Emphasis ------------------------------------------------------ */
+
+  /*
+   * The shared ladder, read as a field rather than a button: `ghost` is borderless,
+   * `outline` is the default bordered look, `solid` is a filled field that reads as
+   * inactive until focused. See `docs/foundations.md` section 3.
+   */
+  .uir-textbox[data-variant="ghost"] .uir-textbox__control {
+    background-color: transparent;
+    border-color: transparent;
+  }
+
+  .uir-textbox[data-variant="outline"] .uir-textbox__control {
+    background-color: transparent;
+  }
+
+  .uir-textbox[data-variant="solid"] .uir-textbox__control {
+    background-color: var(--uir-textbox-fill);
+  }
+
+  /* ---- Intent -------------------------------------------------------- */
+
+  /*
+   * A field's tone supplies five roles, so a new tone is five declarations here and
+   * nothing else changes:
+   *
+   *   --uir-textbox-border        control border at rest
+   *   --uir-textbox-border-hover  control border on hover
+   *   --uir-textbox-ring          focus ring
+   *   --uir-textbox-helper        description text
+   *   --uir-textbox-fill          `solid` background
+   */
+  .uir-textbox[data-tone="neutral"] {
+    /*
+     * `--uir-border-strong` rather than `--uir-border`: the border is a UI component
+     * boundary, so WCAG SC 1.4.11 requires 3:1 against the page and a hairline grey
+     * cannot reach it. Asserted in `tests/contrast.test.ts`.
+     */
+    --uir-textbox-border: var(--uir-border-strong);
+    --uir-textbox-border-hover: var(--uir-text);
+    --uir-textbox-ring: var(--uir-focus-ring-color);
+    --uir-textbox-helper: var(--uir-text-muted);
+    --uir-textbox-fill: var(--uir-surface);
+  }
+
+  .uir-textbox[data-tone="accent"] {
+    --uir-textbox-border: var(--uir-accent);
+    --uir-textbox-border-hover: var(--uir-accent-hover);
+    --uir-textbox-ring: var(--uir-accent);
+    --uir-textbox-helper: var(--uir-text-muted);
+    --uir-textbox-fill: var(--uir-accent-subtle);
+  }
+
+  .uir-textbox[data-tone="positive"] {
+    --uir-textbox-border: var(--uir-success);
+    --uir-textbox-border-hover: var(--uir-success-hover);
+    --uir-textbox-ring: var(--uir-success);
+    --uir-textbox-helper: var(--uir-text-muted);
+    --uir-textbox-fill: var(--uir-success-subtle);
+  }
+
+  .uir-textbox[data-tone="danger"] {
+    --uir-textbox-border: var(--uir-danger);
+    --uir-textbox-border-hover: var(--uir-danger-hover);
+    --uir-textbox-ring: var(--uir-danger);
+    --uir-textbox-helper: var(--uir-danger);
+    --uir-textbox-fill: var(--uir-danger-subtle);
+  }
+
+  /*
+   * Validation overrides intent, whatever the tone says.
+   *
+   * Declared after the tone blocks and at the same specificity, so source order is what
+   * makes it win. `tone="positive"` describes an advisory state; once a value has failed
+   * validation that state is no longer true, and a green field claiming "this is fine"
+   * directly above a red error message is worse than no colour at all.
+   *
+   * Not colour-only: the field carries `data-invalid` for CSS and `aria-invalid` for
+   * assistive technology, and the message below it is the text that says what is wrong.
+   * That is what `docs/foundations.md` section 8 requires, and it is why `helperText` is
+   * the documented partner of `invalid`.
+   */
+  .uir-textbox[data-invalid] {
+    --uir-textbox-border: var(--uir-danger);
+    --uir-textbox-border-hover: var(--uir-danger-hover);
+    --uir-textbox-ring: var(--uir-danger);
+    --uir-textbox-helper: var(--uir-danger);
+  }
+
+  .uir-textbox[data-invalid][data-variant="solid"] .uir-textbox__control {
+    background-color: var(--uir-danger-subtle);
+  }
+
+  /* ---- Hover --------------------------------------------------------- */
+
+  /*
+   * Gated on a fine pointer with hover, for the same reason as `Button`: a hover state
+   * that persists after a tap is a known mobile annoyance, and Fiori's generated CSS
+   * gates `:hover` the same way with `:not([_is-touch])`.
+   *
+   * A read-only field is excluded, because there is nothing to do about its hover.
+   */
+  @media (hover: hover) and (pointer: fine) {
+    .uir-textbox:not([data-disabled]):not([data-readonly]) .uir-textbox__control:hover {
+      border-color: var(--uir-textbox-border-hover);
+    }
+  }
+
+  /* ---- Focus --------------------------------------------------------- */
+
+  /*
+   * The ring is drawn by the `<input>`, not by the wrapper, and offset inwards so it
+   * lands immediately inside the border instead of floating outside the whole control.
+   *
+   * Three alternatives were rejected:
+   *
+   * - A ring on the wrapper via `:focus-within`, which is what UI5 does with a `::after`
+   *   pseudo-element. It fires on mouse click too, which `docs/accessibility.md` rule 4
+   *   rules out, and it is a *second* ring: the base layer's own `input:focus-visible`
+   *   outline still fires underneath it.
+   * - Suppressing the input's outline. Removing a focus outline is an accessibility
+   *   failure and is out of scope for this library.
+   * - Leaving the base ring at its default `+2px` offset. It would sit 3px outside the
+   *   control, and with an adornment present it would hug the text entry area while the
+   *   border and the adornment sat outside it.
+   *
+   * What remains is the input's own `:focus-visible` outline with a negative offset that
+   * clears the border: keyboard-only, and on the element that actually has focus.
+   */
+  .uir-textbox__input:focus-visible {
+    outline: var(--uir-focus-ring-width) solid var(--uir-textbox-ring);
+    outline-offset: calc(-1 * (var(--uir-focus-ring-width) + var(--uir-control-border-width)));
+    transition-duration: 0ms;
+  }
+
+  /* ---- Input --------------------------------------------------------- */
+
+  .uir-textbox__input {
+    background: none;
+    border: 0;
+    color: inherit;
+    /*
+     * `min-inline-size: 0` is load-bearing. A flex item defaults to `min-width: auto`,
+     * which refuses to shrink below its content, so a long placeholder or a long value
+     * would push the control wider than its container instead of scrolling inside it.
+     */
+    flex: 1 1 auto;
+    font: inherit;
+    inline-size: 100%;
+    margin: 0;
+    min-inline-size: 0;
+    padding: 0;
+  }
+
+  /*
+   * A multiline field gets a starting height of two `lg` controls and grows with `rows`.
+   * `resize: vertical` keeps the browser's resize grip, because a textarea that cannot
+   * be resized by the pointer is a textarea whose height can only be set from JavaScript.
+   * Horizontal resizing is off: it would break the control's width contract with no way
+   * back.
+   */
+  .uir-textbox[data-multiline] .uir-textbox__control {
+    min-block-size: calc(var(--uir-control-height-lg) * 2 + var(--uir-control-border-width) * 2);
+  }
+
+  /*
+   * `opacity: 1` on purpose. The browser default is 0.54, which silently drops placeholder
+   * contrast below the value `tests/contrast.test.ts` measures — and a placeholder is
+   * text, so SC 1.4.3 applies to it.
+   */
+  .uir-textbox__input::placeholder {
+    color: var(--uir-text-muted);
+    opacity: 1;
+  }
+
+  /* ---- Adornments ---------------------------------------------------- */
+
+  /*
+   * Decorative by construction: the element sets `aria-hidden`, because an icon beside a
+   * field must not become part of the field's accessible name and must not add a tab
+   * stop either. Anything interactive belongs after the field, as a sibling.
+   */
+  .uir-textbox__adornment {
+    align-items: center;
+    color: var(--uir-text-muted);
+    display: inline-flex;
+    flex-shrink: 0;
+    justify-content: center;
+  }
+
+  .uir-textbox__adornment > * {
+    block-size: var(--uir-icon-size-md);
+    inline-size: var(--uir-icon-size-md);
+  }
+
+  .uir-textbox[data-size="sm"] .uir-textbox__adornment > * {
+    block-size: var(--uir-icon-size-sm);
+    inline-size: var(--uir-icon-size-sm);
+  }
+
+  .uir-textbox[data-size="lg"] .uir-textbox__adornment > * {
+    block-size: var(--uir-icon-size-lg);
+    inline-size: var(--uir-icon-size-lg);
+  }
+
+  /* ---- Description --------------------------------------------------- */
+
+  .uir-textbox__helper {
+    color: var(--uir-textbox-helper);
+    font-size: var(--uir-control-font-size-sm);
+    line-height: var(--uir-line-height);
+  }
+
+  /*
+   * The validation message is set at control weight as well as in the danger colour, so
+   * the message explaining the failure is emphasised by more than hue.
+   */
+  .uir-textbox[data-invalid] .uir-textbox__helper {
+    font-weight: var(--uir-control-font-weight);
+  }
+
+  /* ---- Read-only ----------------------------------------------------- */
+
+  /*
+   * A read-only field is still a field: focusable, still submitted with the form, and
+   * its value keeps full contrast. Only the background changes, because the affordance is
+   * "you can read this but not type here", and a filled surface says exactly that without
+   * touching the text colour or the 4.5:1 requirement.
+   *
+   * Deliberately not `opacity`, which is what `disabled` uses: dimming the value would
+   * signal that it does not matter, and it does.
+   */
+  .uir-textbox[data-readonly] .uir-textbox__control {
+    background-color: var(--uir-surface);
+    cursor: default;
+  }
+
+  .uir-textbox[data-readonly] .uir-textbox__input {
+    cursor: default;
+  }
+
+  /* ---- Disabled ------------------------------------------------------ */
+
+  /*
+   * `opacity` only, with `pointer-events` deliberately left intact. MUI's `ButtonBase`
+   * sets `pointer-events: none` on disabled controls, which breaks the tooltip that
+   * explains why they are disabled; MUI documents that as a limitation. Fiori uses
+   * `opacity` with `pointer-events: unset`. A `cursor` gives the affordance without the
+   * side effect.
+   */
+  .uir-textbox[data-disabled] .uir-textbox__control {
+    cursor: not-allowed;
+    opacity: var(--uir-disabled-opacity);
+  }
+
+  .uir-textbox[data-disabled] .uir-textbox__input {
+    cursor: not-allowed;
+  }
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * In Windows High Contrast the OS replaces the palette, so a field drawn with only a
+   * transparent background and a border colour stops being distinguishable from the page.
+   * Fiori handles the same case in the `forced-colors` block of
+   * `@ui5/webcomponents/dist/css/themes/Input.css`.
+   */
+  @media (forced-colors: active) {
+    .uir-textbox__control {
+      background-color: Canvas;
+      border-color: CanvasText;
+      color: CanvasText;
+    }
+
+    .uir-textbox__input {
+      color: CanvasText;
+    }
+
+    .uir-textbox__input:focus-visible {
+      outline-color: Highlight;
+    }
+  }
+}

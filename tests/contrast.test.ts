@@ -84,6 +84,43 @@ const PAIRS = [
     fg: "--uir-text",
     bg: "--uir-background",
   },
+
+  // Textbox. A field adds two pairs the buttons never produced: the value sits on the
+  // control's own background rather than on the page, and the description is text the
+  // user has to be able to read. The placeholder pair is the one that silently failed
+  // before, because the browser's 0.54 default opacity is invisible in a screenshot.
+  { scheme: "light", label: "textbox value on page", fg: "--uir-text", bg: "--uir-background" },
+  {
+    scheme: "light",
+    label: "textbox placeholder on page",
+    fg: "--uir-text-muted",
+    bg: "--uir-background",
+  },
+  {
+    scheme: "light",
+    label: "textbox description on page",
+    fg: "--uir-text-muted",
+    bg: "--uir-background",
+  },
+  { scheme: "dark", label: "textbox value on page", fg: "--uir-text", bg: "--uir-background" },
+  {
+    scheme: "dark",
+    label: "textbox placeholder on page",
+    fg: "--uir-text-muted",
+    bg: "--uir-background",
+  },
+  {
+    scheme: "high-contrast",
+    label: "textbox value on page",
+    fg: "--uir-text",
+    bg: "--uir-background",
+  },
+  {
+    scheme: "high-contrast",
+    label: "textbox description on page",
+    fg: "--uir-text-muted",
+    bg: "--uir-background",
+  },
 ] as const;
 
 /** SC 1.4.3 for normal-size text. A control label is 1rem at weight 500, which is not

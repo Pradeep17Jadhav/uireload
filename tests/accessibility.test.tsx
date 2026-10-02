@@ -155,6 +155,61 @@ describe("ToggleButtonGroup", () => {
   });
 });
 
+describe("Textbox", () => {
+  it("has no accessibility violations with a label and description", async () => {
+    const { Textbox } = await import("uireload/components/textbox");
+
+    const { container } = render(
+      <Textbox id="email" label="Email address" helperText="We never share it" />
+    );
+
+    await expectNoViolations(container);
+  });
+
+  it("has no violations when invalid, required, read-only or disabled", async () => {
+    const { Textbox } = await import("uireload/components/textbox");
+
+    const { container } = render(
+      <>
+        <Textbox id="a" label="Invalid" invalid helperText="Enter a valid address" required />
+        <Textbox id="b" label="Read only" readOnly defaultValue="Ada" />
+        <Textbox id="c" label="Disabled" disabled defaultValue="Ada" />
+      </>
+    );
+
+    await expectNoViolations(container);
+  });
+
+  it("has no violations as a multiline field with adornments", async () => {
+    const { Textbox } = await import("uireload/components/textbox");
+
+    const { container } = render(
+      <Textbox
+        id="bio"
+        label="Short bio"
+        multiline
+        rows={4}
+        startAdornment={<span>$</span>}
+        endAdornment={<span>USD</span>}
+      />
+    );
+
+    await expectNoViolations(container);
+  });
+
+  it("has no violations when labelled only by aria-label", async () => {
+    // A field with no visible label is legal when it has a name, and the name is the only
+    // thing that keeps it out of axe's `label` rule.
+    const { Textbox } = await import("uireload/components/textbox");
+
+    const { container } = render(
+      <Textbox id="filter" label={undefined} aria-label="Filter results" type="search" />
+    );
+
+    await expectNoViolations(container);
+  });
+});
+
 describe("colour schemes", () => {
   it("has no violations in any scheme", async () => {
     const { Button } = await import("uireload/components/button");

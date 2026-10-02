@@ -71,6 +71,14 @@ export type {
 export { ToggleButtonGroup } from "./components/toggle-button-group";
 export type { ToggleButtonGroupProps, SelectionMode } from "./components/toggle-button-group";
 
+export { Textbox } from "./components/textbox";
+export type {
+  TextboxProps,
+  TextboxOwnProps,
+  TextboxType,
+  TextboxElement,
+} from "./components/textbox";
+
 /* ---------------------------------------------------------- foundations --- */
 /*
  * The shared design contract. Exported so consumers can type their own abstractions

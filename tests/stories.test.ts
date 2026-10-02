@@ -95,6 +95,14 @@ describe("component stories", () => {
         "toggle-button-group/toggle-button-group.stories.tsx",
         [/ghost.*outline.*solid/s, /neutral.*accent.*positive.*danger/s],
       ],
+      [
+        "textbox/textbox.stories.tsx",
+        [
+          /ghost.*outline.*solid/s,
+          /neutral.*accent.*positive.*danger/s,
+          /text.*email.*number.*password.*search.*tel.*url/s,
+        ],
+      ],
     ];
 
     for (const [relative, patterns] of expectations) {
