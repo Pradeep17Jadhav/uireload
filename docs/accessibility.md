@@ -104,7 +104,10 @@ For every component:
 6. **Colour is never the only signal.** Disabled, invalid and selected states carry
    an attribute or text, not just a colour.
 7. **Respect `prefers-reduced-motion`.** Animate through `--uir-duration`, which
-   collapses to near-zero for users who opted out.
+   collapses to near-zero for users who opted out. The one exception is continuous
+   motion whose rate _is_ the information — currently `Button`'s loading spinner,
+   which slows rather than stopping. A stopped spinner reports "not busy", which is
+   a lie.
 
 ## Controlled state
 

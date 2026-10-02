@@ -30,7 +30,7 @@ Versions read from `../referenceUILibraries/package.json`: `@mui/material` 9.4.0
 | `defaultChecked`  | `boolean`                                         | `false`     | Uncontrolled initial state.              |
 | `onCheckedChange` | `(checked: boolean) => void`                      | —           | Every change.                            |
 | `disabled`        | `boolean`                                         | `false`     | Native `disabled`.                       |
-| `readOnly`        | `never`                                           | �           | Not implemented. See the gap below.      |
+| `readOnly`        | `never`                                           | —           | Not implemented. See the gap below.      |
 | `required`        | `boolean`                                         | `false`     | Native `required` + a hidden "Required". |
 | `size`            | `"sm" \| "md" \| "lg"`                            | `"md"`      | `docs/foundations.md` §2.                |
 | `tone`            | `"neutral" \| "accent" \| "positive" \| "danger"` | `"neutral"` | The colour of the track when on.         |

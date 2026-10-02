@@ -362,24 +362,17 @@
     inline-size: 100%;
   }
 
-  /* ---- Grouped ------------------------------------------------------- */
-
   /*
-   * In a group, all but the first member drops its inline-start border so the group
-   * reads as one segmented control. Fiori does the same with
-   * `:not(:first-child)` on `ui5-segmented-button-item`.
+   * `data-grouped` carries no rules here on purpose.
+   *
+   * `ToggleButtonGroup` marks every member with it, and it used to mean "drop your inline-start
+   * border and flatten your end corners" right here. Both were hardcoded to the inline axis, which
+   * is only correct for `horizontal`: in a vertical group every member but the first lost its
+   * **left** border, leaving a ragged edge, and the radius rules flattened the wrong corners. The
+   * axis is a property of the group and not of the button, so the seam and the corners are styled in
+   * `toggle-button-group.css`, where `data-orientation` is available.
+   *
+   * The attribute stays as a documented hook for consumer CSS that wants to target a group's
+   * members without reaching for `:first-child` / `:last-child`.
    */
-  .uir-button[data-grouped]:not(:first-of-type) {
-    border-inline-start-width: 0;
-  }
-
-  .uir-button[data-grouped]:first-of-type {
-    border-start-end-radius: 0;
-    border-end-end-radius: 0;
-  }
-
-  .uir-button[data-grouped]:last-of-type {
-    border-start-start-radius: 0;
-    border-end-start-radius: 0;
-  }
 }

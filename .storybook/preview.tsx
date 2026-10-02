@@ -9,8 +9,8 @@ import type { Preview } from "@storybook/react";
  *   bundler owns ordering, and a story must show its result rather than reimplement it.
  * - No story can be under-styled. A story importing only `./button.css` left every
  *   `ToggleButtonGroup` member with the browser's default grey, because the group renders
- *   ToggleButton which renders Button. That is invisible in production � the bundled
- *   stylesheet has everything � and glaring in Storybook.
+ *   ToggleButton which renders Button. That is invisible in production — the bundled
+ *   stylesheet has everything — and glaring in Storybook.
  * - `npm run storybook` runs `build:css` first, so this is never stale.
  */
 import "../dist/index.css";

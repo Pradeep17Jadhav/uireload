@@ -27,6 +27,69 @@ function libraryStories(): string[] {
   return found;
 }
 
+describe("which stories Storybook publishes", () => {
+  /**
+   * The leak this exists to prevent.
+   *
+   * `_template/example.stories.tsx` was published as a component: `index.json` listed
+   * `template-example--*` alongside the nine real ones, and it appeared in the sidebar as
+   * "Template/Example". `libraryStories()` above already skipped `_template`, which is exactly why
+   * nothing caught it - the test suite and Storybook had two different definitions of "a component".
+   *
+   * The fix is the filename: `example.stories.template.tsx` cannot be matched by `*.stories.@(ts|tsx)`.
+   * Storybook's `!`-negated globs were tried in two forms and neither excluded anything, so this
+   * asserts the thing that actually holds rather than the thing that was tried.
+   */
+  it("has no discoverable story file under the authoring template", () => {
+    const dir = join(root, "src", "components", "_template");
+    const offenders = readdirSync(dir).filter(
+      (file) => file.endsWith(".stories.tsx") || file.endsWith(".stories.ts")
+    );
+
+    expect(offenders).toEqual([]);
+  });
+
+  it("still ships a complete copyable template", () => {
+    const dir = join(root, "src", "components", "_template");
+
+    // AGENTS.md section 5 step 5 copies this directory wholesale, so every part has to be here even
+    // though the stories file is no longer discoverable by Storybook.
+    for (const required of [
+      "example.tsx",
+      "example.types.ts",
+      "example.css",
+      "example.test.tsx",
+      "example.stories.template.tsx",
+      "index.ts",
+    ]) {
+      expect(readdirSync(dir), `_template is missing ${required}`).toContain(required);
+    }
+  });
+
+  it("publishes exactly the components the test suite checks", () => {
+    // Every story file on disk that Storybook's glob would match, template included.
+    const onDisk: string[] = [];
+    const componentsDir = join(root, "src", "components");
+    for (const entry of readdirSync(componentsDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      for (const file of readdirSync(join(componentsDir, entry.name))) {
+        if (file.endsWith(".stories.tsx")) onDisk.push(`${entry.name}/${file}`);
+      }
+    }
+
+    // Agreement between the glob and this suite is the invariant: nothing Storybook shows goes
+    // unchecked, and nothing this suite checks is invisible in Storybook.
+    expect(
+      libraryStories()
+        .map((path) => path.split(/[\\/]/).slice(-2).join("/"))
+        .sort()
+    ).toEqual(onDisk.sort());
+
+    const config = readFileSync(join(root, ".storybook", "main.ts"), "utf8");
+    expect(config).toContain('stories: ["../src/**/*.stories.@(ts|tsx)"]');
+  });
+});
+
 describe("story stylesheets", () => {
   /**
    * `.storybook/preview.tsx` imports the assembled `dist/index.css`, which is what a
@@ -122,7 +185,7 @@ describe("component stories", () => {
      * that omits it teaches the one mistake the component cannot prevent.
      *
      * A tag that spreads `{...args}` inherits the name from the story's `args`, so that
-     * counts � but only if `args` really does declare one, which is asserted separately.
+     * counts — but only if `args` really does declare one, which is asserted separately.
      */
     const source = readFileSync(
       join(root, "src", "components", "icon-button", "icon-button.stories.tsx"),

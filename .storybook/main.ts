@@ -26,6 +26,24 @@ const aliases = [
 ];
 
 const config: StorybookConfig = {
+  /*
+   * No negation here, and that is deliberate.
+   *
+   * `_template` used to be published as a component: `index.json` listed `template-example--*`
+   * alongside the nine real ones and it appeared in the sidebar as "Template/Example", so a
+   * screenshot review or visual-regression sweep would pick up scaffolding.
+   *
+   * Storybook's `!`-negated `stories` globs were tried in two forms -- one excluding the whole
+   * `_template` directory and one excluding only `*.stories.tsx` beneath it -- and neither
+   * excluded anything: both builds
+   * still emitted all six template stories. Rather than depend on negation behaviour that is not
+   * observable here, the template's story file is named `example.stories.template.tsx`, so the glob
+   * cannot match it at all. `tests/stories.test.ts` fails if a `*.stories.tsx` reappears under
+   * `_template`.
+   *
+   * The template remains a complete, copyable starting point: `AGENTS.md` section 5 step 5 already
+   * requires renaming every `example` occurrence when copying it, so this suffix is renamed too.
+   */
   stories: ["../src/**/*.stories.@(ts|tsx)"],
   addons: ["@storybook/addon-essentials", "@storybook/addon-a11y"],
   framework: {

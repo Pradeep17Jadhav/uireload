@@ -24,7 +24,7 @@ import { TONES, VARIANTS } from "../src/foundations";
 /**
  * The stylesheet with comments removed.
  *
- * The file's own documentation names the very constructs these tests forbid �
+ * The file's own documentation names the very constructs these tests forbid —
  * `pointer-events: none` and `margin-left` are both discussed at length while explaining
  * why neither is used. Scanning the raw text therefore matches the explanation instead
  * of the code. Comments are not CSS.

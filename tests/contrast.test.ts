@@ -302,7 +302,7 @@ function parseColor(value: string): Rgb {
  *
  * Rounded to 8 bits per channel because that is what a browser composites to. Without
  * the rounding, 50% black over white yields 127.5 and the computed ratio differs from
- * the rendered one in the third decimal � small, but it means this helper would
+ * the rendered one in the third decimal — small, but it means this helper would
  * disagree with axe and with devtools about the same pixels.
  */
 function flatten(top: Rgb, bottom: Rgb): Rgb {
@@ -420,7 +420,7 @@ describe("the contrast helper", () => {
      * alpha would compute contrast against a colour the user never sees.
      *
      * 50% black over white is `#808080` (0.5 * 255 = 127.5, rounded), and black on that
-     * is 5.32:1 � so the expected value is checkable by hand rather than merely
+     * is 5.32:1 — so the expected value is checkable by hand rather than merely
      * self-consistent.
      */
     expect(contrast("rgba(0, 0, 0, 0.5)", "#ffffff")).toBeCloseTo(
@@ -432,7 +432,7 @@ describe("the contrast helper", () => {
 
   it("composites a translucent background over what is behind it", () => {
     // The dark scheme's hover washes are `rgba()`, and they are backgrounds. Reading
-    // their raw RGB would score the text against a colour the user never sees � and it
+    // their raw RGB would score the text against a colour the user never sees — and it
     // would score it in the wrong direction, because a 16% green is far lighter than the
     // dark page it sits on.
     expect(contrast("#000000", "rgba(0, 0, 0, 0.5)", "#ffffff")).toBeCloseTo(

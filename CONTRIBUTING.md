@@ -56,7 +56,7 @@ These are checked in CI, not left to review:
 
 The four shipped components (`button`, `icon-button`, `toggle-button`,
 `toggle-button-group`) are the reference implementations. Read
-`docs/foundations.md` first — it is the consistency contract they all implement, and
+`docs/foundations.md` first â€” it is the consistency contract they all implement, and
 the token layer in `src/theme/tokens.css` is what makes it structural rather than
 aspirational.
 
@@ -66,6 +66,41 @@ The four shipped components (`button`, `icon-button`, `toggle-button`,
 `toggle-button-group`) are the reference implementations. Read
 `docs/foundations.md` first: it is the consistency contract they all implement, and
 the `--uir-control-*` token layer is what makes it structural rather than aspirational.
+
+## Releasing
+
+Publishing is driven by a git tag, never by a push to `main`. A tag is the only
+artefact that records "this exact commit is 0.1.0"; a push can land after the version
+was chosen and publish the wrong code. `npm versions` are also immutable, so a
+mistake cannot be fixed by publishing again.
+
+```bash
+npm version 0.1.0 --no-git-tag-version   # edits package.json only
+# edit CHANGELOG.md: move [Unreleased] under a dated [0.1.0] heading
+git commit -am "release 0.1.0"
+git tag v0.1.0
+git push origin main --follow-tags
+```
+
+`.github/workflows/release.yml` then runs `release:check` (which is `verify`),
+asserts the tag matches `package.json` via `scripts/check-tag.mjs`, and publishes with
+`--provenance`.
+
+Two requirements that are not optional:
+
+- **Provenance needs CI.** `publishConfig.provenance` is set, and npm only mints
+  Sigstore attestations from GitHub Actions or GitLab CI on a cloud-hosted runner. A
+  local `npm publish` will not produce provenance. This is why the workflow exists
+  rather than a documented local command.
+- **`repository` in `package.json` must match where you publish from**, case-sensitive.
+  npm verifies the two match before it will attest to a build.
+
+Setup, once: create an npm automation token (not a personal token), add it as the
+`NPM_TOKEN` repository secret, and create a GitHub environment named `npm`. Trusted
+publishing via OIDC removes the token entirely if you would rather not keep one.
+
+`package.json` version and the `CHANGELOG.md` heading are the only two things that
+have to agree. Nothing derives the version from git tags.
 
 ## Adding a runtime dependency
 

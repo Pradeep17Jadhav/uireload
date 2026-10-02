@@ -40,7 +40,19 @@
 
   .uir-switch[data-size="sm"] {
     --uir-switch-track-width: 2rem;
-    --uir-switch-track-height: calc(var(--uir-control-height-sm) * 0.875);
+    /*
+     * The full `sm` height, with no shrink factor.
+     *
+     * This was `calc(var(--uir-control-height-sm) * 0.875)`, which is 21px, and it contradicted
+     * `docs/foundations.md`: "All three heights are at least 1.5rem (24px), satisfying WCAG 2.2
+     * SC 2.5.8 Target Size (Minimum)", and shrinking a target size below 24px is an error. The
+     * invisible `<input>` covers the whole control, so a 21px track produced a 22px interactive
+     * target, below the minimum the library documents itself as meeting.
+     *
+     * `sm` is therefore narrower than `md` but the same height, which is the honest expression of
+     * "dense": less horizontal space, same target.
+     */
+    --uir-switch-track-height: var(--uir-control-height-sm);
   }
 
   .uir-switch[data-size="lg"] {
@@ -100,12 +112,6 @@
     cursor: not-allowed;
   }
 
-  /*
-   * A read-only switch is focusable and its state is readable, so the disabled treatment
-   * would be wrong: dimming it says the setting cannot be read, which is false. Only the
-   * cursor changes.
-   */
-  `n
   /* ---- Track --------------------------------------------------------- */
 
   .uir-switch__track {
@@ -213,6 +219,15 @@
    *   --uir-switch-track-border-checked track border, on
    *   --uir-switch-track-active         track background while pressed, off
    *   --uir-switch-track-checked-active track background while pressed, on
+   *
+   * The two *off* roles deliberately resolve to the same value in every tone, and that is a
+   * decision rather than an oversight: a track is a large area of colour, and a red track on a
+   * switch that is currently off paints a warning where there is nothing to warn about. Tone is
+   * carried by the checked and pressed states, which are the ones the user has actually acted on.
+   *
+   * Worth stating because the four blocks below are otherwise perfect parallels and the two
+   * identical pairs read as copy-paste omissions — they were flagged as dead tokens by an audit
+   * for exactly that reason.
    *
    * A track is a large area of colour, so every one of these is a *fill* pair. The
    * on/off pairs are the two the contrast test measures against the handle drawn on top of

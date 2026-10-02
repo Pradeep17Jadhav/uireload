@@ -52,15 +52,27 @@
   }
 
   /*
-   * Collapse the shared seam. `Button` already handles this via `data-grouped`; the
-   * rules are repeated here against the direct child so the group is correct even if
-   * a consumer wraps a member in their own element.
+   * The shared seam.
+   *
+   * Two declarations, both required, and both on the axis named by `data-orientation`:
+   *
+   * 1. `border-*-start-width: 0` on every member but the first, so two borders never stack.
+   * 2. A negative start margin of exactly one border width, so each member sits *over* the
+   *    previous member's end border, which then reads as the single visible line.
+   *
+   * Both halves used to be split. `button.css` stripped `border-inline-start-width`
+   * unconditionally on `[data-grouped]` and the group applied only the margin. That is correct for
+   * `horizontal` and wrong for `vertical`: every member but the first lost its **left** border
+   * while the vertical seam went unaddressed, so a vertical group rendered with a ragged left edge
+   * and no seam. The axis is only knowable here, so the whole seam lives here.
    */
   .uir-toggle-button-group[data-orientation="horizontal"] > *:not(:first-child) {
+    border-inline-start-width: 0;
     margin-inline-start: calc(-1 * var(--uir-control-border-width));
   }
 
   .uir-toggle-button-group[data-orientation="vertical"] > *:not(:first-child) {
+    border-block-start-width: 0;
     margin-block-start: calc(-1 * var(--uir-control-border-width));
   }
 

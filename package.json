@@ -204,7 +204,8 @@
     "check:pkg": "npm run sync:exports:check && publint --strict && attw --pack .",
     "pack:check": "npm pack --dry-run",
     "verify": "npm run format:check && npm run lint && npm run lint:css && npm run typecheck && npm run build && npm run test && npm run size && npm run check:pkg && npm run pack:check",
-    "release:check": "npm run verify"
+    "release:check": "npm run verify",
+    "release:tag": "node scripts/check-tag.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
@@ -246,10 +247,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/uireload/uireload.git"
+    "url": "git+https://github.com/Pradeep17Jadhav/uireload.git"
   },
   "bugs": {
-    "url": "https://github.com/uireload/uireload/issues"
+    "url": "https://github.com/Pradeep17Jadhav/uireload/issues"
   },
-  "homepage": "https://github.com/uireload/uireload#readme"
+  "homepage": "https://github.com/Pradeep17Jadhav/uireload#readme"
 }

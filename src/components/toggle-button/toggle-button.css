@@ -3,12 +3,12 @@
  *
  * Only the pressed state is new; everything else comes from `Button`. The pressed
  * appearance reuses the variant's *active* colours, which is why a pressed toggle needs
- * no palette of its own � see the tone roles in `button.css`.
+ * no palette of its own — see the tone roles in `button.css`.
  */
 
 @layer uireload.components {
   /*
-   * A pressed button is never `:active` � that is a transient pointer state � so the
+   * A pressed button is never `:active` — that is a transient pointer state — so the
    * active colours have to be applied explicitly, and the right ones depend on the
    * variant. A `solid` toggle darkens its fill; an unfilled one takes the *press* step
    * of the wash ramp, which is one visible step past the hover a pointer would give it.

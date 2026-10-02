@@ -144,7 +144,7 @@ export function checkLine(line, options = {}) {
   /*
    * Suppression is decided by the caller from the *original* line. The marker is
    * almost always written as a trailing comment, and by the time comments are
-   * stripped it would be gone � which would silently disable every inline
+   * stripped it would be gone — which would silently disable every inline
    * suppression in the codebase.
    */
   if (options.suppressed === true) return [];

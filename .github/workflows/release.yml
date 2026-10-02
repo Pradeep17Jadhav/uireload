@@ -1,0 +1,61 @@
+name: Release
+
+# Publishing is tag-driven, never push-driven. A tag is the only artefact that
+# states "this exact commit is 0.1.0", so it is the only safe trigger: a push to
+# main can land after the version was chosen and publish the wrong code.
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+# A release job mints credentials and uploads an immutable artefact, so it must
+# never run concurrently with another release.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      # Required for provenance: this is what lets npm verify the build came
+      # from this workflow and mint a Sigstore attestation for it.
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          # Never cache in a release build. A cache hit would mean verifying
+          # against a tree nobody in this run produced.
+          cache: ""
+
+      # `--ignore-scripts` because the build is driven explicitly below. It also
+      # means a compromised devDependency cannot run code during install.
+      - run: npm ci --ignore-scripts
+
+      # `release:check` is `verify`: format, lint, CSS lint, typecheck, build,
+      # tests, size budget, publint and attw. Running it here rather than
+      # trusting a green check on the commit means the tarball that ships is one
+      # this job built itself.
+      - name: Verify
+        run: npm run release:check
+
+      - name: Check the tag matches package.json
+        # Without this, a mistyped tag publishes a version nobody asked for, and
+        # npm versions are immutable, so it cannot be undone by republishing.
+        run: node scripts/check-tag.mjs "${GITHUB_REF_NAME}"
+
+      - name: Publish
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -186,7 +186,7 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps) {
    * Members must be `ToggleButton` elements passed directly.
    *
    * The group rebuilds each member rather than rendering `children` as-is, so it needs
-   * each member's `value` � which only a `ToggleButton` prop can supply. A child that is
+   * each member's `value` — which only a `ToggleButton` prop can supply. A child that is
    * a *component* (`<Members />`) or a fragment wraps the real buttons one level deeper,
    * and this collapses them into a single valueless button with an empty label. That is
    * silent and looks like a rendering bug rather than a usage error, so it is made loud.
@@ -209,8 +209,8 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps) {
         console.error(
           `ToggleButtonGroup: every child must be a <ToggleButton>, but found ${name}. ` +
             "The group reads each member's `value` to manage selection, and a child that " +
-            "wraps the buttons hides it. Pass the ToggleButtons directly � " +
-            "`{items.map(i => <ToggleButton key={i.value} value={i.value}>�)}` � rather " +
+            "wraps the buttons hides it. Pass the ToggleButtons directly — " +
+            "`{items.map(i => <ToggleButton key={i.value} value={i.value}>{i.label}</ToggleButton>)}` — rather " +
             "than a component or fragment that returns them."
         );
       }
@@ -254,8 +254,8 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps) {
           role: isSingle ? "radio" : "button",
           /*
            * The group's selection wins over the member's own `pressed` /
-           * `defaultPressed`. Inside a group, selection is the *group's* concern �
-           * that is the whole reason the group exists � so a member's local state is
+           * `defaultPressed`. Inside a group, selection is the *group's* concern —
+           * that is the whole reason the group exists — so a member's local state is
            * ignored rather than merged, which would let the two disagree.
            */
           pressed: isPressed(value),

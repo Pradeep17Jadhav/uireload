@@ -7,6 +7,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-02
+
+First release. Infrastructure plus the first four components.
+
 ### Added
 
 - **Design foundations.** `docs/foundations.md` plus a `--uir-control-*` token layer and
@@ -87,7 +91,3 @@ Documented in [`docs/architecture.md`](./docs/architecture.md#known-limitations)
 no component-level CSS splitting, heuristic `box-shadow` linting, no automated
 screen-reader testing, and coverage thresholds still at their infrastructure-era
 values.
-
-## [0.1.0] - Unreleased
-
-Infrastructure only. No components are implemented.

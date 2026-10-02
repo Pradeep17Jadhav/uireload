@@ -155,7 +155,9 @@ describe("component CSS", () => {
     // stylesheet, so a story imports its own. Stories are never published, so the rule
     // they would otherwise break does not apply to them.
     for (const file of walkTs(join(root, "src"))) {
-      if (file.endsWith(".stories.tsx")) continue;
+      // Matches the template's `example.stories.template.tsx` too: that suffix exists so
+      // Storybook's glob cannot pick the template up as a real story, so it must stay exempt here.
+      if (/\.stories(\.template)?\.tsx$/.test(file)) continue;
 
       const code = readFileSync(file, "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
       const cssImport = /^\s*import\s+["'][^"']+\.css["']/m;

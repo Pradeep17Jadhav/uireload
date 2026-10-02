@@ -66,8 +66,8 @@ export interface RovingFocusOptions {
    * How to find the group's members among the container's children.
    *
    * Defaults to the `[data-uir-roving-item]` marker written by `getItemProps`. A
-   * component whose members are already identifiable by role — a radiogroup's radios,
-   * for instance — passes a selector instead of adding a marker attribute purely so
+   * component whose members are already identifiable by role â€” a radiogroup's radios,
+   * for instance â€” passes a selector instead of adding a marker attribute purely so
    * this hook can find them.
    */
   itemSelector?: string | undefined;
@@ -76,7 +76,7 @@ export interface RovingFocusOptions {
    *
    * The APG radio-group pattern requires selection to follow focus, which is not
    * something a focus-management helper can do on its own. The index is into the
-   * resolved member list, so a consumer must re-resolve it — hence `index` rather
+   * resolved member list, so a consumer must re-resolve it â€” hence `index` rather
    * than the element.
    */
   onNavigate?: ((index: number) => void) | undefined;

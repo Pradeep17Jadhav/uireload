@@ -25,7 +25,16 @@
    */
   .uir-popover {
     background-color: var(--uir-surface-raised);
-    border: var(--uir-control-border-width) solid var(--uir-border);
+    /*
+     * `--uir-popover-border`, not `--uir-border` directly.
+     *
+     * The four `data-tone` blocks below exist to give `tone` a visual effect, and this is the rule
+     * that consumes them. Reading `--uir-border` here instead made every tone render identically,
+     * so `tone="danger"` produced a popover with no danger in it — which is worse than not having
+     * the prop at all. Same shape as `Dialog`'s `--uir-dialog-border` and `Select`'s
+     * `--uir-select-border`.
+     */
+    border: var(--uir-control-border-width) solid var(--uir-popover-border);
     border-radius: var(--uir-control-radius);
     color: var(--uir-text);
     font-family: var(--uir-font-family);
@@ -114,15 +123,18 @@
     position: absolute;
   }
 
+  /*
+   * The arrow's one dimension. Declared here because only this component draws an arrow;
+   * `docs/foundations.md` §11 step 6 would promote it to `tokens.css` if a second overlay
+   * grew one. The chosen size means the arrow visually matches the 0.375rem control radius,
+   * so the two corners read as one shape rather than as a triangle stuck to a rounded box.
+   *
+   * The triangle is inset by exactly this size, so its base sits *on* the surface's edge and
+   * covers the border where the two meet. That is the whole technique: no second offset token,
+   * because the border is one pixel and the seam it would correct is one pixel wide.
+   */
   .uir-popover {
-    /*
-     * The arrow's two dimensions. Declared here because only this component draws an arrow;
-     * `docs/foundations.md` §11 step 6 would promote them to `tokens.css` if a second overlay
-     * grew one. The chosen size means the arrow visually matches the 0.375rem control radius,
-     * so the two corners read as one shape rather than as a triangle stuck to a rounded box.
-     */
     --uir-popover-arrow-size: 0.375rem;
-    --uir-popover-arrow-offset: calc(var(--uir-popover-arrow-size) - 1px);
   }
 
   /*
