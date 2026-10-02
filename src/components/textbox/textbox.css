@@ -292,6 +292,23 @@
   /* ---- Input --------------------------------------------------------- */
 
   .uir-textbox__input {
+    /*
+     * The 24px minimum target, applied to the element the user actually clicks.
+     *
+     * `align-self: stretch` was tried first and does not work here: the control is a flex container
+     * whose own height is content-driven (`min-block-size`, not `block-size`), so there is no
+     * definite cross size for a child to stretch into and the input kept its line-height. At `sm`
+     * that is 22.4px, inside a 32px visible control — the padding above and below the input was not
+     * part of the hit area, and clicking it did nothing.
+     *
+     * A floor on the input is the fix that survives a content-sized parent, and it is invisible for
+     * `md` and `lg`, whose line-heights are already above 24px. At `sm` it grows the field by under
+     * two pixels, which is the cost of meeting WCAG 2.2 SC 2.5.8 as `docs/foundations.md` claims.
+     *
+     * `--uir-control-height-sm` rather than a literal, because that token *is* the 24px minimum and
+     * `tests/target-size.test.ts` asserts it stays at 1.5rem.
+     */
+    min-block-size: var(--uir-control-height-sm);
     background: none;
     border: 0;
     color: inherit;

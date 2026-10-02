@@ -22,7 +22,10 @@ jobs:
   publish:
     name: Publish to npm
     runs-on: ubuntu-latest
-    environment: npm
+    # No `environment:` gate. GitHub fails a job whose environment does not exist,
+    # and an unreleased repo has none, so declaring one would block every publish.
+    # Add `environment: npm` once the environment exists and you want reviewers or
+    # wait timers on the upload step.
     permissions:
       contents: read
       # Required for provenance: this is what lets npm verify the build came

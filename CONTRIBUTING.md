@@ -95,9 +95,14 @@ Two requirements that are not optional:
 - **`repository` in `package.json` must match where you publish from**, case-sensitive.
   npm verifies the two match before it will attest to a build.
 
-Setup, once: create an npm automation token (not a personal token), add it as the
-`NPM_TOKEN` repository secret, and create a GitHub environment named `npm`. Trusted
-publishing via OIDC removes the token entirely if you would rather not keep one.
+Setup, once: create an npm automation token (not a personal token) and add it as the
+`NPM_TOKEN` repository secret. The workflow declares no GitHub environment, so that is
+the only credential required. Trusted publishing via OIDC removes the token entirely if
+you would rather not keep one.
+
+To gate the upload behind reviewers later, add `environment: npm` to the `publish` job
+and create the environment. GitHub fails a job whose environment does not exist, which
+is why it is absent rather than present and broken.
 
 `package.json` version and the `CHANGELOG.md` heading are the only two things that
 have to agree. Nothing derives the version from git tags.
