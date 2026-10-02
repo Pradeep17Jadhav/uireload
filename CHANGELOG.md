@@ -7,6 +7,44 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Added
+
+- **`docs/references.md`.** The provenance record for every component: which
+  file and symbol behind each non-obvious API choice, and which behaviour was
+  copied, renamed, narrowed or rejected. Agent-only, and not published.
+- `tests/published-content.test.ts`, which fails the build when anything shipped
+  names a reference library. It reads `dist/` rather than the source, because a
+  source-level check would pass while a stale build still published the old
+  comments, and it covers the `sourcesContent` of every source map, which embeds
+  the entire original TypeScript.
+- `tests/markdown.test.ts`, covering table well-formedness and other structural
+  rules a prose file can violate silently.
+- `npm run release:patch | release:minor | release:major`. One command per bump
+  type: bump the version, release the `[Unreleased]` body under a dated heading,
+  run `verify`, commit, tag, and push. The push is what publishes, because npm
+  only mints provenance attestations from a supported CI provider.
+
+### Changed
+
+- **Provenance moved out of the shipped code.** Every published `.d.ts`,
+  `dist/index.css` comment and source map is now free of third-party library
+  names. The reasoning stays and is stated in terms of the widget, the ARIA
+  pattern, WCAG or platform behaviour; only the attribution moved to
+  `docs/references.md`. Naming another library in a shipped artefact also
+  implied a port or compatibility relationship that does not exist.
+- `docs/foundations.md` and the component `README.md` files rewritten to match,
+  dropping the per-file citation lists that the provenance record now holds.
+
+### Fixed
+
+- **The template's story was published as a real component.** `index.json` listed
+  `template-example--*` in the Storybook sidebar, so a screenshot sweep would pick
+  up scaffolding. Negated `stories` globs were tried in two forms and neither
+  excluded anything, so the template's story file is now
+  `example.stories.template.tsx`, which the glob cannot match at all.
+- **Comments left dangling by the de-attribution pass.** A line reduced to bare
+  punctuation by a row-level replacement; caught by inspection, not by any tool.
+
 ## [0.1.0] - 2026-10-02
 
 First release. Infrastructure plus the first four components.
