@@ -1,0 +1,216 @@
+/*
+ * Skeleton styles.
+ *
+ * The shimmer is a `background-position` animation on a gradient, not a transform on the bar.
+ *
+ * A transform moves the bar itself, which is a moving object; a background moving inside a stationary
+ * bar reads as light passing over a surface. That difference is why skeleton implementations that
+ * animate the element look unsettled and ones that animate the background do not.
+ *
+ * `prefers-reduced-motion` slows the shimmer rather than stopping it, for the reason documented on
+ * `Skeleton`'s `animate` prop and in `docs/accessibility.md` rule 7: a stopped skeleton is a grey
+ * rectangle, and the *motion* is part of what says "this is loading" — so removing it removes
+ * information rather than just decoration.
+ */
+
+@layer uireload.components {
+  .uir-skeleton,
+  .uir-skeleton__bar,
+  .uir-skeleton__shape {
+    box-sizing: border-box;
+  }
+
+  /* ---- Root ---------------------------------------------------------- */
+
+  .uir-skeleton {
+    --uir-skeleton-line-height: 1rem;
+    --uir-skeleton-radius: var(--uir-radius-small);
+    /*
+     * The placeholder's own colours.
+     *
+     * These three were read by the rules below and declared nowhere, which is the single reason this
+     * component was invisible: an undeclared custom property does not throw and does not warn, it
+     * resolves to nothing, so `background-color: var(--uir-skeleton-fill)` declared no background at
+     * all and the shimmer's gradient was invalid. Every rule was green in review, green in the build
+     * and green in the test suite, because a missing variable is not an error — it is a smaller
+     * rendering. `tests/source-hygiene.test.ts` now fails on a token read but never declared.
+     */
+    --uir-skeleton-fill: var(--uir-neutral-wash);
+    --uir-skeleton-sheen: rgb(255 255 255 / 55%);
+    --uir-skeleton-duration: 1.4s;
+    /*
+     * The block a `rounded` or `circular` shape takes when given neither `width` nor `height`.
+     */
+    --uir-skeleton-shape-size: 2.5rem;
+
+    /*
+     * The sheen is one value for every scheme, and that is the point.
+     *
+     * A translucent white lightens whatever it sits on, so it reads as a band travelling across a
+     * light grey bar in the light scheme and across a dark slate bar in the dark one — with no
+     * per-scheme override and no `color-mix`, which this library does not use anywhere. The *fill* is
+     * what has to change per scheme, and `--uir-neutral-wash` is already redefined for each.
+     *
+     * What matters is that the fill is distinguishable from the page it stands in for: a skeleton the
+     * same colour as its background is not a placeholder, it is a hole in the layout.
+     */
+
+    display: grid;
+    gap: calc(var(--uir-skeleton-line-height) * 0.5);
+    font-family: var(--uir-font-family);
+    /*
+     * `inline-size: 100%` so the skeleton fills its container by default.
+     *
+     * The point of a skeleton is to occupy the box the content will occupy. An inline element that
+     * shrinks to nothing is not a placeholder for anything.
+     */
+    inline-size: 100%;
+  }
+
+  /*
+   * A grid, not a block.
+   *
+   * The bars are children, and `gap` is how the space between them is expressed — which is what lets
+   * the spacing scale with the line height rather than being a second literal.
+   */
+
+  /* ---- Bars ---------------------------------------------------------- */
+
+  /*
+   * The bar itself, and the shimmer that runs across it.
+   *
+   * The gradient is drawn on `::after` so the bar's own background can stay a flat fill. Mixing the
+   * two — a gradient background with the fill in one declaration — means the animation has to animate
+   * the fill too, which is why some implementations flicker.
+   */
+  .uir-skeleton__bar,
+  .uir-skeleton__shape {
+    background-color: var(--uir-skeleton-fill);
+    block-size: var(--uir-skeleton-line-height);
+    border-radius: var(--uir-skeleton-radius);
+    display: block;
+    inline-size: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .uir-skeleton__shape {
+    /*
+     * Square by default.
+     *
+     * A `rounded` or `circular` skeleton with no height would be a full-width pill, which is not what
+     * either variant means; the height has to come from somewhere and the line height is the honest
+     * default for a shape standing in for a line of content.
+     */
+    aspect-ratio: 1;
+    block-size: auto;
+    inline-size: var(--uir-skeleton-shape-size, 2.5rem);
+  }
+
+  .uir-skeleton[data-variant="rounded"] .uir-skeleton__shape {
+    aspect-ratio: auto;
+    inline-size: 100%;
+  }
+
+  .uir-skeleton[data-variant="circular"] .uir-skeleton__shape {
+    border-radius: 50%;
+  }
+
+  .uir-skeleton[data-variant="circular"] {
+    /* A circle's size is its height, so the root must not be full width. */
+    inline-size: auto;
+  }
+
+  /*
+   * The shimmer.
+   *
+   * Inset to cover the bar and wider than it, so the gradient can travel from off one edge to off the
+   * other without the bar's own edges going transparent mid-animation.
+   */
+  .uir-skeleton__bar::after,
+  .uir-skeleton__shape::after {
+    animation: uir-skeleton-shimmer var(--uir-skeleton-duration) linear infinite;
+    background-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--uir-skeleton-sheen) 50%,
+      transparent 100%
+    );
+    content: "";
+    inset: 0;
+    position: absolute;
+    /*
+     * Twice the bar's width, so half of it is always off-screen and the visible half travels a full
+     * bar width. At exactly the bar's width the gradient's soft edges are visible at the extremes.
+     */
+    inline-size: 200%;
+    transform: translateX(-100%);
+  }
+
+  /*
+   * `data-animate` absent means the shimmer does not run at all.
+   *
+   * `display: none` on the pseudo-element rather than `animation: none`, because a `background-image`
+   * with no animation still paints — and a bar with a static gradient is a bar that looks like a
+   * rendering error rather than a deliberate choice.
+   */
+  .uir-skeleton:not([data-animate])::after,
+  .uir-skeleton:not([data-animate]) .uir-skeleton__bar::after,
+  .uir-skeleton:not([data-animate]) .uir-skeleton__shape::after {
+    display: none;
+  }
+
+  @keyframes uir-skeleton-shimmer {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+  /*
+   * The keyframes live in a library that must not leak names.
+   *
+   * Every `@keyframes` and every custom property in this file is `uir-`-prefixed, so a consumer's own
+   * `fade` or `--bar-height` cannot collide with ours. The animation *name* is a global identifier in
+   * the document, not a scoped one.
+   */
+
+  /* ---- Reduced motion ------------------------------------------------ */
+
+  /*
+   * Slower, not stopped. See the header comment.
+   *
+   * 2.4s, the same figure the loading spinner in `button.css` uses for the same reason.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .uir-skeleton__bar::after,
+    .uir-skeleton__shape::after {
+      animation-duration: 2.4s;
+    }
+  }
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * A skeleton is a placeholder, and a placeholder in a forced-colours theme has no business being
+   * invisible.
+   *
+   * `GrayText` is the system colour for a disabled or inert element, which is exactly what a skeleton
+   * is: present, informative, and not available. The sheen is dropped rather than restated, because a
+   * gradient between two system colours is a gradient between two colours that may be identical.
+   */
+  @media (forced-colors: active) {
+    .uir-skeleton__bar,
+    .uir-skeleton__shape {
+      background-color: GrayText;
+      forced-color-adjust: none;
+    }
+
+    .uir-skeleton__bar::after,
+    .uir-skeleton__shape::after {
+      display: none;
+    }
+  }
+}

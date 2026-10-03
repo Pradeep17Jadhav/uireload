@@ -1,0 +1,410 @@
+/*
+ * Alert styles.
+ *
+ * A wash with a bar down the block-start edge, the same vocabulary as `Tile` — which is deliberate:
+ * an alert and a status tile are saying the same thing in different sizes, and a page where the same
+ * tone reads two different ways is a page nobody can learn.
+ *
+ * Every declaration uses a logical property, so the whole component mirrors in RTL.
+ */
+
+@layer uireload.components {
+  .uir-alert,
+  .uir-alert__icon,
+  .uir-alert__glyph,
+  .uir-alert__body,
+  .uir-alert__title,
+  .uir-alert__message,
+  .uir-alert__action,
+  .uir-alert__dismiss,
+  .uir-alert__dismiss-glyph {
+    box-sizing: border-box;
+  }
+
+  /* ---- Root ---------------------------------------------------------- */
+
+  .uir-alert {
+    --uir-alert-edge: transparent;
+    --uir-alert-edge-width: 4px;
+    --uir-alert-radius: var(--uir-radius);
+
+    align-items: flex-start;
+    background-color: var(--uir-alert-fill);
+    border: var(--uir-alert-border-width, transparent) solid
+      var(--uir-alert-border-color, transparent);
+    border-radius: var(--uir-alert-radius);
+    color: var(--uir-alert-text);
+    display: flex;
+    font-family: var(--uir-font-family);
+    gap: var(--uir-control-gap);
+    line-height: var(--uir-line-height);
+    padding-block: var(--uir-alert-pad-block);
+    padding-inline: var(--uir-alert-pad-inline);
+    /*
+     * The tone bar.
+     *
+     * On the root, not on a part, for the same reason as `Tile`: a bar attached to the body scrolls
+     * away on a long alert, and a message whose status colour disappears is a message that has lost
+     * the one thing it was saying.
+     */
+    position: relative;
+  }
+
+  .uir-alert::before {
+    background-color: var(--uir-alert-edge);
+    content: "";
+    inset-block: 0;
+    inset-inline-start: 0;
+    position: absolute;
+    inline-size: var(--uir-alert-edge-width);
+  }
+
+  /*
+   * Neutral hides the bar rather than drawing it transparent: a transparent bar still occupies the
+   * inline-start edge and shifts the content by its width.
+   */
+  .uir-alert[data-tone="neutral"]::before {
+    display: none;
+  }
+
+  /*
+   * The bar sits inside the rounded corner, so the root's inline-start padding has to account for it
+   * or the icon sits on top of it.
+   */
+  .uir-alert:not([data-tone="neutral"]) {
+    padding-inline-start: calc(var(--uir-alert-pad-inline) + var(--uir-alert-edge-width));
+  }
+
+  .uir-alert {
+    --uir-alert-pad-block: var(--uir-control-pad-block-md);
+    --uir-alert-pad-inline: var(--uir-control-pad-inline-md);
+  }
+
+  /* ---- Body ---------------------------------------------------------- */
+
+  /*
+   * The body takes the remaining width and the icon does not shrink.
+   *
+   * `min-inline-size: 0` so a long unbroken string wraps instead of pushing the actions off the edge,
+   * which is the failure an alert carrying a button is most prone to.
+   */
+  .uir-alert__body {
+    flex: 1;
+    min-inline-size: 0;
+  }
+
+  .uir-alert__title {
+    color: inherit;
+    font-size: var(--uir-control-font-size-md);
+    font-weight: var(--uir-control-font-weight);
+    line-height: var(--uir-line-height);
+    margin: 0 0 calc(var(--uir-space) * 0.25) 0;
+  }
+
+  .uir-alert__message {
+    overflow-wrap: break-word;
+  }
+
+  /*
+   * Actions on their own line.
+   *
+   * An alert is narrow — it sits in a column beside a form — so a button beside the text would
+   * squeeze the text into a two-word-per-line column. Below the message is the only place a button
+   * fits.
+   */
+  .uir-alert__action {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--uir-control-gap);
+    margin-block-start: calc(var(--uir-space) * 0.75);
+  }
+
+  /* ---- Glyph --------------------------------------------------------- */
+
+  /*
+   * The tone marker.
+   *
+   * The same shapes as `Snackbar`: a ring for information and success, and a filled ring with a bar
+   * through it for danger. A ring is read as "information" whatever colour it is, and a failure that
+   * looks like a notification is a failure nobody acts on.
+   */
+  .uir-alert__glyph {
+    border: 2px solid var(--uir-alert-accent);
+    border-radius: 50%;
+    flex-shrink: 0;
+    block-size: 1.25rem;
+    inline-size: 1.25rem;
+    /*
+     * The tone marker is aligned to the **first line** of the message, not to the top of the alert.
+     *
+     * The root is `align-items: flex-start`, which puts the marker's box against the alert's padding
+     * edge. The text inside the body starts one line-box lower, because the body's line box has
+     * leading above the glyphs — so a marker on the padding edge sits visibly high, roughly half a
+     * line above the text it labels, and reads as belonging to the alert rather than to the words.
+     *
+     * `margin-block-start` is half the difference between the marker's height and the text's line
+     * height, which centres the marker on that first line for any font size and any density. It is
+     * the same arithmetic as `align-items: center` applied to a single line, done per-glyph because
+     * the marker's box is smaller than the line it centres on.
+     *
+     * A titled alert then has its marker level with the title, which is what "the icon stands for
+     * this alert" should look like whether or not the alert has a title.
+     */
+    margin-block-start: calc((var(--uir-line-height) * 1em - 1.25rem) / 2);
+  }
+
+  .uir-alert__glyph[data-tone="danger"] {
+    background-color: var(--uir-alert-accent);
+    position: relative;
+  }
+
+  .uir-alert__glyph[data-tone="danger"]::after {
+    background-color: var(--uir-alert-fill-solid);
+    block-size: 2px;
+    content: "";
+    inline-size: 55%;
+    inset-block-start: calc(50% - 1px);
+    inset-inline-start: 22.5%;
+    position: absolute;
+  }
+
+  .uir-alert__icon {
+    align-items: center;
+    display: inline-flex;
+    flex-shrink: 0;
+    justify-content: center;
+    block-size: 1.25rem;
+    inline-size: 1.25rem;
+    /*
+     * The same first-line centring as the built-in glyph.
+     *
+     * A consumer's own icon has exactly the same problem and exactly the same fix, and it is stated
+     * here rather than left for them to discover — an icon that is half a line high is the most
+     * common thing a reviewer notices on an alert and the least likely to be diagnosed.
+     */
+    margin-block-start: calc((var(--uir-line-height) * 1em - 1.25rem) / 2);
+  }
+
+  /* ---- Dismiss ------------------------------------------------------- */
+
+  .uir-alert__dismiss {
+    align-items: center;
+    background: none;
+    border: 0;
+    border-radius: 50%;
+    color: currentcolor;
+    cursor: pointer;
+    display: inline-flex;
+    flex-shrink: 0;
+    justify-content: center;
+    /*
+     * A 24px target. A close control sized to its glyph is about 12px, and this is a control users aim
+     * at in a hurry.
+     */
+    block-size: var(--uir-control-height-sm);
+    inline-size: var(--uir-control-height-sm);
+    /*
+     * Pull the control up against the top padding so it sits level with the first line of text
+     * rather than floating below it.
+     *
+     * `-md` rather than a bare `--uir-control-pad-block`: the sized ladder is what the theme declares,
+     * and a bare name would have been a token nothing ever set — which is a declaration that silently
+     * computes to nothing and leaves this margin at its initial value.
+     */
+    margin-block-start: calc(-1 * (var(--uir-control-pad-block-md) - var(--uir-space) * 0.5));
+    margin-inline-start: auto;
+    padding: 0;
+  }
+
+  .uir-alert__dismiss-glyph {
+    block-size: 0.6em;
+    border-block-start: 1.5px solid currentcolor;
+    border-inline-start: 1.5px solid currentcolor;
+    display: block;
+    inline-size: 0.6em;
+    transform: rotate(45deg) translateY(-1px);
+  }
+
+  /* ---- Tone and variant ---------------------------------------------- */
+
+  /*
+   * Four roles per tone, in one block, covering the fill, the text, the bar and the glyph together.
+   *
+   * A wash rather than the tone at full strength: an alert is a large surface, and a saturated fill on
+   * a large surface makes the text on it the second-most important thing on the page.
+   */
+  .uir-alert[data-tone="neutral"] {
+    --uir-alert-fill: var(--uir-neutral-wash);
+    --uir-alert-text: var(--uir-neutral-on-wash);
+    --uir-alert-accent: var(--uir-text-muted);
+    --uir-alert-fill-solid: var(--uir-neutral-wash);
+  }
+
+  .uir-alert[data-tone="accent"] {
+    --uir-alert-fill: var(--uir-accent-wash);
+    --uir-alert-text: var(--uir-accent-on-wash);
+    --uir-alert-accent: var(--uir-accent);
+    --uir-alert-fill-solid: var(--uir-accent-wash);
+    --uir-alert-edge: var(--uir-accent);
+  }
+
+  .uir-alert[data-tone="positive"] {
+    --uir-alert-fill: var(--uir-success-wash);
+    --uir-alert-text: var(--uir-success-on-wash);
+    --uir-alert-accent: var(--uir-success);
+    --uir-alert-fill-solid: var(--uir-success-wash);
+    --uir-alert-edge: var(--uir-success);
+  }
+
+  .uir-alert[data-tone="danger"] {
+    --uir-alert-fill: var(--uir-danger-wash);
+    --uir-alert-text: var(--uir-danger-on-wash);
+    --uir-alert-accent: var(--uir-danger);
+    --uir-alert-fill-solid: var(--uir-danger-wash);
+    --uir-alert-edge: var(--uir-danger);
+  }
+
+  /*
+   * `outlined` swaps the wash for the surface and gives the border the text colour.
+   *
+   * The border uses `--uir-alert-text` rather than the raw tone, for the reason in `Chip`: a border
+   * lighter than the label beside it is a shape a low-vision user can see and a label they cannot read.
+   */
+  .uir-alert[data-variant="outlined"] {
+    --uir-alert-fill: var(--uir-surface-raised);
+    --uir-alert-border-width: var(--uir-control-border-width);
+    --uir-alert-border-color: var(--uir-alert-text);
+  }
+
+  /*
+   * `solid` inverts: the tone becomes the fill and the text becomes the contrast colour.
+   *
+   * The bar disappears, because on a solid fill the background already says the tone and a bar on it
+   * is a stripe of the same colour. This is the loudest the library goes, which is the point of it
+   * being opt-in.
+   */
+  .uir-alert[data-variant="solid"] {
+    --uir-alert-border-width: transparent;
+    --uir-alert-text: var(--uir-alert-contrast);
+  }
+
+  .uir-alert[data-variant="solid"]::before {
+    display: none;
+  }
+
+  .uir-alert[data-variant="solid"] {
+    --uir-alert-contrast: var(--uir-surface-raised);
+  }
+
+  .uir-alert[data-variant="solid"][data-tone="neutral"] {
+    --uir-alert-fill: var(--uir-text);
+    --uir-alert-contrast: var(--uir-surface);
+  }
+
+  .uir-alert[data-variant="solid"][data-tone="accent"] {
+    --uir-alert-fill: var(--uir-accent);
+    --uir-alert-contrast: var(--uir-accent-contrast);
+  }
+
+  .uir-alert[data-variant="solid"][data-tone="positive"] {
+    --uir-alert-fill: var(--uir-success);
+    --uir-alert-contrast: var(--uir-success-contrast);
+  }
+
+  .uir-alert[data-variant="solid"][data-tone="danger"] {
+    --uir-alert-fill: var(--uir-danger);
+    --uir-alert-contrast: var(--uir-danger-contrast);
+  }
+
+  /* ---- States -------------------------------------------------------- */
+
+  /*
+   * Hover is gated on a fine pointer, for the reason every other component in this library states.
+   *
+   * The dismiss control only. An alert that shifts under its own text while the pointer crosses it is
+   * an alert nobody can finish reading.
+   */
+  @media (hover: hover) and (pointer: fine) {
+    .uir-alert__dismiss:hover {
+      background-color: var(--uir-alert-dismiss-hover);
+    }
+  }
+
+  .uir-alert__dismiss:active {
+    background-color: var(--uir-alert-dismiss-active);
+  }
+
+  .uir-alert__dismiss:focus-visible {
+    outline: var(--uir-focus-ring-width) solid var(--uir-focus-ring-color);
+    outline-offset: 1px;
+  }
+
+  .uir-alert {
+    --uir-alert-dismiss-hover: rgb(0 0 0 / 6%);
+    --uir-alert-dismiss-active: rgb(0 0 0 / 12%);
+  }
+
+  /*
+   * A solid alert needs light-on-dark hover, or the dark overlay makes the button vanish into it.
+   */
+  .uir-alert[data-variant="solid"] {
+    --uir-alert-dismiss-hover: rgb(255 255 255 / 14%);
+    --uir-alert-dismiss-active: rgb(255 255 255 / 24%);
+  }
+
+  /* ---- Reduced motion ------------------------------------------------ */
+
+  /* Nothing to do: an alert does not animate. Recorded so the absence is a decision. */
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * A wash fill is a light tint, and a light tint in a forced-colours theme is very likely to be
+   * indistinguishable from the page — which makes an alert invisible, and an invisible alert is worse
+   * than no alert because the page looks fine.
+   *
+   * So the surface goes to `Canvas`, the text to `CanvasText`, and the tone moves entirely to the bar
+   * and the border. `Highlight` is used for the solid variant because that is what a "selected"
+   * appearance is in every one of these themes.
+   */
+  @media (forced-colors: active) {
+    .uir-alert {
+      background-color: Canvas;
+      border-color: CanvasText;
+      color: CanvasText;
+      forced-color-adjust: none;
+    }
+
+    .uir-alert[data-tone="neutral"] {
+      border-color: CanvasText;
+      border-width: var(--uir-control-border-width);
+    }
+
+    .uir-alert[data-variant="outlined"],
+    .uir-alert[data-variant="solid"] {
+      border-color: CanvasText;
+      border-width: var(--uir-control-border-width);
+    }
+
+    .uir-alert[data-variant="solid"] {
+      background-color: Highlight;
+      color: HighlightText;
+    }
+
+    .uir-alert__glyph {
+      border-color: CanvasText;
+    }
+
+    .uir-alert__glyph[data-tone="danger"] {
+      background-color: Canvas;
+    }
+
+    .uir-alert__glyph[data-tone="danger"]::after {
+      background-color: CanvasText;
+    }
+
+    .uir-alert__dismiss:focus-visible {
+      outline-color: Highlight;
+    }
+  }
+}

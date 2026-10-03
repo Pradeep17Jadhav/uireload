@@ -360,58 +360,35 @@ export function Slider(props: SliderProps) {
   /* ---- Pointer on the track ------------------------------------------ */
 
   /**
-   * Value under the pointer.
+   * Note that a press has begun, so the gesture commits when it ends.
    *
-   * Read from the root's box rather than from a thumb, so the whole track is a hit target — a slider
-   * whose rail is only draggable on the 16px thumb is much slower to use with a pointer.
+   * There is deliberately no value arithmetic here. An earlier version derived the value under the
+   * pointer and moved the nearest thumb to it, and it was wrong in two ways at once:
+   *
+   * - It measured the **root**, not the rail. The root also holds the label, the value readout and the
+   *   helper text, so it is 64px tall where the rail is 4px. On the block axis the press position was
+   *   mapped across a box sixteen times the track's height, so the thumb landed somewhere the user
+   *   had not clicked and appeared "not centred".
+   * - It fought the platform. The input underneath is a real `<input type="range">` and already
+   *   tracks the pointer exactly; deriving a second value from a second box on the same gesture is how
+   *   a slider ends up jumping between two systems' answers.
+   *
+   * So the rail is now the input's hit target and the pointer maths is the browser's, which is what
+   * makes `aria-valuenow` and the drawn thumb unable to disagree. The nearest-thumb-on-track-click
+   * behaviour this gave up is recorded as a gap in the README, with the reason.
    */
-  const valueFromPointer = (event: React.PointerEvent<HTMLDivElement>): number => {
-    const box = rootRef.current?.getBoundingClientRect();
-    if (box === undefined || box.width === 0 || box.height === 0) return min;
+  const onPointerBegan = (): void => {
+    if (disabled) return;
 
-    const vertical = orientation === "vertical";
-    const raw0 = vertical ? box.bottom - event.clientY : event.clientX - box.left;
-    const length = vertical ? box.height : box.width;
-
-    return min + (raw0 / length) * (max - min);
-  };
-
-  const onTrackPointerDown = (event: React.PointerEvent<HTMLDivElement>): void => {
-    if (disabled || event.button !== 0) return;
     /*
-     * Only when the track itself was hit. A drag that began on a thumb is the platform's, and
-     * re-deriving the value here would fight it: the thumb's own input already tracks the pointer,
-     * and two systems writing the same value on one gesture is how a slider ends up jumping.
+     * Record the value from *before* the gesture, so `Escape` can restore it.
+     *
+     * This is what the old track handler did too, and it has to happen on the press rather than on
+     * the first `change`: by the time a `change` fires the pointer has already moved the value, and
+     * "before the interaction" would then mean "one step into it".
      */
-    if (event.target !== event.currentTarget) {
-      /*
-       * The press began on a thumb, so the platform owns the drag. Flagging it is still needed: the
-       * resulting `change` events must not commit, because the gesture is not finished until the
-       * button comes up.
-       */
-      dragging.current = true;
-      return;
-    }
-
-    const box = rootRef.current?.getBoundingClientRect();
-    if (box === undefined) return;
-
     beginInteraction();
     dragging.current = true;
-
-    const value = valueFromPointer(event);
-    /*
-     * The nearest thumb moves to the pointer, not thumb 0. On a range slider, clicking the far end
-     * of the track should grab the thumb nearest that end — grabbing the low thumb and dragging it
-     * all the way across is the behaviour that makes range sliders feel broken.
-     */
-    const index = values.reduce(
-      (best, candidate, at) =>
-        Math.abs(candidate - value) < Math.abs((values[best] as number) - value) ? at : best,
-      0
-    );
-
-    move(index, value, "change");
   };
 
   /* ---- A11y wiring --------------------------------------------------- */
@@ -453,7 +430,7 @@ export function Slider(props: SliderProps) {
       data-track={trackProp}
       onKeyDown={handleKeyDown}
       onPointerUp={onPointerSettled}
-      onPointerDown={onTrackPointerDown}
+      onPointerDown={onPointerBegan}
       onPointerCancel={onPointerSettled}
     >
       <div className="uir-slider__header">

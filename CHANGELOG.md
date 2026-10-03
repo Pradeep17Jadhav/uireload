@@ -9,6 +9,78 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 
+- **`Divider`, `Skeleton`, `Avatar`, `Alert`.** Four components with no shared theme
+  beyond the token contract.
+  - **`Divider`** renders identically whether or not it is in the accessibility
+    tree, so `decorative` is an explicit prop: `role="presentation"` rather than
+    `aria-hidden`, which does not stop an announcement when focus lands inside. A
+    string `label` is written to `aria-label` too, because `role="separator"` is a
+    **structure** role and structure roles are not named from their contents — the
+    text inside the rule looks like its name and is not one.
+  - **`Skeleton`** announces almost nothing: a `role="status"` region named
+    `"Loading"`, and every bar `aria-hidden`. A screen reader describing four grey
+    rectangles has told the user nothing, and reading it four times delays the
+    announcement that matters. `lines={0}` renders one bar rather than nothing,
+    because an empty placeholder is the layout shift the component exists to
+    prevent.
+  - **`Avatar`** falls back to its initials when the image fails — a revoked avatar
+    URL is normal, not exceptional, and a broken-image glyph is worse than letters.
+    The image and the initials are alternatives, never both: rendering both
+    announces "Ada Lovelace, AL". `initialsFrom` is exported so a consumer derives
+    them the same way, and the component takes `initials` rather than a `name`
+    because splitting a display name is a guess it would get wrong for every name
+    that is not "First Last".
+  - **`Alert`** derives both `role` and `aria-live` from `tone`, so `tone="danger"`
+    becomes `role="alert"` without a second prop — the one tone that means "this
+    will cost you" is the only one that justifies interrupting a screen reader.
+    Both remain overridable, and a contradictory pair warns in development. The
+    alert never dismisses itself: `onDismiss` reports and stays.
+- **`Tooltip`.** A focusable `<span>` trigger, portalled and positioned by the
+  shared overlay algorithm. `delay={400}` on hover and **no delay on focus**,
+  because a keyboard user has arrived deliberately and there is no
+  accidentally-passed-over case to guard against; `hideDelay={200}` so moving the
+  pointer onto the tooltip to read it does not dismiss it. `describe` chooses
+  between `aria-describedby` and `aria-label`, because a description supplements a
+  name and cannot replace a missing one — the difference between an icon button
+  that is announced and one that is not. The surface is always in the DOM and
+  `hidden` when closed, since a description that appears with its element is never
+  observed.
+- **`Drawer`.** `modal` defaults to **`false`**, which is the component's most
+  consequential decision: modal is a focus trap and a scroll lock, and a
+  navigation drawer that traps focus is worse than one that does not, because the
+  user cannot reach the item they opened it to change. A non-modal drawer still
+  takes focus on open — otherwise `Tab` never gets inside and the drawer is
+  unreachable — and does not trap. `placement` is logical, not `left` / `right`.
+  `onClose(reason)` is the request and `onDismiss(reason)` is the fact, matching
+  `Dialog`, `Popover` and `Snackbar`.
+- **`Pagination`.** A named `<nav>` of real buttons. `aria-current="page"`, never
+  `aria-pressed`: the current page is a position, not a toggle. First and last are
+  always one click away, the gaps are `aria-hidden` because announcing "ellipsis"
+  announces a piece of CSS, and a `role="status"` region announces "Page 3 of 12"
+  — which is the part neither reference API has, and the fix for a screen reader
+  user pressing a page number and being told nothing.
+- **`Stepper`.** `linear` by default, and the default decides which steps exist as
+  **buttons**: the steps behind the current one are activatable, because a wizard
+  you cannot go back in is a wizard people abandon, and the steps ahead are plain
+  text. Unreachable steps are `<div>`s rather than disabled buttons — a disabled
+  control is announced as "unavailable", which also claims it is a control. The
+  current step's header is therefore never a button, so `aria-current="step"` is
+  written to whichever element the step is; putting it on the button alone would
+  make the one thing the component communicates vanish in its default mode.
+  `errorText` is `aria-describedby`-ed onto the header, with per-instance ids so two
+  steppers on a page cannot announce each other's failures.
+
+### Changed
+
+- `BASE_MESSAGES` gains `common.page`, `common.previousPage`, `common.nextPage`,
+  `common.firstPage`, `common.lastPage`, `common.step` and `common.of` (the last
+  with a `{total}` placeholder, so "Page 3 of 12" is not concatenated — the word
+  order is the translator's to choose).
+
+## [0.3.0] - 2026-10-02
+
+### Added
+
 - **`Textbox`, `Select`, `Switch`, `Popover`, `Dialog`.** Five components, completing
   the form-control and overlay set. Every one renders the platform's control where
   one exists — a real `<input type="radio">` per radio option, a real

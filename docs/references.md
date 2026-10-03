@@ -345,6 +345,211 @@ pointer and focus pauses here cover the cases that actually lose the user's plac
 reason rather than `dismiss` — it names the mechanism rather than the intent, so it cannot also carry a
 close-button press.
 
+### Divider - `src/components/divider/`
+
+| Concern        | Source                                                                                                                                                             |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Prop surface   | `@mui/material/Divider/Divider.d.ts` - `orientation`, `variant`, `flexItem`, `textAlign`, `absolute`, `children`                                                   |
+| Root element   | `@mui/material/Divider/Divider.d.ts` - `defaultComponent: RootComponent`, `RootComponent extends React.ElementType = 'hr'`                                         |
+| Semantic name  | The `<hr>` element's implicit `role="separator"`, with `children` removing the role entirely - the same rule `role="presentation"` implements here                 |
+| Label position | `@mui/material/Divider/Divider.d.ts` - `textAlign: 'center' \| 'right' \| 'left'`; the label centred by default is the finding, the physical alignment is rejected |
+| No counterpart | No `Divider`, `Separator` or `HR` tag exists in either library's `dist/`; a rule is composed from borders by the consumer there                                    |
+
+Rejected: `absolute` (`@mui/material/Divider/Divider.d.ts`) - absolute positioning inside a scrolling
+container is a layout decision the consumer owns. `variant: fullWidth | inset | middle` (same file) -
+three widths for the same rule, which is a spacing decision rather than a component state; `weight` is
+the one axis that changes what the thing _is_. `flexItem` (same file) - a flex-child fix, not a prop.
+`textAlign` (same file) - physical, and it names a property rather than a state. Rotated text for a
+vertical labelled rule exists in neither library and was rejected here: it is readable in Latin script
+and unusable in most others.
+
+### Skeleton - `src/components/skeleton/`
+
+| Concern              | Source                                                                                                           |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Prop surface         | `@mui/material/Skeleton/Skeleton.d.ts` - `variant`, `animation`, `width`, `height`, `children`                   |
+| Shape vocabulary     | `@mui/material/Skeleton/Skeleton.d.ts` - `variant: 'text' \| 'rectangular' \| 'rounded' \| 'circular'`           |
+| Number or string     | `@mui/material/Skeleton/Skeleton.d.ts` - `width?: number \| string`, `height?: number \| string`                 |
+| Animation vocabulary | `@mui/material/Skeleton/Skeleton.d.ts` - `animation: 'pulse' \| 'wave' \| false`                                 |
+| Root element         | `@mui/material/Skeleton/Skeleton.d.ts` - `defaultComponent: RootComponent`, `extends React.ElementType = 'span'` |
+| No counterpart       | No `Skeleton` or placeholder tag exists in either library's `dist/`; a busy region is assembled by hand there    |
+
+Rejected: `rectangular` (`@mui/material/Skeleton/Skeleton.d.ts`) - a hard-cornered block is a shape
+nothing on a page uses, so `rounded` is the block and there is no third value. `'pulse' | 'wave'`
+(same file) - two animations for one job; the difference is decorative and a component that ships both
+is a component with a preference to maintain. `children` (same file) - a skeleton with content in it is
+not a skeleton. `<span>` as the root (same file) - a span cannot take the block sizing a placeholder
+needs. Neither library has any accessibility surface for a loading placeholder at all, which is why
+`role="status"`, `aria-busy` and the `aria-hidden` bars here have no citation and are recorded as this
+component's own answer to the APG live-region pattern.
+
+### Avatar - `src/components/avatar/`
+
+| Concern            | Source                                                                                                                                                                                          |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Prop surface       | `@ui5/webcomponents/dist/Avatar.d.ts` - `initials`, `shape`, `size`, `colorScheme`, `interactive`, `fallbackIcon`, `icon`, `accessibleName`                                                     |
+| Slots              | `@ui5/webcomponents/dist/Avatar.d.ts` - `image: DefaultSlot<HTMLElement>`, `badge: Slot<HTMLElement>`                                                                                           |
+| Image-failure path | `@ui5/webcomponents/dist/Avatar.d.ts` - `_imageLoadError: boolean`, `_hasImage: boolean`                                                                                                        |
+| Accessible mode    | `@ui5/webcomponents/dist/types/AvatarMode.d.ts` - `Image`, `Decorative`, `Interactive`, each documented with the `role` it renders internally (`img`, `presentation` + `aria-hidden`, `button`) |
+| Shape vocabulary   | `@ui5/webcomponents/dist/types/AvatarShape.d.ts` - `Circle`, `Square`                                                                                                                           |
+| Size ladder        | `@ui5/webcomponents/dist/types/AvatarSize.d.ts` - `XS`, `S`, `M`, `L`, `XL`                                                                                                                     |
+| Prop decomposition | `@mui/material/Avatar/Avatar.d.ts` - `src`, `srcSet`, `alt`, `variant`, `sizes`, `children`                                                                                                     |
+| Slots              | `@mui/material/Avatar/Avatar.d.ts` - `AvatarSlots`: `root`, `img`, `fallback`                                                                                                                   |
+| Shape vocabulary   | `@mui/material/Avatar/Avatar.d.ts` - `variant: 'circular' \| 'rounded' \| 'square'`                                                                                                             |
+
+Rejected: `Square` (`@ui5/webcomponents/dist/types/AvatarShape.d.ts`,
+`@mui/material/Avatar/Avatar.d.ts`) - a hard square at avatar sizes is what a company logo wants, which
+is an image rather than an avatar; at large sizes it reads as a rounded circle. `Decorative` as a
+_mode_ (`@ui5/webcomponents/dist/types/AvatarMode.d.ts`) - the same declarative answer is available by
+passing `alt=""`, and a mode that must be kept in sync with `alt` is a second way to be wrong. `colorScheme`
+`'Accent1'..'Accent10'` and `Placeholder` / `Transparent` (same file) - twelve scheme values over an
+accent ramp is a palette this library does not have; `tone` reuses the library-wide four. `Auto`
+(same file) - deriving a colour from a name is a guess a component should not make. `fallbackIcon` and
+`children` (`@mui/material/Avatar/Avatar.d.ts`) - an initials fallback is always available and always
+correct, so a second fallback is a choice with no correct answer. `srcSet` (same file) - a resolution
+concern the `src` prop cannot express but which needs no new API. `AvatarMode` as an explicit prop
+(same file) - `interactive` already answers the only question it asks.
+
+### Alert - `src/components/alert/`
+
+| Concern                   | Source                                                                                                                                 |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Slot vocabulary           | `@mui/material/Alert/Alert.d.ts` - `AlertSlots`: `root`, `icon`, `message`, `action`, `closeButton`, `closeIcon`                       |
+| Prop surface              | `@mui/material/Alert/Alert.d.ts` - `action`, `icon`, `role`, `onClose`, `closeText`, `severity`, `variant`, `iconMapping`              |
+| Severity vocabulary       | `@mui/material/Alert/Alert.d.ts` - `AlertColor = 'success' \| 'info' \| 'warning' \| 'error'`                                          |
+| Fill vocabulary           | `@mui/material/Alert/Alert.d.ts` - `variant: 'standard' \| 'filled' \| 'outlined'`                                                     |
+| `role` as a prop          | `@mui/material/Alert/Alert.d.ts` - `role?: string`, defaulted to `'alert'`; the existence of an overridable role is the finding        |
+| Design vocabulary         | `@ui5/webcomponents/dist/types/MessageStripDesign.d.ts` - `Information`, `Positive`, `Negative`, `Critical`, `ColorSet1`, `ColorSet2`  |
+| Parts                     | `@ui5/webcomponents/dist/MessageStrip.d.ts` - `@csspart icon`, `icon: Slot<IIcon>`                                                     |
+| Close behaviour           | `@ui5/webcomponents/dist/MessageStrip.d.ts` - `close: void`, `hideCloseButton`, `hideIcon`                                             |
+| No live-region vocabulary | Neither API states an `aria-live` value for the message container; the `status` / `alert` split is this component's own reconciliation |
+
+Rejected: `'warning'` (`@mui/material/Alert/Alert.d.ts`) and `Information` / `ColorSet1` / `ColorSet2`
+(`@ui5/webcomponents/dist/types/MessageStripDesign.d.ts`) - six or four severities for a message that
+has not changed what the user should _do_; a tone has to change the required action, and that is the
+argument `docs/foundations.md` already makes for the library-wide four. `'info'` and `'success'` /
+`'error'` (same file) - re-mapped onto the library's `neutral` / `positive` / `danger` rather than
+carried across, because the names encode a reference library's semantics rather than this one's.
+`onClose` firing with the event (`@mui/material/Alert/Alert.d.ts`) - an alert's dismiss has exactly one
+reason, so a reason parameter would be a parameter with one legal value, and the consumer does not need
+the event. `iconMapping` (same file) - a four-entry lookup table whose whole content is four glyphs, and
+`icon` already accepts a node. `closeText` (same file) - one default that is right for every alert, with
+`dismissLabel` for the page that has several; the name is retained. `standard` (same file) - renamed to
+`subtle` for the same reason `Chip` uses `filled`, since `standard` names nothing. `hideIcon` and
+`hideCloseButton` (`@ui5/webcomponents/dist/MessageStrip.d.ts`) - a neutral alert draws no glyph
+because a mark beside text that says nothing is decoration, and the dismiss control appears with
+`dismissible` rather than being hidden by default.
+
+### Tooltip - `src/components/tooltip/`
+
+| Concern            | Source                                                                                                                                                                                                         |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Prop surface       | `@mui/material/Tooltip/Tooltip.d.ts` - `enterDelay`, `enterNextDelay`, `leaveDelay`, `describeChild`, `disableInteractive`, `arrow`, `followCursor`, `open`, `onOpen`, `onClose`, `placement`, `title`         |
+| Slots              | `@mui/material/Tooltip/Tooltip.d.ts` - `tooltip`, `popper`, `transition`, `arrow`                                                                                                                              |
+| Enter delay        | `@mui/material/Tooltip/Tooltip.d.ts` - `enterDelay?: number`, `enterNextDelay?: number`                                                                                                                        |
+| The grace period   | `@mui/material/Tooltip/Tooltip.d.ts` - `leaveDelay?: number`, documented as "the `tooltip` will remain open as long as the user hovers over the tooltip before the `leaveDelay` is expired"                    |
+| Describing a child | `@mui/material/Tooltip/Tooltip.d.ts` - `describeChild?: boolean`; the existence of the flag is the finding, and neither `tooltip` nor `describeChild` chooses between `aria-describedby` and `aria-label`      |
+| No counterpart     | **No general `Tooltip` tag exists in the second library's `dist/`.** The only `*Tooltip*` files there are `SliderTooltip.d.ts` and `SliderTooltipTemplate.d.ts`, a slider's value bubble rather than a tooltip |
+
+Rejected: `title` (`@ui5/webcomponents/dist/SliderTooltip.d.ts` - a `value` bubble pinned to a slider
+thumb) - it cannot be styled, positioned, shown on focus or reached by touch, which is the whole reason
+this component exists. `disableInteractive` (`@mui/material/Tooltip/Tooltip.d.ts`) - here it is the
+default, because a surface the pointer cannot enter dismisses as the user moves toward it to read the
+last word; the arrow is therefore `pointer-events: none` unconditionally. `disableTouchListener`,
+`disableHoverListener`, `disableFocusListener` (same file) - a tooltip with no listener at all is a
+focus stop that goes nowhere, so none of the three is offered. `followCursor` (same file) - a tooltip
+that follows the pointer cannot be read, because it is never still. `enterNextDelay` (same file) - a
+shorter delay for re-entering a _different_ tooltip is a refinement to a delay that should not fire in
+the first place. `transition` (same file) - a motion library's slot, in a library whose stated position
+is that motion is not its concern. Eight `placement` values (`@mui/material/Tooltip/Tooltip.d.ts`) -
+`left` / `right` are `inline-start` / `inline-end` on a vertical axis, so the four logical values plus the
+shared flip-and-clamp covers all eight. `aria-label` from `String(label)` - a `ReactNode` has no string
+form, so the attribute is applied only when `label` is a string.
+
+### Drawer - `src/components/drawer/`
+
+| Concern                | Source                                                                                                                                                           |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Edge vocabulary        | `@mui/material/Drawer/Drawer.d.ts` - `anchor?: 'left' \| 'top' \| 'right' \| 'bottom'`                                                                           |
+| Persistence vocabulary | `@mui/material/Drawer/Drawer.d.ts` - `variant?: 'permanent' \| 'persistent' \| 'temporary'`                                                                      |
+| Default                | `@mui/material/Drawer/Drawer.js` - `variant = 'temporary'`, the module-level default                                                                             |
+| Slots                  | `@mui/material/Drawer/Drawer.d.ts` - `DrawerSlots`: `root`, `docked`, `paper`, `transition`, `backdrop`                                                          |
+| Modal inheritance      | `@mui/material/Drawer/Drawer.d.ts` - `DrawerProps extends StandardProps<ModalProps, ...>`, so it inherits the focus trap, scroll lock and `aria-modal` wholesale |
+| Collapsible navigation | `@ui5/webcomponents-fiori/dist/SideNavigation.d.ts` - `collapsed: boolean`, `accessibleName`, `items`, `fixedItems`, `header`                                    |
+| Fixed vs. overlay      | `@ui5/webcomponents-fiori/dist/SideNavigation.d.ts` - `inPopover: boolean`, `_popoverContents` - the split between a panel in the layout and one over it         |
+| No counterpart         | No `Drawer` tag exists in the second library's `dist/`; `SideNavigation` is a navigation list rather than a panel, and has no overlay mode of its own            |
+
+Rejected: `anchor: 'left' | 'right'` (`@mui/material/Drawer/Drawer.d.ts`) - physical, so an RTL consumer
+has to think about direction to place a navigation drawer, which is what logical properties exist to
+stop; `inline-start` / `inline-end` cover both with no second prop set.
+`variant: 'permanent' | 'persistent'` (same file) - three names for two behaviours: a permanent drawer is a
+layout column, which is a `Tile` grid rather than an overlay, and a persistent one is this component
+with `showClose`. `transition` / `TransitionProps` (same file) - a motion library's slot.
+`ModalProps` inheritance (same file) - this component composes the shared portal, scroll-lock and
+focus-trap helpers directly so that `modal` can be **off**, which inheriting a `Modal` cannot express.
+`collapsed` (`@ui5/webcomponents-fiori/dist/SideNavigation.d.ts`) - a navigation list's own state, and
+its popover mode is the overlay case rather than a prop of the panel. `header` and `fixedItems` (same
+file) - taken as the `header` and `footer` slots, which is the useful part.
+
+### Pagination - `src/components/pagination/`
+
+| Concern          | Source                                                                                                                                                                                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Prop surface     | `@mui/material/Pagination/Pagination.d.ts` - `PaginationProps extends UsePaginationProps, StandardProps<React.HTMLAttributes<HTMLElement>, 'children' \| 'onChange'>`                                   |
+| Core props       | `@mui/material/usePagination/usePagination.d.ts` - `count`, `page`, `defaultPage`, `boundaryCount`, `siblingCount`, `disabled`, `hideNextButton`, `hidePrevButton`, `showFirstButton`, `showLastButton` |
+| Item vocabulary  | `@mui/material/usePagination/usePagination.d.ts` - `type: 'page' \| 'first' \| 'last' \| 'next' \| 'previous' \| 'start-ellipsis' \| 'end-ellipsis'`                                                    |
+| Item shape       | `@mui/material/usePagination/usePagination.d.ts` - `{ onClick, type, page, selected, disabled }`                                                                                                        |
+| Accessible names | `@mui/material/Pagination/Pagination.d.ts` - `getItemAriaLabel?: (type, page, selected) => string`                                                                                                      |
+| Shape and fill   | `@mui/material/Pagination/Pagination.d.ts` - `shape: 'circular' \| 'rounded'`, `variant: 'text' \| 'outlined'`, `color`, `size`                                                                         |
+| No counterpart   | No pagination tag exists in the second library's `dist/`; there is no `*aginat*` file in either package                                                                                                 |
+| No live region   | **Neither API has any live-region or `aria-live` surface.** `getItemAriaLabel` names a control; nothing announces the position after a change                                                           |
+
+Rejected: `renderItem` and `PaginationRenderItemParams`
+(`@mui/material/Pagination/Pagination.d.ts`) - an escape hatch that replaces the whole component, at
+which point the consumer is writing a pagination control and the library is in the way. `shape` and
+`variant` (same file) - two axes for a row of equal squares, and `rounded` on a 40px target stops being
+a shape difference. `color` (same file) - the current page is a _position_, carried by `aria-current`;
+`aria-current` plus a token is enough and a four-value colour scale on a number row is a chart.
+`showFirstButton` / `showLastButton` / `hideNextButton` / `hidePrevButton` as four booleans (same file) -
+four independent switches whose four meaningful combinations are one (`showEdges`), and the two "hide"
+flags cannot express "hide previous but keep first", which is a real configuration.
+`defaultPage` (same file) - `page` is fully controlled here, because the collection being paged is the
+consumer's state and a component that keeps its own copy is a component that can disagree with it.
+`boundaryCount` (same file) - kept as the always-present first and last rather than a count, because
+the ends of a collection are one click away in every configuration or the control has failed at its one
+job. The `role="status"` region and `formatMessage`'s `{total}` template are this component's own
+answer to the live-region gap both APIs share.
+
+### Stepper - `src/components/stepper/`
+
+| Concern               | Source                                                                                                                                               |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Prop surface          | `@mui/material/Stepper/Stepper.d.ts` - `activeStep`, `alternativeLabel`, `nonLinear`, `orientation`, `connector`                                     |
+| Step prop surface     | `@mui/material/Step/Step.d.ts` - `active`, `completed`, `disabled`, `expanded`, `index`, `StepLabelProps`                                            |
+| Step slots            | `@mui/material/Step/Step.d.ts` - `StepSlots`: `root`, `label`, `icon`, `optional`, `completed`, `expanded`, `description`                            |
+| Orientation           | `@mui/material/Stepper/Stepper.d.ts` - `orientation?: Orientation`, and the `connector` element's placement rule                                     |
+| Step identity         | `@ui5/webcomponents-fiori/dist/WizardStep.d.ts` - `titleText`, `subtitleText`, `icon`, `disabled`, `selected`                                        |
+| Branching steps       | `@ui5/webcomponents-fiori/dist/WizardStep.d.ts` - `branching: boolean`                                                                               |
+| Separators            | `@ui5/webcomponents-fiori/dist/Wizard.d.ts` - `hideSeparator`, `activeSeparator`, `branchingSeparator`                                               |
+| Parts                 | `@ui5/webcomponents-fiori/dist/Wizard.d.ts` - `@csspart navigator`, `@csspart step-content`                                                          |
+| Fast-navigation group | `@ui5/webcomponents-fiori/dist/Wizard.d.ts` - `F6` / `Shift+F6` / `Ctrl+Alt+Down`, requiring `@ui5/webcomponents-base/dist/features/F6Navigation.js` |
+| Step count            | `@ui5/webcomponents-fiori/dist/Wizard.d.ts` - `ariaSetsize: number`, `ariaPosinset: number`                                                          |
+
+Rejected: `alternativeLabel` (`@mui/material/Stepper/Stepper.d.ts`) - a second presentation of the same
+steps, which doubles the strip's content to restate what the state already says. `nonLinear` (same
+file) - kept, but **inverted in meaning**: it governs the steps _ahead_ of the current one, whereas a
+boolean named after linearity reads as "can I jump anywhere". `connector` as a React element (same
+file) - a layout element; the connector here is drawn by the CSS, and `vertical` reuses the same grid so
+nothing about the markup changes between orientations. `expanded` and `StepLabelProps` (same file) -
+an expandable step is a disclosure, which is a different component. `WizardStep`'s `branching` and
+`Wizard`'s `branchingSeparator` (both `@ui5/webcomponents-fiori/dist/Wizard*.d.ts`) - a wizard whose
+step list depends on earlier answers needs its own model of which steps exist; this component takes a
+flat list and renders what it is given. The F6 fast-navigation group (same file) - it requires
+importing an opt-in module and is a global convention rather than a component behaviour, and it is
+already rejected for `TabBar` on the same grounds. `ariaSetsize` / `ariaPosinset`
+(`@ui5/webcomponents-fiori/dist/Wizard.d.ts`) - the strip is an `<ol>`, which already gives a screen
+reader the position and the count; the explicit attributes would say it twice.
+
 ### Foundations - `src/foundations.ts`, `src/theme/tokens.css`, `docs/foundations.md`
 
 | Concern               | Source                                                                                                   |

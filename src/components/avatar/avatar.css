@@ -1,0 +1,274 @@
+/*
+ * Avatar styles.
+ *
+ * A circle sized off the control height ladder, so an avatar lines up with the `IconButton` or the
+ * `Avatar` beside it without anyone tuning a number.
+ *
+ * The initials and the image are stacked in the same box rather than swapped in and out, because a
+ * layout that changes when an image loads is a layout shift — and an avatar is exactly where that is
+ * most visible, since it sits at the end of a line of text.
+ */
+
+@layer uireload.components {
+  .uir-avatar,
+  .uir-avatar__image,
+  .uir-avatar__initials,
+  .uir-avatar__glyph,
+  .uir-avatar__badge {
+    box-sizing: border-box;
+  }
+
+  /* ---- Root ---------------------------------------------------------- */
+
+  .uir-avatar {
+    /*
+     * The size ladder.
+     *
+     * `sm` / `md` / `lg` read the control heights, so an avatar lines up with the button or the chip
+     * beside it without anyone tuning a number. `xs` and `xl` are outside that ladder because the
+     * control ladder's ceiling is the wrong one here: `--uir-control-height-lg` is 2.75rem because a
+     * control taller than that stops being a control, and an avatar is not a control — it is a picture
+     * of a person, which appears beside prose at whatever size the layout needs. 8rem is large enough
+     * to be the subject of a page rather than a decoration on it.
+     */
+    --uir-avatar-size: var(--uir-control-height-md);
+
+    align-items: center;
+    background-color: var(--uir-avatar-fill);
+    border: var(--uir-control-border-width) solid var(--uir-avatar-border);
+    border-radius: 50%;
+    color: var(--uir-avatar-text);
+    display: inline-flex;
+    flex-shrink: 0;
+    /*
+     * Position relative so the badge can sit outside the circle without a second wrapper.
+     *
+     * The alternative — putting the badge in a `::after` — makes it impossible to render arbitrary
+     * content there, and a badge is usually text.
+     */
+    position: relative;
+  }
+
+  .uir-avatar[data-size="xs"] {
+    --uir-avatar-size: 1.25rem;
+  }
+
+  .uir-avatar[data-size="sm"] {
+    --uir-avatar-size: var(--uir-control-height-sm);
+  }
+
+  /*
+   * No `md` rule: the root's own `--uir-avatar-size` *is* `--uir-control-height-md`, and a rule that
+   * restated it would be a second place to change the default.
+   */
+
+  .uir-avatar[data-size="lg"] {
+    --uir-avatar-size: var(--uir-control-height-lg);
+  }
+
+  .uir-avatar[data-size="xl"] {
+    --uir-avatar-size: 8rem;
+  }
+
+  .uir-avatar[data-variant="rounded"] {
+    border-radius: var(--uir-radius);
+  }
+
+  /*
+   * Text inside the circle.
+   *
+   * Initial-bearing type sizes run larger than the surrounding prose at the same `font-size`, so the
+   * initials are scaled down. A capital "A" at 1rem inside a 24px circle is a letter, not an avatar.
+   *
+   * The ratio is 0.32, not the 0.4 this used to use, and 0.4 was visibly too large: two capitals at
+   * 0.4em are about 1.2em wide, so they needed a circle at least 1.2em across to clear the edge, and
+   * the ratio was quietly producing initials that touched the border at every size. 0.32 gives two
+   * capitals about 0.96em of width in a 1em circle, which leaves a visible ring of fill on each side
+   * and scales to 8rem without the letters growing into the edge.
+   *
+   * `line-height: 1` as well, so the line box cannot be taller than the circle and push the glyphs
+   * off the centre.
+   */
+  .uir-avatar__initials,
+  .uir-avatar__image {
+    align-items: center;
+    block-size: 100%;
+    border-radius: inherit;
+    display: flex;
+    font-family: var(--uir-font-family);
+    font-size: calc(var(--uir-avatar-size) * 0.32);
+    font-weight: var(--uir-control-font-weight);
+    inline-size: 100%;
+    justify-content: center;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    /*
+     * `object-fit: cover` rather than `contain`: an avatar is a circle, and `contain` letterboxes a
+     * non-square image inside it with the fill colour showing as bars.
+     */
+    object-fit: cover;
+    overflow: hidden;
+  }
+
+  /*
+   * One initial may be given as a single glyph rather than two, and it can read better large.
+   *
+   * `:not(:empty)` rather than a `data-` attribute so the rule keys on the thing itself, and the
+   * pseudo-element is only there to hold the selector — a single letter is already centred by the
+   * flexbox above, so there is nothing to render.
+   */
+  .uir-avatar__initials:empty {
+    display: none;
+  }
+
+  /*
+   * The empty-avatar glyph.
+   *
+   * A head-and-shoulders silhouette from two circles and a rounded block, so there is no icon to
+   * import and no request. It is what renders when there is neither an image nor initials, which is
+   * the common case for a user record with no profile photo.
+   */
+  .uir-avatar__glyph {
+    block-size: 60%;
+    border-radius: 50% 50% 45% 45%;
+    border-block-start: 2px solid currentcolor;
+    border-inline-start: 2px solid currentcolor;
+    border-inline-end: 2px solid currentcolor;
+    display: block;
+    inline-size: 60%;
+    position: relative;
+  }
+
+  .uir-avatar__glyph::before {
+    background-color: currentcolor;
+    border-radius: 50%;
+    block-size: 38%;
+    content: "";
+    inline-size: 38%;
+    inset-block-start: -55%;
+    position: absolute;
+    inset-inline-start: 31%;
+  }
+
+  /* ---- Badge --------------------------------------------------------- */
+
+  /*
+   * A presence dot, hung on the inline-end and block-end corner.
+   *
+   * Logical offsets so it hangs on the same corner in RTL rather than jumping to the other side.
+   */
+  .uir-avatar__badge {
+    background-color: var(--uir-avatar-badge-fill);
+    border: var(--uir-control-border-width) solid var(--uir-surface-raised);
+    border-radius: 50%;
+    color: var(--uir-avatar-badge-text);
+    font-family: var(--uir-font-family);
+    font-size: calc(var(--uir-avatar-size) * 0.3);
+    font-weight: var(--uir-control-font-weight);
+    inset-block-end: 0;
+    inset-inline-end: 0;
+    line-height: 1;
+    min-block-size: 25%;
+    min-inline-size: 25%;
+    padding: 0.1em;
+    position: absolute;
+  }
+
+  /* ---- Tone ---------------------------------------------------------- */
+
+  /*
+   * Four roles per tone. `neutral` is the default because an avatar is not a status.
+   */
+  .uir-avatar[data-tone="neutral"] {
+    --uir-avatar-fill: var(--uir-neutral-wash);
+    --uir-avatar-text: var(--uir-neutral-on-wash);
+    --uir-avatar-border: transparent;
+    /* Read by `:hover` below, and previously declared nowhere — so hover did nothing at all. */
+    --uir-avatar-hover: var(--uir-neutral-wash-active);
+    --uir-avatar-badge-fill: var(--uir-success);
+    --uir-avatar-badge-text: var(--uir-success-contrast);
+  }
+
+  .uir-avatar[data-tone="accent"] {
+    --uir-avatar-fill: var(--uir-accent-wash);
+    --uir-avatar-text: var(--uir-accent-on-wash);
+    --uir-avatar-border: transparent;
+    --uir-avatar-hover: var(--uir-accent-wash-active);
+    --uir-avatar-badge-fill: var(--uir-accent);
+    --uir-avatar-badge-text: var(--uir-accent-contrast);
+  }
+
+  .uir-avatar[data-tone="positive"] {
+    --uir-avatar-fill: var(--uir-success-wash);
+    --uir-avatar-text: var(--uir-success-on-wash);
+    --uir-avatar-border: transparent;
+    --uir-avatar-hover: var(--uir-success-wash-active);
+    --uir-avatar-badge-fill: var(--uir-success);
+    --uir-avatar-badge-text: var(--uir-success-contrast);
+  }
+
+  .uir-avatar[data-tone="danger"] {
+    --uir-avatar-fill: var(--uir-danger-wash);
+    --uir-avatar-text: var(--uir-danger-on-wash);
+    --uir-avatar-border: transparent;
+    --uir-avatar-hover: var(--uir-danger-wash-active);
+    --uir-avatar-badge-fill: var(--uir-danger);
+    --uir-avatar-badge-text: var(--uir-danger-contrast);
+  }
+
+  /* ---- States -------------------------------------------------------- */
+
+  /*
+   * An activatable avatar.
+   *
+   * The browser's default button styling has to be undone explicitly rather than relied on not
+   * existing — `background: none` is what makes the tone fill apply to the button rather than to
+   * nothing.
+   */
+  .uir-avatar[data-interactive] {
+    background-color: var(--uir-avatar-fill);
+    cursor: pointer;
+    font: inherit;
+    padding: 0;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .uir-avatar[data-interactive]:not([data-disabled]):hover {
+      background-color: var(--uir-avatar-hover);
+    }
+  }
+
+  .uir-avatar[data-interactive]:focus-visible {
+    outline: var(--uir-focus-ring-width) solid var(--uir-focus-ring-color);
+    outline-offset: var(--uir-focus-ring-offset);
+  }
+
+  .uir-avatar[data-disabled] {
+    cursor: not-allowed;
+    opacity: var(--uir-disabled-opacity);
+  }
+
+  /* ---- Reduced motion ------------------------------------------------ */
+
+  /* Nothing to do: an avatar has no motion. Recorded so the absence is a decision. */
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * The initials and the glyph follow `currentcolor`, so they need nothing. The *fill* is the part that
+   * does: a wash is a light tint and a light tint in a forced-colours theme is very likely to be
+   * indistinguishable from the page, which makes an avatar invisible.
+   */
+  @media (forced-colors: active) {
+    .uir-avatar {
+      background-color: Canvas;
+      border-color: CanvasText;
+      color: CanvasText;
+      forced-color-adjust: none;
+    }
+
+    .uir-avatar[data-interactive]:focus-visible {
+      outline-color: Highlight;
+    }
+  }
+}

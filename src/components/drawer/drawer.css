@@ -1,0 +1,292 @@
+/*
+ * Drawer styles.
+ *
+ * A fixed panel on one edge, with the body as the only scrolling part.
+ *
+ * Every placement is written once, in logical properties, so `inline-start` is the reading direction's
+ * leading edge and the whole set mirrors in RTL without a second rule. That is the reason for
+ * `placement="inline-start"` rather than `"left"` — a drawer pinned to the physical left in an RTL page
+ * is on the wrong side of the reading flow.
+ */
+
+@layer uireload.components {
+  .uir-drawer,
+  .uir-drawer__header,
+  .uir-drawer__titlebar,
+  .uir-drawer__title,
+  .uir-drawer__body,
+  .uir-drawer__footer,
+  .uir-drawer__close,
+  .uir-drawer__close-glyph,
+  .uir-drawer__backdrop {
+    box-sizing: border-box;
+  }
+
+  /* ---- Backdrop ------------------------------------------------------ */
+
+  /*
+   * Only rendered when `modal`.
+   *
+   * `fixed` and full-viewport, above the page and below the panel. The panel is a later sibling in the
+   * portal so it paints on top without a z-index of its own.
+   */
+  .uir-drawer__backdrop {
+    background-color: var(--uir-drawer-backdrop);
+    inset: 0;
+    position: fixed;
+    z-index: var(--uir-z-index-overlay);
+  }
+
+  /* ---- Panel --------------------------------------------------------- */
+
+  .uir-drawer {
+    --uir-drawer-pad: var(--uir-space);
+
+    background-color: var(--uir-drawer-fill);
+    color: var(--uir-text);
+    display: flex;
+    flex-direction: column;
+    font-family: var(--uir-font-family);
+    /*
+     * A border on the edge the drawer came from, not a shadow on all sides.
+     *
+     * A panel flush to the viewport edge has no outside for a shadow to fall on; the rule is what
+     * separates it from the page behind it.
+     */
+    box-shadow: var(--uir-shadow-large);
+    /*
+     * `min-block-size: 100%` on an inline drawer and `min-inline-size: 100%` on a block one, so the
+     * panel spans its edge even when its content is short — a drawer that stops halfway is a drawer
+     * that looks broken.
+     */
+    overflow: hidden;
+    position: fixed;
+    z-index: calc(var(--uir-z-index-overlay) + 1);
+  }
+
+  .uir-drawer[data-vertical] {
+    block-size: 100%;
+    inline-size: var(--uir-drawer-size, 20rem);
+  }
+
+  .uir-drawer[data-placement="inline-start"] {
+    border-inline-end: var(--uir-control-border-width) solid var(--uir-border);
+    inset-block: 0;
+    inset-inline-start: 0;
+  }
+
+  .uir-drawer[data-placement="inline-end"] {
+    border-inline-start: var(--uir-control-border-width) solid var(--uir-border);
+    inset-block: 0;
+    inset-inline-end: 0;
+  }
+
+  /*
+   * A block drawer — a top or bottom bar.
+   *
+   * `inline-size: 100%` rather than `auto`, because a `position: fixed` element sizes to its content
+   * by default and a bottom drawer that is as wide as its content is not a drawer.
+   */
+  .uir-drawer:not([data-vertical]) {
+    inline-size: 100%;
+    max-block-size: 80vh;
+  }
+
+  .uir-drawer[data-placement="block-start"] {
+    border-block-end: var(--uir-control-border-width) solid var(--uir-border);
+    inset-block-start: 0;
+    inset-inline: 0;
+  }
+
+  .uir-drawer[data-placement="block-end"] {
+    border-block-start: var(--uir-control-border-width) solid var(--uir-border);
+    inset-block-end: 0;
+    inset-inline: 0;
+  }
+
+  /* ---- Header, title and footer -------------------------------------- */
+
+  .uir-drawer__header {
+    border-block-end: var(--uir-control-border-width) solid var(--uir-border);
+    flex-shrink: 0;
+    padding: var(--uir-drawer-pad);
+  }
+
+  /*
+   * The title bar.
+   *
+   * A grid rather than a flex row with a spacer, so the heading and the close control stay the same
+   * height as the heading's line box however long the title is.
+   */
+  .uir-drawer__titlebar {
+    align-items: center;
+    border-block-end: var(--uir-control-border-width) solid var(--uir-border);
+    display: grid;
+    flex-shrink: 0;
+    gap: var(--uir-control-gap);
+    grid-template-columns: 1fr auto;
+    padding: var(--uir-drawer-pad);
+  }
+
+  .uir-drawer__title {
+    color: var(--uir-text);
+    font-size: var(--uir-control-font-size-lg);
+    font-weight: var(--uir-control-font-weight);
+    line-height: var(--uir-line-height);
+    margin: 0;
+    /*
+     * `min-inline-size: 0` so a long title truncates rather than pushing the close control off the
+     * edge of the panel.
+     */
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ---- Body ---------------------------------------------------------- */
+
+  /*
+   * The body is the only scrolling part.
+   *
+   * `flex: 1` plus `overflow-y: auto` on the body and `min-block-size: 0` — without the last one, a
+   * flex item refuses to shrink below its content and the drawer grows past the viewport instead of
+   * its body scrolling inside it.
+   */
+  .uir-drawer__body {
+    flex: 1;
+    min-block-size: 0;
+    overflow-y: auto;
+    padding: var(--uir-drawer-pad);
+  }
+
+  .uir-drawer__footer {
+    border-block-start: var(--uir-control-border-width) solid var(--uir-border);
+    flex-shrink: 0;
+    padding: var(--uir-drawer-pad);
+  }
+
+  /* ---- Close control ------------------------------------------------- */
+
+  /*
+   * The close control.
+   *
+   * Almost nothing here any more, and that is the point. The control is an `IconButton`, so its box,
+   * its 24px target, its hover fill and its focus ring are the shared ones — which is why this element
+   * no longer styles itself. A hand-rolled icon button is exactly how it came to have an up-arrow
+   * glyph and a glyph that was not centred inside its own button.
+   *
+   * Two declarations remain: `flex-shrink: 0` so a long title cannot squeeze it out of the title bar,
+   * and `margin-inline-start: auto` to push it to the trailing edge.
+   */
+  .uir-drawer__close {
+    flex-shrink: 0;
+    margin-inline-start: auto;
+  }
+
+  /*
+   * The cross.
+   *
+   * Two bars crossing, each a single `border-block-start` on a pseudo-element rotated about its own
+   * inline-start edge — so four arms come from two declarations and there is no SVG to import and no
+   * request to make.
+   *
+   * `currentColor` throughout, which is what makes it correct in every colour scheme and in forced
+   * colours with nothing extra to keep in step.
+   *
+   * `transform-origin: left center` is load-bearing: without it the rotation is about the element's
+   * own centre, the two bars do not meet in the middle, and the glyph ends up offset up and to the
+   * right of where the rotation put it.
+   */
+  .uir-drawer__close-glyph {
+    block-size: 0.75em;
+    display: block;
+    inline-size: 0.75em;
+    position: relative;
+  }
+
+  .uir-drawer__close-glyph::before,
+  .uir-drawer__close-glyph::after {
+    border-block-start: 1.5px solid currentcolor;
+    content: "";
+    display: block;
+    inline-size: 100%;
+    inset-block-start: 50%;
+    inset-inline-start: 0;
+    position: absolute;
+    transform-origin: left center;
+  }
+
+  .uir-drawer__close-glyph::before {
+    transform: rotate(45deg);
+  }
+
+  .uir-drawer__close-glyph::after {
+    transform: rotate(-45deg);
+  }
+
+  /* ---- Tokens and states --------------------------------------------- */
+
+  .uir-drawer {
+    /*
+     * `--uir-drawer-size` is the fallback for `size`.
+     *
+     * The prop wins — it is applied as an inline `inline-size` / `block-size` — and this is what a
+     * drawer with no `size` gets. 20rem is wide enough for a navigation list and narrow enough to leave
+     * the page visible beside it, which is the point of a non-modal drawer.
+     */
+    --uir-drawer-size: 20rem;
+    --uir-drawer-fill: var(--uir-surface-raised);
+    --uir-drawer-backdrop: rgb(15 23 42 / 45%);
+  }
+
+  /*
+   * The close control's hover, active and focus states are **not** restated here.
+   *
+   * They belong to `IconButton`, which is what the control now is. Keeping local copies would mean two
+   * places to change them and a hover that disagreed with every other icon button in the app the first
+   * time either was edited — which is exactly the duplication that composing a shared control exists to
+   * remove.
+   */
+
+  .uir-drawer[data-disabled] {
+    opacity: var(--uir-disabled-opacity);
+  }
+
+  /* ---- Reduced motion ------------------------------------------------ */
+
+  /*
+   * Nothing to undo. The panel does not animate: a drawer that slides in over the content the user is
+   * reading makes them wait for it, and a `prefers-reduced-motion` user should not be the only one for
+   * whom that is true. Recorded so the absence is a decision rather than an omission.
+   */
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * The backdrop is the part that needs help. An `rgb(15 23 42 / 45%)` scrim is a colour the system
+   * palette does not know, and `Canvas` at partial opacity is not expressible — so the modal state is
+   * carried by the panel's border instead, and the scrim goes as light as a system colour can.
+   */
+  @media (forced-colors: active) {
+    .uir-drawer__backdrop {
+      background-color: Canvas;
+      opacity: 0.6;
+    }
+
+    .uir-drawer {
+      background-color: Canvas;
+      border-color: CanvasText;
+      color: CanvasText;
+      forced-color-adjust: none;
+    }
+
+    .uir-drawer[data-modal] {
+      border-width: 2px;
+    }
+
+    .uir-drawer__close:focus-visible {
+      outline-color: Highlight;
+    }
+  }
+}

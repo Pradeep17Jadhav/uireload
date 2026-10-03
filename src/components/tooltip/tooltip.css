@@ -1,0 +1,139 @@
+/*
+ * Tooltip styles.
+ *
+ * Small, high contrast, and never wider than its text. `max-inline-size` in `ch` rather than pixels,
+ * because a tooltip that runs the full width of a window is a paragraph and a paragraph is not a
+ * tooltip — it has no role, no focus and no dismissal.
+ *
+ * The surface is `position: fixed` and its coordinates come from the shared overlay algorithm, so no
+ * rule here positions anything. Everything is appearance.
+ */
+
+@layer uireload.components {
+  .uir-tooltip-trigger {
+    /*
+     * Inline, so a tooltip on a word inside a sentence does not become a block.
+     *
+     * `outline-offset` is negative on the focus ring: the trigger is often text or an icon inside a
+     * row, and a ring with padding around it overlaps whatever sits next to it.
+     */
+    display: inline;
+    position: relative;
+  }
+
+  .uir-tooltip {
+    --uir-tooltip-radius: var(--uir-radius-small);
+
+    background-color: var(--uir-tooltip-fill);
+    border-radius: var(--uir-tooltip-radius);
+    box-shadow: var(--uir-shadow);
+    color: var(--uir-tooltip-text);
+    font-family: var(--uir-font-family);
+    font-size: var(--uir-control-font-size-sm);
+    /*
+     * Tighter leading than body text.
+     *
+     * A tooltip is at most two or three lines, and body leading makes a short block of text look like
+     * it is set in a different document from the page it is describing.
+     */
+    line-height: 1.35;
+    max-inline-size: 20ch;
+    padding-block: 0.25rem;
+    padding-inline: 0.5rem;
+    /*
+     * Above everything, because a tooltip that renders behind the thing it describes is worse than no
+     * tooltip: it is a tooltip the user cannot read and no way to know why.
+     */
+    z-index: var(--uir-z-index-overlay);
+  }
+
+  /*
+   * The arrow.
+   *
+   * A rotated square in the surface colour, with a shadow, positioned on the edge facing the trigger.
+   * It is `::before` so the label stays a plain text node — an arrow element in the DOM would be
+   * content the screen reader has to skip past.
+   *
+   * `pointer-events: none`, because a tooltip the pointer cannot enter is a tooltip that dismisses the
+   * instant the user moves toward it to read the last word.
+   */
+  .uir-tooltip::before {
+    background-color: inherit;
+    block-size: 0.5rem;
+    content: "";
+    inline-size: 0.5rem;
+    position: absolute;
+    transform: rotate(45deg);
+  }
+
+  .uir-tooltip[data-placement="top"]::before {
+    inset-block-end: -0.25rem;
+    inset-inline-start: calc(50% - 0.25rem);
+  }
+
+  .uir-tooltip[data-placement="bottom"]::before {
+    inset-block-start: -0.25rem;
+    inset-inline-start: calc(50% - 0.25rem);
+  }
+
+  .uir-tooltip[data-placement="start"]::before,
+  .uir-tooltip[data-placement="end"]::before {
+    inset-block-start: calc(50% - 0.25rem);
+  }
+
+  .uir-tooltip[data-placement="start"]::before {
+    inset-inline-end: -0.25rem;
+  }
+
+  .uir-tooltip[data-placement="end"]::before {
+    inset-inline-start: -0.25rem;
+  }
+
+  /*
+   * Tokens, declared on the surface rather than on `:root`.
+   *
+   * A tooltip is inverted relative to the page — dark on light, light on dark — because it is almost
+   * always over content of the opposite colour and has to promise contrast against whatever it lands
+   * on. `--uir-tooltip-fill` is therefore the same in both schemes, for the same reason
+   * `Snackbar`'s is.
+   */
+  .uir-tooltip {
+    --uir-tooltip-fill: #1e293b;
+    --uir-tooltip-text: #f8fafc;
+  }
+
+  /* ---- States -------------------------------------------------------- */
+
+  /*
+   * No enter animation.
+   *
+   * A tooltip that fades in is a tooltip the user has already missed by the time it appears, and it
+   * competes with the content underneath for attention at exactly the moment the pointer is moving.
+   * `hidden` handles the closed state; nothing animates between the two.
+   */
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * A dark fill is almost certainly not a colour a forced-colours theme knows, and a tooltip whose
+   * text colour is computed from one can end up unreadable — on a component whose entire job is to be
+   * read.
+   */
+  @media (forced-colors: active) {
+    .uir-tooltip {
+      background-color: Canvas;
+      border: var(--uir-control-border-width) solid CanvasText;
+      color: CanvasText;
+      forced-color-adjust: none;
+    }
+
+    /*
+     * The arrow inherits the surface's `background-color`, which in forced colours is `Canvas` — so
+     * it is restated here rather than inherited, because an arrow that is a different colour from its
+     * own surface reads as a separate object.
+     */
+    .uir-tooltip::before {
+      background-color: Canvas;
+    }
+  }
+}

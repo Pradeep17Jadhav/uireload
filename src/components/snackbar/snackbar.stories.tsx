@@ -42,7 +42,16 @@ const meta = {
     placement: "bottom-end",
     tone: "neutral",
     live: "polite",
-    duration: 7000,
+    /*
+     * `null`, not a number.
+     *
+     * Every story here is a static `open: true` that mounts once and is never re-opened. With a real
+     * duration the snackbar closed after seven seconds and then stayed closed for the rest of the
+     * visit, so the canvas went blank and looked like a broken component rather than an expired
+     * timer. `AutoDismiss` is where the timer is shown, because "it closes itself" is a behaviour
+     * worth seeing and not worth paying for on the other nine stories.
+     */
+    duration: null,
     showClose: true,
     dismissOnClickOutside: false,
     pauseOnHover: true,
@@ -61,13 +70,7 @@ type Story = StoryObj<typeof meta>;
  */
 export const Default: Story = {};
 
-/**
- * Open, with an action.
- *
- * The common case: a message and one thing to do about it. Hovering pauses the timer — which matters
- * here more than anywhere, because the action is a button and a countdown that runs while the pointer is
- * over it is a countdown aimed at the control the user is reaching for.
- */
+/** Open, with an action. */
 export const WithAction: Story = {
   args: {
     open: true,
@@ -76,32 +79,32 @@ export const WithAction: Story = {
   },
 };
 
+/**
+ * The timer, running.
+ *
+ * The one story that keeps a real duration, because "it closes itself after a while" is behaviour a
+ * user needs to see and cannot see anywhere else. Re-open it from the canvas controls to watch it
+ * again.
+ */
+export const AutoDismiss: Story = {
+  args: { open: true, duration: 7000 },
+};
+
 /** Every tone. The glyph is the only thing that changes — the surface stays dark and opaque. */
 export const Tones: Story = {
   render: (args) => (
-    <div style={{ padding: "2rem", display: "grid", gap: "var(--uir-space)" }}>
+    <div style={{ display: "grid", gap: "var(--uir-space)", padding: "2rem" }}>
       {(["neutral", "accent", "positive", "danger"] as const).map((tone) => (
-        <div key={tone}>
-          <Button size="sm" onClick={() => undefined}>
-            Show {tone}
-          </Button>
-          <Snackbar {...args} open={false} tone={tone} />
-        </div>
+        <Snackbar key={tone} {...args} open tone={tone} />
       ))}
     </div>
   ),
 };
 
-/**
- * Every placement.
- *
- * Logical, so `bottom-end` is the bottom of the reading direction's trailing edge and mirrors in RTL
- * without a second prop.
- */
+/** Every placement. Logical, so the set mirrors in RTL without a second prop. */
 export const Placements: Story = {
   render: (args) => (
-    <div style={{ padding: "2rem", minBlockSize: "18rem", position: "relative" }}>
-      <Text_ />
+    <div style={{ display: "grid", gap: "var(--uir-space)", padding: "2rem" }}>
       {(
         [
           "top-start",
@@ -112,8 +115,8 @@ export const Placements: Story = {
           "bottom-end",
         ] as const
       ).map((placement) => (
-        <div key={placement}>
-          <Snackbar {...args} open={false} placement={placement} />
+        <div key={placement} style={{ minHeight: "4rem", position: "relative" }}>
+          <Snackbar {...args} open placement={placement} />
         </div>
       ))}
     </div>
@@ -121,109 +124,74 @@ export const Placements: Story = {
 };
 
 /**
- * The close reason.
+ * The close reasons, which a consumer cannot otherwise tell apart.
  *
- * A timed-out message and a dismissed one want different responses, and a consumer that cannot tell
- * them apart gets the behaviour wrong in a way that is very hard to see. This story prints the reason
- * it was last given.
+ * `onClose` is the request and `onDismiss` is the fact, and both fire for one dismissal — so this
+ * story exists to show the reason arriving on each.
  */
 export const CloseReasons: Story = {
-  render: function Render() {
-    const [open, setOpen] = useState(false);
-    const [log, setLog] = useState<string[]>([]);
+  render: function Render(args) {
+    const [open, setOpen] = useState(true);
+    const [last, setLast] = useState<string | null>(null);
 
-    const note = useCallback((reason: SnackbarCloseReason) => {
-      setLog((current) => [reason, ...current].slice(0, 5));
+    const show = useCallback((reason: SnackbarCloseReason) => {
+      setLast(reason);
+      setOpen(false);
+      // Reopen on a timer so the story can be run through all three reasons in one visit.
+      setTimeout(() => setOpen(true), 1200);
     }, []);
 
     return (
-      <div style={{ display: "grid", gap: "var(--uir-space)", padding: "2rem" }}>
-        <div style={{ display: "flex", gap: "var(--uir-space)" }}>
-          <Button onClick={() => setOpen(true)}>Show for 6s</Button>
-          <Button onClick={() => setOpen(true)} variant="outline">
-            Show permanently
-          </Button>
-        </div>
-
-        <div style={{ fontFamily: "var(--uir-font-family)", fontSize: "0.875rem" }}>
-          {log.length === 0 ? (
-            <span style={{ color: "var(--uir-text-muted)" }}>
-              Close reasons, most recent first. A timeout and a dismissal are different facts.
-            </span>
-          ) : (
-            <ol>
-              {log.map((reason, i) => (
-                <li key={`${reason}-${i}`}>{reason}</li>
-              ))}
-            </ol>
-          )}
-        </div>
+      <div style={{ padding: "2rem" }}>
+        <p style={{ color: "var(--uir-text-muted)", marginBlockEnd: "var(--uir-space)" }}>
+          Last dismissal: <code>{last ?? "none yet"}</code>
+        </p>
 
         <Snackbar
+          {...args}
           open={open}
-          duration={6000}
-          onClose={(reason) => {
-            note(reason);
-            if (reason !== "timeout") setOpen(false);
-          }}
-          onDismiss={note}
-          action={<Button size="sm">Undo</Button>}
-        >
-          Archived 3 items.
-        </Snackbar>
+          onClose={show}
+          onDismiss={(reason) => setLast(`onDismiss: ${reason}`)}
+          dismissOnClickOutside
+        />
       </div>
     );
   },
 };
 
 /**
- * Never closes on a timer.
+ * No timer.
  *
- * For anything the user must act on. A message the user has to read before acting cannot be one that
- * removes itself.
+ * `duration={null}` explicitly, for a message that must be dealt with: a validation failure, a
+ * destructive action's confirmation. Auto-dismissing those is how a user misses the one thing the
+ * page said to them.
  */
 export const Permanent: Story = {
   args: {
     open: true,
     duration: null,
-    children: "Your session expires in 2 minutes. Stay signed in?",
+    tone: "danger",
+    children: "3 files could not be uploaded. Retry to try again.",
   },
 };
 
-/**
- * Dismiss on click outside.
- *
- * Off by default, and deliberately: it is a convenience on a message with no controls and a hazard on
- * one with them, because a stray click on a message carrying a button throws away what the user was
- * reaching for.
- */
+/** Dismiss on a click outside, which is what a toast wants and a message does not. */
 export const DismissOnClickOutside: Story = {
   args: { open: true, dismissOnClickOutside: true },
 };
 
-/**
- * Assertive.
- *
- * Interrupts whatever is being read. Right for an error the user must know about now, wrong for
- * everything else.
- */
+/** Assertive, for the one tone that should interrupt. */
 export const Assertive: Story = {
   args: { open: true, live: "assertive", tone: "danger", children: "Payment failed." },
 };
 
-/** RTL and high contrast. */
+/** RTL and high contrast. The surface is dark and opaque in every scheme, by design. */
 export const HighContrastRtl: Story = {
   globals: { scheme: "high-contrast", direction: "rtl" },
-  args: { open: true, children: "تم حفظ الإعدادات.", action: <Button size="sm">تراجع</Button> },
+  args: {
+    open: true,
+    tone: "positive",
+    children: "تم حفظ الإعدادات.",
+    action: <Button size="sm">تراجع</Button>,
+  },
 };
-
-/* A spacer, so the placement story has something to sit over. */
-function Text_() {
-  return (
-    <p style={{ color: "var(--uir-text-muted)", fontFamily: "var(--uir-font-family)" }}>
-      The strip is fixed to the viewport and portalled to the end of the body, so it is not pushed
-      off the bottom of the page by a long form and is not trapped inside an ancestor&apos;s
-      overflow.
-    </p>
-  );
-}

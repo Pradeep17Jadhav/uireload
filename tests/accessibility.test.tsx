@@ -740,6 +740,333 @@ describe("Snackbar", () => {
   });
 });
 
+describe("Divider", () => {
+  it("has no accessibility violations in any of its states", async () => {
+    const { Divider } = await import("uireload/components/divider");
+
+    const { container, rerender } = render(<Divider />);
+    await expectNoViolations(container);
+
+    rerender(<Divider decorative />);
+    await expectNoViolations(container);
+
+    // A structure role is not named from its contents, so the label is the case worth checking: it
+    // is stated as `aria-label` rather than left to the text inside the rule.
+    rerender(<Divider label="or continue with" />);
+    await expectNoViolations(container);
+
+    rerender(<Divider orientation="vertical" weight="thick" />);
+    await expectNoViolations(container);
+  });
+});
+
+describe("Skeleton", () => {
+  it("has no accessibility violations in every variant", async () => {
+    const { Skeleton } = await import("uireload/components/skeleton");
+
+    for (const variant of ["text", "rounded", "circular"] as const) {
+      const { container, unmount } = render(
+        <Skeleton variant={variant} lines={4} width="100%" height={64} />
+      );
+
+      /*
+       * The point of the run: every bar and shape is `aria-hidden`, so the only thing axe sees is one
+       * named status region. A skeleton whose placeholders were announced would pass most rules and
+       * still be a failure, which is why that is asserted in the component's own tests too.
+       */
+      await expectNoViolations(container);
+      unmount();
+    }
+  });
+
+  it("has no violations with a custom label or with the animation off", async () => {
+    const { Skeleton } = await import("uireload/components/skeleton");
+
+    const { container, rerender } = render(<Skeleton label="Loading your projects" lines={3} />);
+    await expectNoViolations(container);
+
+    rerender(<Skeleton animate={false} lines={1} />);
+    await expectNoViolations(container);
+  });
+});
+
+describe("Avatar", () => {
+  it("has no accessibility violations for each of its three fallbacks", async () => {
+    const { Avatar } = await import("uireload/components/avatar");
+
+    // An image that names the person, an image that is decorative, and initials — three different
+    // accessibility contracts that all have to pass.
+    const named = render(<Avatar alt="Ada Lovelace" initials="AL" src="/a.png" />);
+    await expectNoViolations(named.container);
+    named.unmount();
+
+    const decorative = render(<Avatar alt="" initials="AL" src="/a.png" />);
+    await expectNoViolations(decorative.container);
+    decorative.unmount();
+
+    const initials = render(<Avatar initials="AL" />);
+    await expectNoViolations(initials.container);
+    initials.unmount();
+  });
+
+  it("has no violations when interactive, or interactive and disabled", async () => {
+    const { Avatar } = await import("uireload/components/avatar");
+
+    const enabled = render(
+      <Avatar interactive initials="AL" badge={<span data-testid="b">3</span>} />
+    );
+    await expectNoViolations(enabled.container);
+    enabled.unmount();
+
+    const disabled = render(<Avatar disabled interactive initials="AL" />);
+    await expectNoViolations(disabled.container);
+  });
+});
+
+describe("Alert", () => {
+  it("has no accessibility violations in every tone, variant and urgency", async () => {
+    const { Alert } = await import("uireload/components/alert");
+
+    for (const tone of ["neutral", "accent", "positive", "danger"] as const) {
+      for (const variant of ["subtle", "outlined", "solid"] as const) {
+        const { container, unmount } = render(
+          <Alert
+            action={<button type="button">Retry</button>}
+            dismissible
+            title="Payment failed"
+            tone={tone}
+            variant={variant}
+          >
+            We could not charge your card.
+          </Alert>
+        );
+
+        await expectNoViolations(container);
+        unmount();
+      }
+    }
+  });
+
+  it("has no violations with the contradictory role and urgency, which warns in development", async () => {
+    const { Alert } = await import("uireload/components/alert");
+    const warn = console.warn;
+    console.warn = () => undefined;
+
+    try {
+      const { container } = render(
+        <Alert role="status" urgency="assertive" tone="danger">
+          Contradictory.
+        </Alert>
+      );
+
+      await expectNoViolations(container);
+    } finally {
+      console.warn = warn;
+    }
+  });
+});
+
+describe("Tooltip", () => {
+  it("has no accessibility violations while shown and while hidden", async () => {
+    const { Tooltip } = await import("uireload/components/tooltip");
+
+    const { rerender } = render(
+      <Tooltip label="Delete this project">
+        <button type="button">Delete</button>
+      </Tooltip>
+    );
+
+    // `document.body`, because the surface is portalled — the same reasoning as `Popover`.
+    await expectNoViolations(document.body);
+
+    rerender(
+      <Tooltip label="Delete this project" open>
+        <button type="button">Delete</button>
+      </Tooltip>
+    );
+    await expectNoViolations(document.body);
+  });
+
+  it("has no violations when the tooltip is the accessible name", async () => {
+    const { Tooltip } = await import("uireload/components/tooltip");
+
+    render(
+      <Tooltip describe="label" label="Delete project" open>
+        <button type="button">×</button>
+      </Tooltip>
+    );
+
+    // `aria-label` on the wrapper is the case where a wrong choice produces a button announced as
+    // "button" and nothing else, so it is the one worth running axe over.
+    await expectNoViolations(document.body);
+  });
+});
+
+describe("Drawer", () => {
+  it("has no accessibility violations when modal", async () => {
+    const { Drawer } = await import("uireload/components/drawer");
+
+    render(
+      <Drawer modal open title="Confirm" footer={<button type="button">Delete</button>}>
+        <p>This cannot be undone.</p>
+      </Drawer>
+    );
+
+    await expectNoViolations(document.body);
+  });
+
+  it("has no violations when not modal, in every placement", async () => {
+    const { Drawer } = await import("uireload/components/drawer");
+
+    for (const placement of ["inline-start", "inline-end", "block-start", "block-end"] as const) {
+      const { unmount } = render(
+        <Drawer open placement={placement} title="Navigation">
+          <nav aria-label="Sections">
+            <ul>
+              <li>Overview</li>
+            </ul>
+          </nav>
+        </Drawer>
+      );
+
+      await expectNoViolations(document.body);
+      unmount();
+    }
+  });
+
+  it("has no violations without a title, or without a close control", async () => {
+    const { Drawer } = await import("uireload/components/drawer");
+
+    const named = render(
+      <Drawer open aria-label="Filters">
+        <p>No title, so the name comes from the root props.</p>
+      </Drawer>
+    );
+    await expectNoViolations(document.body);
+    named.unmount();
+
+    render(
+      <Drawer open showClose={false} title="Pick a workspace">
+        <button type="button">Acme Inc</button>
+      </Drawer>
+    );
+    await expectNoViolations(document.body);
+  });
+});
+
+describe("Pagination", () => {
+  it("has no accessibility violations with the window, and with every page", async () => {
+    const { Pagination } = await import("uireload/components/pagination");
+
+    const { container, rerender } = render(<Pagination page={10} pageCount={20} />);
+    await expectNoViolations(container);
+
+    rerender(<Pagination page={10} pageCount={20} siblingCount="all" />);
+    await expectNoViolations(container);
+  });
+
+  it("has no violations at either end, without edges, or disabled", async () => {
+    const { Pagination } = await import("uireload/components/pagination");
+
+    for (const page of [0, 19]) {
+      const atEnd = render(<Pagination page={page} pageCount={20} />);
+      await expectNoViolations(atEnd.container);
+      atEnd.unmount();
+    }
+
+    const noEdges = render(<Pagination page={4} pageCount={20} showEdges={false} />);
+    await expectNoViolations(noEdges.container);
+    noEdges.unmount();
+
+    const disabled = render(<Pagination disabled page={4} pageCount={20} />);
+    await expectNoViolations(disabled.container);
+  });
+});
+
+describe("Stepper", () => {
+  it("has no accessibility violations in linear and non-linear mode", async () => {
+    const { Stepper } = await import("uireload/components/stepper");
+
+    const steps = [
+      { id: "a", label: "Account" },
+      { id: "b", label: "Profile", description: "Name and photo" },
+      { id: "c", label: "Billing" },
+      { id: "d", label: "Review" },
+    ];
+
+    for (const navigation of ["linear", "non-linear"] as const) {
+      for (const orientation of ["horizontal", "vertical"] as const) {
+        const { container, unmount } = render(
+          <Stepper
+            label="Checkout"
+            navigation={navigation}
+            orientation={orientation}
+            steps={steps}
+            active={2}
+          />
+        );
+
+        /*
+         * The case worth running: in linear mode the current step has no button, so `aria-current`
+         * must be on a `<div>` or the strip communicates nothing at all — and an `aria-current` on a
+         * plain element is exactly the sort of thing axe's structure rules catch.
+         */
+        await expectNoViolations(container);
+        unmount();
+      }
+    }
+  });
+
+  it("has no violations with an error, an optional step, and a locked step", async () => {
+    const { Stepper } = await import("uireload/components/stepper");
+
+    const { container } = render(
+      <Stepper
+        active={2}
+        navigation="non-linear"
+        steps={[
+          { id: "a", label: "Account" },
+          { id: "b", label: "Identity check", disabled: true },
+          {
+            id: "c",
+            label: "Billing",
+            optional: true,
+            tone: "danger",
+            errorText: "Card number is invalid",
+          },
+          { id: "d", label: "Review" },
+        ]}
+      />
+    );
+
+    await expectNoViolations(container);
+  });
+
+  it("has no violations with content, or disabled", async () => {
+    const { Stepper } = await import("uireload/components/stepper");
+
+    const withContent = render(
+      <Stepper active={1} showContent steps={[{ id: "a", label: "Account" }]}>
+        <p>Step body.</p>
+      </Stepper>
+    );
+    await expectNoViolations(withContent.container);
+    withContent.unmount();
+
+    const disabled = render(
+      <Stepper
+        disabled
+        active={2}
+        steps={[
+          { id: "a", label: "Account" },
+          { id: "b", label: "Review" },
+        ]}
+      />
+    );
+    await expectNoViolations(disabled.container);
+  });
+});
+
 describe("colour schemes", () => {
   it("has no violations in any scheme", async () => {
     const { Button } = await import("uireload/components/button");

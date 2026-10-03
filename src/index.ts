@@ -137,6 +137,40 @@ export type { TabBarProps, TabBarOwnProps, TabItem } from "./components/tab-bar"
 export { Snackbar } from "./components/snackbar";
 export type { SnackbarProps, SnackbarOwnProps, SnackbarCloseReason } from "./components/snackbar";
 
+export { Divider } from "./components/divider";
+export type {
+  DividerProps,
+  DividerOwnProps,
+  DividerOrientation,
+  DividerWeight,
+} from "./components/divider";
+
+export { Skeleton } from "./components/skeleton";
+export type { SkeletonProps, SkeletonOwnProps, SkeletonVariant } from "./components/skeleton";
+
+export { Avatar, initialsFrom } from "./components/avatar";
+export type { AvatarProps, AvatarOwnProps, AvatarShape } from "./components/avatar";
+
+export { Alert } from "./components/alert";
+export type { AlertProps, AlertOwnProps, AlertUrgency, AlertVariant } from "./components/alert";
+
+export { Tooltip } from "./components/tooltip";
+export type { TooltipProps, TooltipOwnProps, TooltipPlacement } from "./components/tooltip";
+
+export { Drawer } from "./components/drawer";
+export type { DrawerProps, DrawerOwnProps, DrawerCloseReason } from "./components/drawer";
+
+export { Pagination } from "./components/pagination";
+export type { PaginationProps, PaginationOwnProps } from "./components/pagination";
+
+export { Stepper } from "./components/stepper";
+export type {
+  StepperProps,
+  StepperOwnProps,
+  StepperNavigation,
+  StepperStep,
+} from "./components/stepper";
+
 /* ---------------------------------------------------------- foundations --- */
 /*
  * The shared design contract. Exported so consumers can type their own abstractions

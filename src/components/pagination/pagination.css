@@ -1,0 +1,308 @@
+/*
+ * Pagination styles.
+ *
+ * A row of equal squares, each the control height, because a page number is a target the user aims at
+ * in a hurry while scanning for the one they want. Square is deliberate: a pill-shaped number is read
+ * as a toggle, and `aria-current="page"` is a position.
+ *
+ * The edge controls are the same size as the page buttons, not smaller — a "next" that is easier to
+ * miss than a page number is a "next" nobody uses.
+ */
+
+@layer uireload.components {
+  .uir-pagination,
+  .uir-pagination__control,
+  .uir-pagination__page,
+  .uir-pagination__chevron,
+  .uir-pagination__gap,
+  .uir-pagination__status {
+    box-sizing: border-box;
+  }
+
+  /* ---- Root ---------------------------------------------------------- */
+
+  .uir-pagination {
+    --uir-pagination-size: var(--uir-control-height-md);
+
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    font-family: var(--uir-font-family);
+    gap: calc(var(--uir-control-gap) * 0.5);
+  }
+
+  .uir-pagination[data-size="sm"] {
+    --uir-pagination-size: var(--uir-control-height-sm);
+  }
+
+  .uir-pagination[data-size="lg"] {
+    --uir-pagination-size: var(--uir-control-height-lg);
+  }
+
+  /*
+   * A flex row that wraps.
+   *
+   * Twenty page numbers do not fit in a narrow container, and a row that overflows is a row whose last
+   * pages are unreachable. Wrapping is the only honest answer without measuring.
+   */
+
+  /* ---- Buttons ------------------------------------------------------- */
+
+  .uir-pagination__control,
+  .uir-pagination__page {
+    align-items: center;
+    background-color: var(--uir-pagination-fill);
+    border: var(--uir-control-border-width) solid var(--uir-pagination-border);
+    border-radius: var(--uir-control-radius);
+    color: var(--uir-pagination-text);
+    cursor: pointer;
+    display: inline-flex;
+    flex-shrink: 0;
+    font-family: inherit;
+    /*
+     * `tabular-nums`, so a page number does not change width as it counts and the row does not
+     * shuffle sideways as the current page moves.
+     */
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--uir-control-font-weight);
+    justify-content: center;
+    /*
+     * Square, and sized off the control height so every target meets the 24px floor — including the
+     * edge controls, which is the case usually given a smaller size.
+     */
+    block-size: var(--uir-pagination-size);
+    inline-size: var(--uir-pagination-size);
+    margin: 0;
+    padding: 0;
+  }
+
+  .uir-pagination__page {
+    font-size: var(--uir-control-font-size-sm);
+  }
+
+  /*
+   * The current page.
+   *
+   * A solid accent fill rather than an outline. An outlined current page on a row of filled ones
+   * reads as "selected but not active", and the whole point is that this is where the user is.
+   */
+  .uir-pagination__page[data-current] {
+    background-color: var(--uir-pagination-current);
+    border-color: var(--uir-pagination-current);
+    color: var(--uir-pagination-current-text);
+    cursor: default;
+  }
+
+  /* ---- Chevron ------------------------------------------------------- */
+
+  /*
+   * The edge controls' glyphs.
+   *
+   * Drawn from two borders meeting at a point, rotated per direction, so there is nothing to import
+   * and no request. `data-direction` rather than four rules keyed on the control's position, because
+   * the control carries no idea which end of the row it is in.
+   */
+  /*
+   * The edge controls' glyphs: one chevron for previous and next, two for first and last.
+   *
+   * Each chevron is a box with a top and an inline-start border, rotated — so nothing is imported
+   * and there is no request. The rotation points it: -45 degrees is `<`, 135 is `>`.
+   *
+   * `position: relative` on the glyph itself is what makes the two-chevron cases possible at all.
+   * The previous version drew the second chevron as a `::after` bar with `position: absolute` and
+   * no positioned ancestor, so it was laid out against the page rather than the control and appeared
+   * as a stray line somewhere off in the row.
+   */
+  .uir-pagination__chevron {
+    block-size: 0.5em;
+    display: block;
+    inline-size: 0.5em;
+    position: relative;
+  }
+
+  /*
+   * The chevrons.
+   *
+   * Both pseudo-elements carry a chevron and the glyph itself carries none, so `first` and `last` are
+   * two identical shapes side by side — `<<` and `>>` — rather than a chevron with a bar beside it,
+   * which is a different symbol and reads as "|<`.
+   *
+   * Positioning is by `inset-inline-start`, so the second chevron sits beside the first in either
+   * reading direction with no second rule.
+   */
+  .uir-pagination__chevron::before,
+  .uir-pagination__chevron::after {
+    border-block-start: 1.5px solid currentcolor;
+    border-inline-start: 1.5px solid currentcolor;
+    content: "";
+    display: block;
+    block-size: 100%;
+    inline-size: 100%;
+    position: absolute;
+  }
+
+  /* Previous and next: a single chevron, so the glyph is one chevron wide. */
+  .uir-pagination__chevron[data-direction="prev"],
+  .uir-pagination__chevron[data-direction="next"]::before {
+    inset-inline-start: 0;
+  }
+
+  .uir-pagination__chevron[data-direction="prev"]::after,
+  .uir-pagination__chevron[data-direction="next"]::after {
+    display: none;
+  }
+
+  /* First and last: two chevrons, so the glyph is twice as wide. */
+  .uir-pagination__chevron[data-direction="first"],
+  .uir-pagination__chevron[data-direction="last"] {
+    inline-size: 1em;
+  }
+
+  .uir-pagination__chevron[data-direction="first"]::after,
+  .uir-pagination__chevron[data-direction="last"]::after {
+    inset-inline-start: 0.5em;
+  }
+
+  /*
+   * Which way each set points.
+   *
+   * The rotation is the only thing that differs, and it is on the pseudo-elements rather than on the
+   * glyph so both chevrons of a first or last rotate together.
+   */
+  .uir-pagination__chevron[data-direction="prev"]::before,
+  .uir-pagination__chevron[data-direction="first"]::before,
+  .uir-pagination__chevron[data-direction="first"]::after {
+    transform: rotate(-45deg);
+  }
+
+  .uir-pagination__chevron[data-direction="next"]::before,
+  .uir-pagination__chevron[data-direction="last"]::before,
+  .uir-pagination__chevron[data-direction="last"]::after {
+    transform: rotate(135deg);
+  }
+
+  /*
+   * RTL.
+   *
+   * `previous` and `next` are named for the reading order, not for a direction, so in RTL every one of
+   * these has to point the other way: `next` is to the left, not the right. One `scaleX` on the glyph
+   * mirrors both of its chevrons at once — which is why the rotation lives on the pseudo-elements and
+   * not on the glyph, since a transform on the glyph would be overwritten here and the chevrons would
+   * stop pointing anywhere.
+   */
+  [dir="rtl"] .uir-pagination__chevron {
+    transform: scaleX(-1);
+  }
+
+  /* ---- Gap ----------------------------------------------------------- */
+
+  /*
+   * The ellipsis.
+   *
+   * Sized as a target so the row's rhythm stays even, and `user-select: none` so dragging across the
+   * row to select the label beside it does not pick up three dots.
+   */
+  .uir-pagination__gap {
+    align-items: center;
+    color: var(--uir-pagination-text);
+    display: inline-flex;
+    flex-shrink: 0;
+    block-size: var(--uir-pagination-size);
+    inline-size: var(--uir-pagination-size);
+    justify-content: center;
+    user-select: none;
+  }
+
+  /* ---- Status -------------------------------------------------------- */
+
+  /*
+   * The live region.
+   *
+   * Visually hidden, because the current page is already obvious on screen — a page button is filled.
+   * The announcement is for a user who cannot see which one.
+   */
+  .uir-pagination__status {
+    block-size: 1px;
+    clip-path: inset(50%);
+    flex-basis: 100%;
+    inline-size: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+  }
+
+  /* ---- Tokens -------------------------------------------------------- */
+
+  .uir-pagination {
+    --uir-pagination-fill: var(--uir-surface-raised);
+    --uir-pagination-border: var(--uir-border);
+    --uir-pagination-text: var(--uir-text);
+    --uir-pagination-current: var(--uir-accent);
+    --uir-pagination-current-text: var(--uir-accent-contrast);
+    --uir-pagination-hover: var(--uir-neutral-fill-hover);
+    --uir-pagination-disabled-opacity: var(--uir-disabled-opacity);
+  }
+
+  /* ---- States -------------------------------------------------------- */
+
+  /*
+   * Hover is gated on a fine pointer, for the reason every other component in this library states.
+   *
+   * Suppressed on the current page: it is not a target, and a hover on it suggests there is somewhere
+   * to go when the user is already there.
+   */
+  @media (hover: hover) and (pointer: fine) {
+    .uir-pagination__control:not(:disabled):hover,
+    .uir-pagination__page:not(:disabled):not([data-current]):hover {
+      background-color: var(--uir-pagination-hover);
+    }
+  }
+
+  .uir-pagination__control:disabled,
+  .uir-pagination__page:disabled,
+  .uir-pagination[data-disabled] .uir-pagination__control,
+  .uir-pagination[data-disabled] .uir-pagination__page {
+    cursor: not-allowed;
+    opacity: var(--uir-pagination-disabled-opacity);
+  }
+
+  .uir-pagination__control:focus-visible,
+  .uir-pagination__page:focus-visible {
+    outline: var(--uir-focus-ring-width) solid var(--uir-focus-ring-color);
+    outline-offset: 1px;
+  }
+
+  /* ---- Reduced motion ------------------------------------------------ */
+
+  /* Nothing to do: a row of buttons does not animate. Recorded so the absence is a decision. */
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * The current page is the part that needs help. A custom fill is not a colour a forced-colours theme
+   * knows, so a filled current page and an unfilled one become indistinguishable — which is the one
+   * thing the control must never lose.
+   *
+   * `Highlight` is what a selected item is in every one of these themes.
+   */
+  @media (forced-colors: active) {
+    .uir-pagination__control,
+    .uir-pagination__page {
+      background-color: Canvas;
+      border-color: CanvasText;
+      color: CanvasText;
+      forced-color-adjust: none;
+    }
+
+    .uir-pagination__page[data-current] {
+      background-color: Highlight;
+      border-color: Highlight;
+      color: HighlightText;
+    }
+
+    .uir-pagination__control:focus-visible,
+    .uir-pagination__page:focus-visible {
+      outline-color: Highlight;
+    }
+  }
+}

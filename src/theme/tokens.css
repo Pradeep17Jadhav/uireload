@@ -80,6 +80,15 @@
 
   /* ---- Space & shape --------------------------------------------------- */
   --uir-space: 0.5rem;
+  /*
+   * Two steps below `--uir-space`, for gaps that are *inside* a control rather than between them.
+   *
+   * A mark to its icon, a bullet to its text, an option's marker to its label. These need to be
+   * visibly tighter than the gap between two controls, and a token is what keeps them consistent —
+   * which is the whole reason they exist rather than four components each inventing `0.25rem`.
+   */
+  --uir-space-sm: 0.375rem;
+  --uir-space-xs: 0.25rem;
   --uir-radius: 0.375rem;
   --uir-radius-small: 0.25rem;
   --uir-radius-large: 0.75rem;
@@ -148,6 +157,12 @@
   --uir-control-font-size-sm: 0.875rem;
   --uir-control-font-size-md: 1rem;
   --uir-control-font-size-lg: 1.125rem;
+  /*
+   * A step below `sm`, for text that is *about* a control rather than in it: a step's description, a
+   * mark's label, a helper line. Twelve pixels, which is the floor at which a label stays legible at
+   * a forced-colours theme's 1.4 line height.
+   */
+  --uir-control-font-size-xs: 0.75rem;
 
   /*
    * Control labels sit slightly heavier than body text. 500 is the closest widely

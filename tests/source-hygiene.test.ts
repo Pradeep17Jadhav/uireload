@@ -202,4 +202,63 @@ describe("CSS data attributes", () => {
 
     expect(orphans.sort()).toEqual([]);
   });
+
+  /**
+   * The inverse of the check above, and the one that actually caught bugs.
+   *
+   * `consumes every component-local token its stylesheet declares` only looks at declarations a
+   * stylesheet makes for itself. It says nothing about a token a stylesheet *reads* that nothing ever
+   * declares — and an undeclared custom property does not throw, does not warn, and does not fail the
+   * build. It simply resolves to nothing, so the declaration that read it quietly stops existing:
+   *
+   * - `Skeleton` read `--uir-skeleton-fill` and `--uir-skeleton-sheen`. Neither was declared, so the
+   *   bars had no background at all and the whole component was invisible on screen.
+   * - `Slider` read `--uir-slider-fill` and `--uir-slider-bubble`. The rail rendered transparent and
+   *   the value bubble had no background.
+   * - `Avatar` read `--uir-avatar-hover`, so `:hover` did nothing.
+   *
+   * Every one of those was green in review, green in the build and green in the test suite, because
+   * a missing variable is not an error — it is a smaller rendering. Tests cannot see it, lint cannot
+   * see it, and the only symptom is a component that is not there.
+   *
+   * Three tokens are legitimately declared at runtime rather than in source, as inline custom
+   * properties on the elements that use them, so they are listed rather than allowed by a pattern.
+   * Adding to that list is a decision to write one in this file and explain it here; the default is
+   * that a token must exist in source.
+   */
+  const RUNTIME_PROPS = new Set(["--uir-slider-at", "--uir-slider-from", "--uir-slider-to"]);
+
+  it("declares every custom property its stylesheets read", () => {
+    const declared = new Set<string>();
+    const read = new Map<string, string[]>();
+
+    for (const dir of COMPONENT_DIRS) {
+      const path = join(ROOT, "src/components", dir, `${dir}.css`);
+      if (!existsSync(path)) continue;
+
+      const css = strip(readFileSync(path, "utf8"));
+
+      for (const match of css.matchAll(/(--uir-[a-z0-9-]+)\s*:/g)) {
+        declared.add(match[1] as string);
+      }
+
+      for (const match of css.matchAll(/var\(\s*(--uir-[a-z0-9-]+)/g)) {
+        const token = match[1] as string;
+        if (!read.has(token)) read.set(token, []);
+        read.get(token)?.push(`${dir}.css`);
+      }
+    }
+
+    // The theme is where the library-wide tokens live, so it is part of "declared".
+    const theme = strip(readFileSync(join(ROOT, "src/theme/tokens.css"), "utf8"));
+    for (const match of theme.matchAll(/(--uir-[a-z0-9-]+)\s*:/g)) {
+      declared.add(match[1] as string);
+    }
+
+    const undeclared = [...read.entries()]
+      .filter(([token]) => !declared.has(token) && !RUNTIME_PROPS.has(token))
+      .map(([token, files]) => `${token} (read in ${[...new Set(files)].join(", ")})`);
+
+    expect(undeclared.sort()).toEqual([]);
+  });
 });

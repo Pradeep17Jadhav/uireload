@@ -27,6 +27,16 @@ export const BASE_MESSAGES = {
   /** The trailing control on a removable chip. Composed with the chip's own text when there is any. */
   "common.remove": "Remove",
 
+  /* Paging. `common.of` is the only one with a placeholder, and it is composed rather than
+     concatenated so a translator can put the count where their language needs it. */
+  "common.page": "Page",
+  "common.previousPage": "Previous page",
+  "common.nextPage": "Next page",
+  "common.firstPage": "First page",
+  "common.lastPage": "Last page",
+  "common.step": "Step",
+  "common.of": "of {total}",
+
   /* Example namespace, showing the convention a first component will follow.
      Not referenced by any shipped component yet. */
   "example.itemSelected": "{count} of {total} selected",
@@ -47,6 +57,13 @@ export const MESSAGE_PLACEHOLDERS: Readonly<Record<MessageKey, readonly string[]
   "common.required": [],
   "common.optional": [],
   "common.remove": [],
+  "common.page": [],
+  "common.previousPage": [],
+  "common.nextPage": [],
+  "common.firstPage": [],
+  "common.lastPage": [],
+  "common.step": [],
+  "common.of": ["total"],
   "example.itemSelected": ["count", "total"],
 };
 

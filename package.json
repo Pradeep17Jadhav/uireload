@@ -1,6 +1,6 @@
 {
   "name": "uireload",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Small, composable, accessible React primitives with zero-runtime styling, consumer-owned theming and first-class RTL/i18n support.",
   "keywords": [
     "react",
@@ -40,6 +40,26 @@
     "./styles.css": "./dist/index.css",
     "./tokens.css": "./dist/theme/tokens.css",
     "./package.json": "./package.json",
+    "./components/alert": {
+      "import": {
+        "types": "./dist/components/alert/index.d.ts",
+        "default": "./dist/components/alert/index.js"
+      },
+      "require": {
+        "types": "./dist/components/alert/index.d.cts",
+        "default": "./dist/components/alert/index.cjs"
+      }
+    },
+    "./components/avatar": {
+      "import": {
+        "types": "./dist/components/avatar/index.d.ts",
+        "default": "./dist/components/avatar/index.js"
+      },
+      "require": {
+        "types": "./dist/components/avatar/index.d.cts",
+        "default": "./dist/components/avatar/index.cjs"
+      }
+    },
     "./components/button": {
       "import": {
         "types": "./dist/components/button/index.d.ts",
@@ -80,6 +100,26 @@
         "default": "./dist/components/dialog/index.cjs"
       }
     },
+    "./components/divider": {
+      "import": {
+        "types": "./dist/components/divider/index.d.ts",
+        "default": "./dist/components/divider/index.js"
+      },
+      "require": {
+        "types": "./dist/components/divider/index.d.cts",
+        "default": "./dist/components/divider/index.cjs"
+      }
+    },
+    "./components/drawer": {
+      "import": {
+        "types": "./dist/components/drawer/index.d.ts",
+        "default": "./dist/components/drawer/index.js"
+      },
+      "require": {
+        "types": "./dist/components/drawer/index.d.cts",
+        "default": "./dist/components/drawer/index.cjs"
+      }
+    },
     "./components/icon-button": {
       "import": {
         "types": "./dist/components/icon-button/index.d.ts",
@@ -98,6 +138,16 @@
       "require": {
         "types": "./dist/components/link/index.d.cts",
         "default": "./dist/components/link/index.cjs"
+      }
+    },
+    "./components/pagination": {
+      "import": {
+        "types": "./dist/components/pagination/index.d.ts",
+        "default": "./dist/components/pagination/index.js"
+      },
+      "require": {
+        "types": "./dist/components/pagination/index.d.cts",
+        "default": "./dist/components/pagination/index.cjs"
       }
     },
     "./components/popover": {
@@ -130,6 +180,16 @@
         "default": "./dist/components/select/index.cjs"
       }
     },
+    "./components/skeleton": {
+      "import": {
+        "types": "./dist/components/skeleton/index.d.ts",
+        "default": "./dist/components/skeleton/index.js"
+      },
+      "require": {
+        "types": "./dist/components/skeleton/index.d.cts",
+        "default": "./dist/components/skeleton/index.cjs"
+      }
+    },
     "./components/slider": {
       "import": {
         "types": "./dist/components/slider/index.d.ts",
@@ -148,6 +208,16 @@
       "require": {
         "types": "./dist/components/snackbar/index.d.cts",
         "default": "./dist/components/snackbar/index.cjs"
+      }
+    },
+    "./components/stepper": {
+      "import": {
+        "types": "./dist/components/stepper/index.d.ts",
+        "default": "./dist/components/stepper/index.js"
+      },
+      "require": {
+        "types": "./dist/components/stepper/index.d.cts",
+        "default": "./dist/components/stepper/index.cjs"
       }
     },
     "./components/switch": {
@@ -219,12 +289,28 @@
         "types": "./dist/components/toggle-button-group/index.d.cts",
         "default": "./dist/components/toggle-button-group/index.cjs"
       }
+    },
+    "./components/tooltip": {
+      "import": {
+        "types": "./dist/components/tooltip/index.d.ts",
+        "default": "./dist/components/tooltip/index.js"
+      },
+      "require": {
+        "types": "./dist/components/tooltip/index.d.cts",
+        "default": "./dist/components/tooltip/index.cjs"
+      }
     }
   },
   "typesVersions": {
     "*": {
       "*": [
         "./dist/index.d.ts"
+      ],
+      "components/alert": [
+        "./dist/components/alert/index.d.ts"
+      ],
+      "components/avatar": [
+        "./dist/components/avatar/index.d.ts"
       ],
       "components/button": [
         "./dist/components/button/index.d.ts"
@@ -238,11 +324,20 @@
       "components/dialog": [
         "./dist/components/dialog/index.d.ts"
       ],
+      "components/divider": [
+        "./dist/components/divider/index.d.ts"
+      ],
+      "components/drawer": [
+        "./dist/components/drawer/index.d.ts"
+      ],
       "components/icon-button": [
         "./dist/components/icon-button/index.d.ts"
       ],
       "components/link": [
         "./dist/components/link/index.d.ts"
+      ],
+      "components/pagination": [
+        "./dist/components/pagination/index.d.ts"
       ],
       "components/popover": [
         "./dist/components/popover/index.d.ts"
@@ -253,11 +348,17 @@
       "components/select": [
         "./dist/components/select/index.d.ts"
       ],
+      "components/skeleton": [
+        "./dist/components/skeleton/index.d.ts"
+      ],
       "components/slider": [
         "./dist/components/slider/index.d.ts"
       ],
       "components/snackbar": [
         "./dist/components/snackbar/index.d.ts"
+      ],
+      "components/stepper": [
+        "./dist/components/stepper/index.d.ts"
       ],
       "components/switch": [
         "./dist/components/switch/index.d.ts"
@@ -279,6 +380,9 @@
       ],
       "components/toggle-button-group": [
         "./dist/components/toggle-button-group/index.d.ts"
+      ],
+      "components/tooltip": [
+        "./dist/components/tooltip/index.d.ts"
       ],
       "styles.css": [
         "./dist/index.css"

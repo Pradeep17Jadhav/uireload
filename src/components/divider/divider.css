@@ -1,0 +1,110 @@
+/*
+ * Divider styles.
+ *
+ * A rule drawn with a border, not a height. A `border` on a zero-height box survives being pushed by
+ * content on either side; a fixed `height` with a background does not, and a divider that collapses to
+ * nothing under its own neighbours is the classic symptom of the height approach.
+ *
+ * `flex: 0 0 auto` matters in the one place a divider is usually used — inside a flex row between two
+ * buttons — where `flex-shrink: 1` would let it be squeezed to zero width.
+ */
+
+@layer uireload.components {
+  .uir-divider {
+    box-sizing: border-box;
+  }
+
+  /* ---- Horizontal ---------------------------------------------------- */
+
+  .uir-divider[data-orientation="horizontal"] {
+    border-block-end: var(--uir-divider-weight) solid var(--uir-divider-color);
+    block-size: 0;
+    inline-size: 100%;
+  }
+
+  .uir-divider[data-orientation="vertical"] {
+    align-self: stretch;
+    border-inline-end: var(--uir-divider-weight) solid var(--uir-divider-color);
+    inline-size: 0;
+    /*
+     * Never shrink.
+     *
+     * In a flex row — the usual home of a vertical rule — the default `flex-shrink: 1` lets it be
+     * squeezed to zero width by a long neighbour, and a divider that has silently vanished is harder
+     * to notice than one that was never drawn.
+     */
+    flex: 0 0 auto;
+  }
+
+  /*
+   * A labelled horizontal divider.
+   *
+   * The rule becomes two half-rules with a gap for the label, because a `text-decoration` line
+   * through the label cannot be broken around it and a background-coloured label needs to know what is
+   * behind it. `::before` and `::after` draw the two halves and the `<span>` sits in the gap, so the
+   * whole thing is three boxes and no knowledge of the page background.
+   */
+  .uir-divider[data-orientation="horizontal"][data-labelled] {
+    align-items: center;
+    block-size: auto;
+    border: 0;
+    display: flex;
+    gap: var(--uir-control-gap);
+    inline-size: 100%;
+  }
+
+  .uir-divider[data-orientation="horizontal"][data-labelled]::before,
+  .uir-divider[data-orientation="horizontal"][data-labelled]::after {
+    block-size: 0;
+    border-block-start: var(--uir-divider-weight) solid var(--uir-divider-color);
+    content: "";
+    flex: 1 1 auto;
+  }
+
+  .uir-divider__label {
+    color: var(--uir-divider-label);
+    flex: 0 0 auto;
+    font-family: var(--uir-font-family);
+    font-size: var(--uir-control-font-size-sm);
+    font-weight: var(--uir-control-font-weight);
+    line-height: var(--uir-line-height);
+  }
+
+  /* ---- Weight and colour --------------------------------------------- */
+
+  /*
+   * Two weights, declared once on the root.
+   *
+   * A numeric width would invite `0.5px`, which no display renders consistently — some show it, some
+   * round it away, and the rounding differs per device.
+   */
+  .uir-divider {
+    --uir-divider-weight: var(--uir-control-border-width);
+    --uir-divider-color: var(--uir-border);
+    --uir-divider-label: var(--uir-text-muted);
+  }
+
+  .uir-divider[data-weight="thick"] {
+    --uir-divider-weight: calc(var(--uir-control-border-width) * 2);
+  }
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * A divider is `CanvasText` in a forced-colours theme, not a token.
+   *
+   * The tokens this rule would otherwise use are not guaranteed to resolve there, and a rule that
+   * resolves to nothing is an absent rule — a layout with a missing border and a layout with a
+   * deliberate gap do not look the same to anyone relying on the gap.
+   */
+  @media (forced-colors: active) {
+    .uir-divider {
+      border-color: CanvasText;
+      forced-color-adjust: none;
+    }
+
+    .uir-divider__label {
+      color: CanvasText;
+    }
+  }
+}

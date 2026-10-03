@@ -33,6 +33,23 @@
   .uir-slider {
     --uir-slider-track-size: 0.25rem;
     --uir-slider-thumb-size: 1.125rem;
+
+    /*
+     * Colours.
+     *
+     * All four were read by rules below and declared nowhere, which is why the rail rendered
+     * transparent and the value bubble had no background. An undeclared custom property does not
+     * throw and does not warn; it resolves to nothing, so the declaration reading it quietly stops
+     * existing. `tests/source-hygiene.test.ts` now fails on a token read but never declared.
+     */
+    --uir-slider-fill: var(--uir-neutral-wash-active);
+    /* A mark's rule, which needs to read as darker than the rail it sits on. */
+    --uir-slider-fill-strong: var(--uir-border-strong);
+    /* The value bubble is inverted for the same reason a tooltip's is: it must promise contrast. */
+    --uir-slider-bubble: #1e293b;
+    --uir-slider-bubble-text: #f8fafc;
+    --uir-slider-thumb-shadow: 0 1px 2px rgb(15 23 42 / 20%);
+
     display: grid;
     font-family: var(--uir-font-family);
     gap: var(--uir-control-gap);
@@ -86,27 +103,35 @@
 
   /* ---- Rail, track and thumbs ---------------------------------------- */
 
+  /*
+   * The rail is the *box* the track and the thumbs are positioned inside, and it has to stay in
+   * flow at the thumb's height.
+   *
+   * This used to share a rule with the track — "they differ only in colour" — which set
+   * `position: absolute` and `block-size: var(--uir-slider-track-size)` on both. So the rail was
+   * 4px tall and out of flow, every `inset-block-start` inside it was measured against 4px instead of
+   * the thumb's 18px, and the thumb hung 14px below the rail it was supposed to be centred on. The
+   * rail is now stated separately for exactly one reason: only the track is absolutely positioned.
+   */
   .uir-slider__rail {
+    background-color: var(--uir-slider-fill);
     block-size: var(--uir-slider-thumb-size);
+    border-radius: calc(var(--uir-slider-track-size) / 2);
+    display: block;
     inline-size: 100%;
     position: relative;
   }
 
-  /*
-   * The rail itself and the filled portion share one rule, because they differ only in colour.
-   */
-  .uir-slider__rail,
   .uir-slider__track {
     background-color: var(--uir-slider-fill);
     border-radius: calc(var(--uir-slider-track-size) / 2);
     block-size: var(--uir-slider-track-size);
-    position: absolute;
-  }
-
-  .uir-slider__rail {
-    inline-size: 100%;
-    /* Vertically centred in the rail box, which is the thumb's height. */
+    /*
+     * Centred in the rail box, which is the thumb's height. Stated here rather than on a shared rule
+     * because the rail is no longer absolutely positioned and must not inherit this.
+     */
     inset-block-start: calc((var(--uir-slider-thumb-size) - var(--uir-slider-track-size)) / 2);
+    position: absolute;
   }
 
   /*
@@ -137,7 +162,7 @@
     border: var(--uir-control-border-width) solid var(--uir-slider-accent);
     border-radius: 50%;
     block-size: var(--uir-slider-thumb-size);
-    box-shadow: var(--uir-slider-thumb-shadow, 0 1px 2px rgb(15 23 42 / 0.2));
+    box-shadow: var(--uir-slider-thumb-shadow);
     inline-size: var(--uir-slider-thumb-size);
     inset-block-start: calc((var(--uir-slider-thumb-size) - var(--uir-slider-thumb-size)) / 2);
     inset-inline-start: calc(var(--uir-slider-at) * 100%);
@@ -170,24 +195,33 @@
   /* ---- The real controls --------------------------------------------- */
 
   /*
-   * Hidden, not removed.
+   * Hidden, but the pointer target.
    *
    * The input has to stay in the accessibility tree, in the tab order, and focusable, so this is a
-   * visually-hidden element rather than `display: none` or `visibility: hidden` — both of which
-   * take it out of the tab order and out of the form entirely.
+   * transparent element rather than `display: none` or `visibility: hidden` — both of which take it
+   * out of the tab order and out of the form entirely.
    *
-   * `pointer-events: none` because the drawn rail and thumbs take the pointer: letting the input take
-   * it too would mean the browser's own thumb-drag maths and ours both writing the same value on
-   * one gesture, and a slider that jumps is the result.
+   * It takes the pointer, and this used to be the bug: the rule said `pointer-events: none` on the
+   * reasoning that "the drawn rail and thumbs take the pointer", and then nothing did. The slider
+   * could not be dragged at all — no grab, no track click, no thumb drag — while every test passed,
+   * because the tests drive `change` and keyboard events rather than a gesture.
+   *
+   * Letting the real input take it is also the only way the drawn thumb and `aria-valuenow` cannot
+   * drift apart: the browser's own pointer maths moves the value, and the drawn thumb is a picture of
+   * the value the browser now holds. A hand-rolled track-click calculation cannot make that promise,
+   * which is why it was removed along with this rule.
+   *
+   * `z-index` above the drawn rail and thumb, so the input is the hit target and the drawing stays
+   * visible through its `opacity: 0`.
    */
   .uir-slider__input {
-    block-size: 100%;
+    block-size: var(--uir-slider-thumb-size);
     inline-size: 100%;
-    inset: 0;
+    inset-block-start: calc(var(--uir-slider-thumb-size) / 2 * -1);
     margin: 0;
     opacity: 0;
-    pointer-events: none;
     position: absolute;
+    z-index: 1;
   }
 
   /*

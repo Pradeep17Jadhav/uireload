@@ -1,0 +1,450 @@
+/*
+ * Stepper styles.
+ *
+ * A strip of markers joined by lines. The line is the point: it is what turns a row of numbered
+ * circles into a sequence, and it is drawn as a rule between two items rather than as a background
+ * image on the strip, so it cannot desynchronise from the items when they are laid out vertically.
+ *
+ * Everything sizes off `--uir-stepper-marker`, so changing one value changes the whole rhythm.
+ */
+
+@layer uireload.components {
+  .uir-stepper,
+  .uir-stepper__strip,
+  .uir-stepper__item,
+  .uir-stepper__step,
+  .uir-stepper__marker,
+  .uir-stepper__text,
+  .uir-stepper__content,
+  .uir-stepper__status {
+    box-sizing: border-box;
+  }
+
+  /* ---- Root ---------------------------------------------------------- */
+
+  .uir-stepper {
+    --uir-stepper-marker: 1.75rem;
+    --uir-stepper-gap: var(--uir-space);
+
+    color: var(--uir-text);
+    font-family: var(--uir-font-family);
+  }
+
+  /* ---- Strip --------------------------------------------------------- */
+
+  /*
+   * A grid with one column per step, rather than a flex row.
+   *
+   * Equal columns are what makes the connectors line up: a flex row sized to its content gives each
+   * step a different width, so the line between steps 1 and 2 is never the same length as the one
+   * between 4 and 5, and the strip visibly fails to be a sequence.
+   */
+  .uir-stepper__strip {
+    display: grid;
+    gap: var(--uir-stepper-gap);
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /*
+   * Vertical.
+   *
+   * `grid-auto-flow: row` with an explicit column count, so the same grid declaration serves both
+   * orientations and nothing about the markup changes.
+   */
+  .uir-stepper[data-orientation="vertical"] .uir-stepper__strip {
+    grid-auto-columns: auto;
+    grid-auto-flow: row;
+    grid-template-columns: 1fr;
+  }
+
+  .uir-stepper__item {
+    /*
+     * The connector.
+     *
+     * A pseudo-element on every item but the first, running from the marker to the next one. Drawn
+     * with `inset-inline-start` and `transform: translateX(-50%)` so it starts at the marker's edge in
+     * both reading directions without a second rule.
+     */
+    min-inline-size: 0;
+    position: relative;
+  }
+
+  /*
+   * `> :first-child` rather than a class: the component knows which item is first, but adding a
+   * class to say so would be a second source of truth for something the DOM already answers.
+   */
+  .uir-stepper__item:not(:first-child)::before {
+    background-color: var(--uir-stepper-connector);
+    block-size: var(--uir-control-border-width);
+    content: "";
+    inset-block-start: calc(var(--uir-stepper-marker) / 2);
+    /*
+     * `inset-inline-*` rather than `left` / `right`, so the connector runs the same distance from
+     * each marker in either reading direction with no second rule.
+     */
+    inset-inline-end: calc(-1 * var(--uir-stepper-gap));
+    /*
+     * The fix for the connector crossing the label.
+     *
+     * This used to span the whole item at marker height, from `-50%` to `+50%`. The label is a grid
+     * column occupying exactly that band, so a 1px line ran straight through the middle of every
+     * step's text.
+     *
+     * The connector has to live where nothing else is drawn. So it starts at this item's marker's
+     * trailing edge and stops at the next item's marker's leading edge — the marker box plus the gap
+     * between the two grid columns, and nothing more. It still joins marker to marker, which is what
+     * makes the strip read as a sequence.
+     */
+    inset-inline-start: var(--uir-stepper-marker);
+    position: absolute;
+  }
+
+  /*
+   * A vertical stepper's connector runs down instead, and only part of the way — between one step's
+   * marker and the next, not across the whole row. `inset-inline-*` becomes the cross axis here,
+   * which is the whole reason the component uses logical properties throughout.
+   */
+  .uir-stepper[data-orientation="vertical"] .uir-stepper__item:not(:first-child)::before {
+    block-size: auto;
+    inset-block-end: calc(-1 * var(--uir-stepper-gap));
+    inset-block-start: var(--uir-stepper-marker);
+    inset-inline-end: auto;
+    inset-inline-start: calc(var(--uir-stepper-marker) / 2);
+    inline-size: var(--uir-control-border-width);
+  }
+
+  /* ---- Label placement ------------------------------------------------ */
+
+  /*
+   * A label above or below its marker.
+   *
+   * Two rows rather than two columns, and that is the whole of the difference: the marker keeps its
+   * own row and the label gets the other one, so the connector's band — which is the marker's row —
+   * never has text in it.
+   *
+   * This is what makes the strip usable in a narrow column. A label beside its marker needs at least
+   * the marker's width plus its longest word, and a stepper in a 12rem sidebar cannot hold that, which
+   * is the case `inline-end` cannot serve no matter how the text wraps.
+   *
+   * `text-align: center` because the marker is centred on the column; a label left-aligned under a
+   * centred marker reads as belonging to whatever sits nearest it.
+   */
+  .uir-stepper[data-label-placement="block-start"] .uir-stepper__step,
+  .uir-stepper[data-label-placement="block-end"] .uir-stepper__step {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    row-gap: var(--uir-space-xs);
+    text-align: center;
+  }
+
+  /*
+   * Which side the marker goes on, by `order` rather than by a second grid.
+   *
+   * `block-start` puts the text first in the flow and the marker second, so it draws above; `block-end`
+   * is the default order, so it draws below. Two declarations, no duplicated markup.
+   *
+   * The *DOM* order stays marker-then-text in both placements, because that is the order a screen
+   * reader reads and it stays the useful one whichever way the label is drawn.
+   */
+  .uir-stepper[data-label-placement="block-start"] .uir-stepper__marker {
+    order: -1;
+  }
+
+  /*
+   * The error text, which spans the full width under a block-placed label: there is no marker column
+   * left to span from, and a centred error under a centred label is easier to associate with its step
+   * than a left-aligned one.
+   */
+  .uir-stepper[data-label-placement="block-start"] .uir-stepper__error,
+  .uir-stepper[data-label-placement="block-end"] .uir-stepper__error {
+    grid-column: 1;
+    text-align: center;
+  }
+
+  /* ---- Step ---------------------------------------------------------- */
+
+  /*
+   * A grid of marker and text, so a long label wraps under itself rather than pushing the connector
+   * out of alignment.
+   */
+  .uir-stepper__step {
+    align-items: flex-start;
+    background: none;
+    border: 0;
+    color: inherit;
+    display: grid;
+    font-family: inherit;
+    gap: var(--uir-stepper-gap);
+    grid-template-columns: var(--uir-stepper-marker) minmax(0, 1fr);
+    margin: 0;
+    padding: 0;
+    text-align: start;
+  }
+
+  /*
+   * Only the actionable ones are buttons, and only they get a cursor, a hover and a focus ring.
+   *
+   * The three states are declared together because they are one fact: a step the user can press looks
+   * pressable, and a step they cannot does not. Styling the `<div>` and the `<button>` as one class
+   * with the interactive bits on the modifier is what keeps the two from drifting apart.
+   */
+  .uir-stepper__step--actionable {
+    cursor: pointer;
+  }
+
+  /* ---- Marker -------------------------------------------------------- */
+
+  .uir-stepper__marker {
+    align-items: center;
+    background-color: var(--uir-stepper-marker-fill);
+    border: var(--uir-control-border-width) solid var(--uir-stepper-marker-border);
+    border-radius: 50%;
+    color: var(--uir-stepper-marker-text);
+    display: inline-flex;
+    flex-shrink: 0;
+    font-size: var(--uir-control-font-size-sm);
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--uir-control-font-weight);
+    block-size: var(--uir-stepper-marker);
+    inline-size: var(--uir-stepper-marker);
+    justify-content: center;
+    line-height: 1;
+  }
+
+  /*
+   * The three states.
+   *
+   * The current step is a filled accent circle rather than a ring, so "where am I" is a colour
+   * difference and not a border-width difference — which at a 2px border is hard to see at all.
+   */
+  .uir-stepper__marker[data-state="completed"] {
+    background-color: var(--uir-accent);
+    border-color: var(--uir-accent);
+    color: var(--uir-accent-contrast);
+  }
+
+  .uir-stepper__marker[data-state="current"] {
+    background-color: var(--uir-accent);
+    border-color: var(--uir-accent);
+    color: var(--uir-accent-contrast);
+  }
+
+  .uir-stepper__marker[data-state="upcoming"] {
+    background-color: var(--uir-stepper-marker-fill);
+    color: var(--uir-stepper-marker-text-muted);
+  }
+
+  /*
+   * An errored step.
+   *
+   * The tone is carried by the marker's ring rather than its fill, so a red circle does not read as
+   * "this is the current step" — which is what a red fill would do, in a component whose entire job
+   * is telling the user where they are.
+   */
+  .uir-stepper__marker[data-tone="danger"] {
+    border-color: var(--uir-danger);
+  }
+
+  /*
+   * The tick.
+   *
+   * A square with two borders, rotated, with the top and right borders removed. `currentcolor` and
+   * nothing else, so it is correct in every scheme and in forced colours without a rule.
+   */
+  .uir-stepper__tick {
+    block-size: 0.45em;
+    border-block-end: 2px solid currentcolor;
+    border-inline-end: 2px solid currentcolor;
+    display: block;
+    inline-size: 0.25em;
+    transform: rotate(45deg) translate(-0.05em, -0.1em);
+  }
+
+  /* ---- Text ---------------------------------------------------------- */
+
+  .uir-stepper__text {
+    display: flex;
+    /* `min-inline-size: 0` so a long label truncates rather than overflowing its grid column. */
+    flex-direction: column;
+    gap: 0.125rem;
+    min-inline-size: 0;
+  }
+
+  .uir-stepper__label {
+    /*
+     * `text-wrap: balance` rather than `nowrap`.
+     *
+     * A stepper label that wraps to three ragged lines makes the strip unreadable, and truncating it
+     * hides which step it is. Balancing is the only option that keeps every word.
+     */
+    color: var(--uir-stepper-label);
+    font-size: var(--uir-control-font-size-sm);
+    font-weight: var(--uir-control-font-weight);
+    line-height: var(--uir-line-height);
+    text-wrap: balance;
+  }
+
+  /*
+   * The upcoming and non-current steps are dimmed.
+   *
+   * Not hidden, and not so dim they drop below the contrast floor: a step the user has not reached
+   * yet still has to be readable, because "how many are left, and what are they" is a question they
+   * are entitled to answer before they start.
+   */
+  .uir-stepper__step[data-state="upcoming"] .uir-stepper__label {
+    color: var(--uir-text-muted);
+  }
+
+  .uir-stepper__description {
+    color: var(--uir-text-muted);
+    font-size: var(--uir-control-font-size-xs);
+    line-height: var(--uir-line-height);
+  }
+
+  /*
+   * The optional marker.
+   *
+   * A small ring, in the margin, `aria-hidden` because "optional" is a claim about the wizard's rule
+   * rather than about this step — it is already in the step's accessible name.
+   */
+  .uir-stepper__optional {
+    background-color: transparent;
+    border: 1px dashed currentcolor;
+    border-radius: 50%;
+    color: var(--uir-text-muted);
+    display: inline-block;
+    block-size: 0.5rem;
+    inline-size: 0.5rem;
+    margin-inline-start: 0.375rem;
+    vertical-align: baseline;
+  }
+
+  /*
+   * The error text.
+   *
+   * Spans both grid columns so it sits under the label rather than squeezed beside the marker, and
+   * wraps rather than truncating — an error message that is cut off is worse than none.
+   */
+  .uir-stepper__error {
+    color: var(--uir-danger);
+    font-size: var(--uir-control-font-size-xs);
+    grid-column: 1 / -1;
+    line-height: var(--uir-line-height);
+    margin-block-start: 0.25rem;
+  }
+
+  /* ---- Content ------------------------------------------------------- */
+
+  .uir-stepper__content {
+    /* The same rhythm as the strip's own gap, so the content is not floating against the page. */
+    margin-block-start: var(--uir-stepper-gap);
+  }
+
+  /* ---- Status -------------------------------------------------------- */
+
+  /*
+   * The live region.
+   *
+   * Visually hidden, because the current step is already obvious on screen — its marker is filled.
+   * The announcement is for a user who cannot see which one is filled.
+   */
+  .uir-stepper__status {
+    block-size: 1px;
+    clip-path: inset(50%);
+    inline-size: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+  }
+
+  /* ---- Tokens -------------------------------------------------------- */
+
+  .uir-stepper {
+    --uir-stepper-marker-fill: var(--uir-surface-raised);
+    --uir-stepper-marker-border: var(--uir-border-strong);
+    --uir-stepper-marker-text: var(--uir-text);
+    --uir-stepper-marker-text-muted: var(--uir-text-muted);
+    --uir-stepper-label: var(--uir-text);
+    --uir-stepper-connector: var(--uir-border-strong);
+  }
+
+  /* ---- States -------------------------------------------------------- */
+
+  @media (hover: hover) and (pointer: fine) {
+    .uir-stepper__step--actionable:hover .uir-stepper__marker {
+      border-color: var(--uir-accent);
+    }
+  }
+
+  .uir-stepper__step--actionable:focus-visible {
+    border-radius: var(--uir-control-radius);
+    outline: var(--uir-focus-ring-width) solid var(--uir-focus-ring-color);
+    outline-offset: 2px;
+  }
+
+  .uir-stepper[data-disabled] {
+    opacity: var(--uir-disabled-opacity);
+  }
+
+  /*
+   * A disabled stepper takes no clicks.
+   *
+   * The headers are still real buttons — a `disabled` attribute would remove them from the tab order
+   * and leave a keyboard user with no way to read the wizard's structure at all, which is the one
+   * thing a disabled form should never do.
+   */
+  .uir-stepper[data-disabled] .uir-stepper__step--actionable {
+    cursor: not-allowed;
+  }
+
+  /* ---- Reduced motion ------------------------------------------------ */
+
+  /* Nothing to do: a strip of markers does not animate. Recorded so the absence is a decision. */
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * The states, restated.
+   *
+   * A custom accent fill is not a colour a forced-colours theme knows, so a completed marker and an
+   * upcoming one collapse to the same appearance — which destroys the only thing this component
+   * communicates. `Highlight` is what a selected item is in every one of these themes, and the
+   * current step is a selected item.
+   */
+  @media (forced-colors: active) {
+    .uir-stepper__marker {
+      background-color: Canvas;
+      border-color: CanvasText;
+      color: CanvasText;
+      forced-color-adjust: none;
+    }
+
+    .uir-stepper__marker[data-state="current"],
+    .uir-stepper__marker[data-state="completed"] {
+      background-color: Highlight;
+      border-color: Highlight;
+      color: HighlightText;
+    }
+
+    .uir-stepper__marker[data-tone="danger"] {
+      border-color: LinkText;
+      border-style: dashed;
+    }
+
+    .uir-stepper__item:not(:first-child)::before {
+      background-color: CanvasText;
+    }
+
+    .uir-stepper__step--actionable:focus-visible {
+      outline-color: Highlight;
+    }
+
+    .uir-stepper__error {
+      color: LinkText;
+    }
+  }
+}
