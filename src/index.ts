@@ -83,6 +83,17 @@ export { Switch } from "./components/switch";
 export type { SwitchProps, SwitchOwnProps } from "./components/switch";
 
 export { Popover } from "./components/popover";
+export { Menu } from "./components/menu";
+export type {
+  MenuProps,
+  MenuOwnProps,
+  MenuItem,
+  MenuSeparator,
+  MenuEntry,
+  MenuItemRole,
+  MenuPlacement,
+  MenuInitialFocus,
+} from "./components/menu";
 export type {
   PopoverProps,
   PopoverOwnProps,
@@ -145,8 +156,39 @@ export type {
   DividerWeight,
 } from "./components/divider";
 
+export { Accordion } from "./components/accordion";
+export type {
+  AccordionProps,
+  AccordionOwnPropsBase,
+  AccordionItem,
+  AccordionSelectionMode,
+  AccordionHeadingLevel,
+  AccordionSingleSelectionProps,
+  AccordionMultipleSelectionProps,
+} from "./components/accordion";
+
+/*
+ * A `navigation` landmark. Exported near the other page-level composites because it composes with them:
+ * a `Menu` in `actions` is the usual way to make a bar work on a narrow screen.
+ */
+export { Navbar } from "./components/navbar";
+export type { NavbarProps, NavbarOwnProps, NavbarItem } from "./components/navbar";
+
 export { Skeleton } from "./components/skeleton";
 export type { SkeletonProps, SkeletonOwnProps, SkeletonVariant } from "./components/skeleton";
+
+/*
+ * The two busy indicators, split by whether the amount of work is knowable.
+ *
+ * `Spinner` never takes a value and `Loader` treats an absent value as indeterminate, so a
+ * caller picks the component rather than a flag — see each README for why one component with a
+ * `mode` prop was rejected.
+ */
+export { Spinner } from "./components/spinner";
+export type { SpinnerProps, SpinnerOwnProps, SpinnerSize } from "./components/spinner";
+
+export { Loader } from "./components/loader";
+export type { LoaderProps, LoaderOwnProps, LoaderSize } from "./components/loader";
 
 export { Avatar, initialsFrom } from "./components/avatar";
 export type { AvatarProps, AvatarOwnProps, AvatarShape } from "./components/avatar";

@@ -383,6 +383,198 @@ needs. Neither library has any accessibility surface for a loading placeholder a
 `role="status"`, `aria-busy` and the `aria-hidden` bars here have no citation and are recorded as this
 component's own answer to the APG live-region pattern.
 
+### Navbar - `src/components/navbar/`
+
+| Concern            | Source                                                                                                                                        |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Landmark element   | `@mui/material/AppBar/AppBar.d.ts` - `position`, `color`, `square`, `enableColorOnDark`, `elevation`                                          |
+| Toolbar container  | `@mui/material/Toolbar/Toolbar.d.ts` - `variant`, `disableGutters`, `children`                                                                |
+| Brand slot         | `@ui5/webcomponents-fiori/dist/ShellBar.d.ts` - `logo`, `icon`, `branding`                                                                    |
+| Trailing actions   | `@ui5/webcomponents-fiori/dist/ShellBar.d.ts` - `actions`, `items`, `count`                                                                   |
+| Overflow behaviour | `@ui5/webcomponents-fiori/dist/ShellBar.d.ts` - `collapsed`, `expanded`, `hiddenItemsIds`, `breakpointSize`                                   |
+| Search integration | `@ui5/webcomponents-fiori/dist/ShellBar.d.ts` - `hideSearchButton`, `disableSearchCollapse`                                                   |
+| Navigation list    | `@ui5/webcomponents-fiori/dist/SideNavigation.d.ts` - `items`, `subItems`, `fixedItems`, `accessibleName`                                     |
+| Collapsed sidebar  | `@ui5/webcomponents-fiori/dist/SideNavigation.d.ts` - `collapsed`, `inPopover`, `header`                                                      |
+| Current item       | The APG has no navigation pattern; `aria-current="page"` is the ARIA specification's own mechanism, and neither library exposes a prop for it |
+| Keyboard contract  | The APG defines no widget pattern for navigation, so no keyboard contract is cited — `Tab` through the links is the whole story               |
+
+Rejected: `color`, `enableColorOnDark` and `elevation` (`@mui/material/AppBar/AppBar.d.ts`) - there is no
+theme object and no palette to key into; colour is `--uir-*` tokens and `data-*`. `square` (same file) - a
+border-radius decision that this component does not vary. `variant` and `disableGutters`
+(`@mui/material/Toolbar/Toolbar.d.ts`) - padding and density are already the `size` prop and the spacing
+tokens. `collapsed` / `expanded` / `hiddenItemsIds` / `breakpointSize`
+(`@ui5/webcomponents-fiori/dist/ShellBar.d.ts`) - a responsive collapse is a layout decision about the whole
+page, and the threshold is the consumer's; guessing one would surprise consumers who have already solved it.
+`hideSearchButton` and `disableSearchCollapse` (same file) - search is content, and belongs in `actions` where
+a `Textbox` or a `Menu` can be placed. `items` and `subItems`
+(`@ui5/webcomponents-fiori/dist/SideNavigation.d.ts`) - a data-driven `items` array is this component's whole
+API; `subItems` is a nested navigation tree, which is a different widget. `inPopover` (same file) - the same
+responsive-collapse concern as `ShellBar`. `fixedItems` (same file) - pinning a group within the bar is a
+layout concern the stylesheet owns; a consumer overrides `position` per item if they need it.
+
+Neither library attaches `aria-current` to the current entry, and neither declares a keyboard contract, so
+both of this component's most important behaviours are recorded here as this repository's own answer rather
+than as a citation. That is why the landmark name and `aria-current="page"` are documented as the component's
+entire accessibility contract in its README.
+
+### Menu - `src/components/menu/`
+
+| Concern               | Source                                                                                                                            |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Trigger binding       | `@ui5/webcomponents/dist/Menu.d.ts` - `opener?: HTMLElement \| string \| null`, plus `anchorEl` in the equivalent React component |
+| Open state            | `@ui5/webcomponents/dist/Menu.d.ts` - `open: boolean`                                                                             |
+| Item row semantics    | `@ui5/webcomponents/dist/MenuItem.d.ts` - `checked: boolean`, `disabled: boolean`, `text?`, `icon?`, `additionalText?`            |
+| Grouping and dividers | `@ui5/webcomponents/dist/Menu.d.ts` - items may be menu items, groups or separators                                               |
+| Popup placement       | `@ui5/webcomponents/dist/Menu.d.ts` - `placement: \`${PopoverPlacement}\``, `horizontalAlign: \`${PopoverHorizontalAlign}\``      |
+| Per-item loading      | `@ui5/webcomponents/dist/MenuItem.d.ts` - `loading: boolean`, `loadingDelay`                                                      |
+| Positioning primitive | `@mui/material/Menu/Menu.d.ts` - `anchorEl`, `open`, `onClose`, `variant`, `slotProps.paper`                                      |
+| Item-level props      | `@mui/material/MenuItem/MenuItem.d.ts` - `selected`, `dense`, `divider`, `disabled`, `autoFocus`                                  |
+| Auto-focus policy     | `@mui/material/Menu/Menu.d.ts` - `autoFocus`, `disableAutoFocusItem`                                                              |
+| Menu anatomy          | `@mui/material/Menu/Menu.d.ts` - `slotProps.list`, `slotProps.paper`, `slotProps.root`                                            |
+| Keyboard contract     | The APG Menu and Menubar patterns: the two libraries declare none, so the pattern is the only source                              |
+
+Rejected: `anchorEl` and `variant` (`@mui/material/Menu/Menu.d.ts`) - one prop choosing between a menu and a
+popover is a prop whose legal values are two different widgets; `Menu` is the menu and `Popover` is the
+popover, and the two are separate components here. `slotProps.paper` / `slotProps.root` (same file) - there
+is no override-object mechanism in this library; state is `data-*` and the surface is styled from tokens.
+`autoFocus` and `disableAutoFocusItem` (same file) - the pattern requires focus to move into the menu when it
+opens, so there is no compliant way to leave it on the trigger; which row is focused is exposed as
+`initialFocus` instead. `selected` (`@mui/material/MenuItem/MenuItem.d.ts`) - a menu runs actions rather than
+committing a value, so a highlighted "current" item is a listbox concept; `checked` on the two checkable roles
+is the menu's own vocabulary. `dense` and `divider` (same file) - spacing is the stylesheet's business, and a
+divider is a first-class entry in `items` rather than a boolean on the row above it. `loading` and
+`loadingDelay` (`@ui5/webcomponents/dist/MenuItem.d.ts`) - a per-row spinner is a composition of `Spinner`, and
+`MenuItem.label` is a `ReactNode`, so a caller who wants one supplies it; `disabled` is the honest signal for
+a row that cannot be used. `additionalText` (`MenuItem.d.ts`) - `description` here, because "additional" does
+not say whether the text is beside or under the label. `PopoverHorizontalAlign` (`Menu.d.ts`) - alignment
+along the cross axis is not a menu decision the caller should make; `placement` already says which logical
+side the menu appears on.
+
+The keyboard contract is taken from the APG Menu and Menubar patterns rather than from either library, because
+neither declares one. Two pattern details are load-bearing and are implemented as specified: a disabled item is
+**focusable** but not activatable, and a checkable item does **not** close the menu on activation while a plain
+`menuitem` does. Arrow-key wrapping is marked optional by the pattern and is implemented, matching every native
+menu.
+
+Focus is managed with roving tabindex rather than `aria-activedescendant`. The pattern accepts either approach;
+roving is chosen because it puts real DOM focus on the row and because the same helper already backs the
+library's other composite widgets.
+
+Submenus are recorded as a gap in the component README rather than implemented. The pattern's Right Arrow
+behaviour for submenus is only meaningful from a menubar, and it explicitly states that a menu opened from a
+menu button does nothing on Right Arrow when the focused item has no submenu — so a single-level menu has no
+use for most of the submenu keyboard contract.
+
+### Accordion - `src/components/accordion/`
+
+| Concern                | Source                                                                                                                                                          |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Structural slots       | `@mui/material/Accordion/accordionClasses.d.ts` - `root`, `heading`, `region`, plus `expanded`, `disabled`, `rounded`, `gutters`                                |
+| Region wiring          | `@mui/material/Accordion/Accordion.js` - the region slot is given `role: 'region'`, `id: summary.props['aria-controls']`, `'aria-labelledby': summary.props.id` |
+| Controlled and default | `@mui/material/Accordion/Accordion.d.ts` - `expanded`, `defaultExpanded`, `onChange?: (event, expanded) => void`                                                |
+| Disabled header        | `@mui/material/Accordion/Accordion.js` - `disabled` is forwarded to the summary, whose root is a `ButtonBase`                                                   |
+| Heading element        | `@mui/material/Accordion/Accordion.d.ts` - `heading?: React.ElementType`, `slotProps.heading: SlotProps<'h3', ...>`                                             |
+| Expand affordance      | `@mui/material/AccordionSummary/AccordionSummary.d.ts` - `expandIcon?: React.ReactNode`                                                                         |
+| Header level           | `@ui5/webcomponents/dist/Panel.d.ts` - `headerLevel: \`${TitleLevel}\``; values `H1`–`H6`in`dist/types/TitleLevel.d.ts`                                         |
+| Custom header content  | `@ui5/webcomponents/dist/Panel.d.ts` - `header: Slot<HTMLElement>`                                                                                              |
+| Collapsed state        | `@ui5/webcomponents/dist/Panel.d.ts` - `collapsed: boolean`                                                                                                     |
+| Header parts           | `@ui5/webcomponents/dist/Panel.d.ts` - `@csspart header-wrapper`, `@csspart header`, `@csspart content`                                                         |
+| Sticky header          | `@ui5/webcomponents/dist/Panel.d.ts` - `stickyHeader: boolean`                                                                                                  |
+| Toggle button naming   | `@ui5/webcomponents/dist/Panel.d.ts` - `useAccessibleNameForToggleButton: boolean`                                                                              |
+
+Rejected: `slotProps` / `slots` (`Accordion.d.ts`) - the library's contract is `data-*` attributes and
+`className`/`style` on the root only; there is no override-object mechanism to map onto. `onChange(event,
+expanded)` (same file) - an extra unused event argument and a boolean about a panel that this component
+identifies by id; `onExpandedChange(id)` carries the same information and nothing else. `disableGutters`
+and `square` (same file) - two boolean props describing one visual axis, which is a single `variant` prop
+here. `TransitionComponent` / `TransitionProps` (same file) - a transition-technique hook, and height
+animation is incompatible with the `hidden` attribute that keeps a collapsed panel out of the tab sequence.
+`stickyHeader` (`Panel.d.ts`) - a scroll-position behaviour layered on a disclosure widget; it needs a
+scroll container the library does not own, so it is recorded as a gap in the component README. `header` as
+a slot (`Panel.d.ts`) - the header here is a button whose only permitted child is its label, so a slot for
+arbitrary header content would change the heading's accessible name; `items[].title` is a `ReactNode` and
+covers rich labels without touching the structure. `fixed`, `noAnimation`, `accessibleRole`,
+`accessibleName` (`Panel.d.ts`) - `ui5-panel` is a generic container that has to be told what it is, whereas
+an accordion panel is a region by definition and an accordion is not a landmark.
+
+`AccordionHeadingLevel` excludes `1`: `TitleLevel` offers `H1`, but a document has exactly one `h1` and an
+accordion is a section of a page rather than the page itself. `headingLevel` is a prop at all because the
+correct value depends on the page's outline, which the library cannot know.
+
+The keyboard contract comes from the APG Accordion pattern rather than from either library, because neither
+declares one: the pattern specifies Enter, Space and Tab, and keeps every header and every expanded panel in
+the natural tab sequence. Neither library adds arrow-key navigation, so none is implemented here — a roving
+tabindex would make Up and Down disagree with the tab order that is actually in force.
+
+### Spinner - `src/components/spinner/`
+
+| Concern              | Source                                                                                                               |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| The two modes        | `@mui/material/CircularProgress/CircularProgress.d.ts` - `variant: 'determinate' \| 'indeterminate'`                 |
+| Ring width           | `@mui/material/CircularProgress/CircularProgress.d.ts` - `thickness?: number`                                        |
+| Diameter             | `@mui/material/CircularProgress/CircularProgress.d.ts` - `size?: number \| string`                                   |
+| Track behind the arc | `@mui/material/CircularProgress/CircularProgress.d.ts` - `enableTrackSlot?: boolean`                                 |
+| Animation technique  | `@mui/material/CircularProgress/CircularProgress.d.ts` - `disableShrink?: boolean`                                   |
+| Size ladder          | `@ui5/webcomponents/dist/BusyIndicator.d.ts` - `size`, values from `dist/types/BusyIndicatorSize.d.ts` (`S`/`M`/`L`) |
+| Caption              | `@ui5/webcomponents/dist/BusyIndicator.d.ts` - `text`, `textPlacement` (values `Top`/`Bottom`)                       |
+| Show-delay           | `@ui5/webcomponents/dist/BusyIndicator.d.ts` - `delay?: number`                                                      |
+| Blocking behaviour   | `@ui5/webcomponents/dist/BusyIndicator.d.ts` - `active`, `focusForward`                                              |
+| No a11y surface      | Neither progress tag in either library declares a role, a label or a live-region treatment for its own indicator     |
+
+Rejected: `variant` (`CircularProgress.d.ts`) - the whole reason this component exists as a separate
+name is that it has no other mode, so a prop selecting between two states would have one legal value.
+`size?: number | string` (same file) - a raw pixel diameter cannot be asked to match a neighbouring
+control without the consumer counting pixels; `sm | md | lg` is the shared vocabulary, so a spinner
+beside a button can be told to match it. `thickness?: number` (same file) - an absolute ring width, which
+closes the arc's gap at small diameters until the ring reads as a solid disc; here the width is a
+fraction of `--uir-spinner-size` so the gap scales with it, and the values are `thin | md | thick`.
+`disableShrink` (same file) - a knob for one library's two-ring animation technique, not part of any
+contract. `enableTrackSlot` (same file) - slot plumbing; the track is always drawn, and a ring with no
+track behind it cannot show rotation. `text` / `textPlacement`
+(`BusyIndicator.d.ts`) - a caption is content, not an indicator, and this component's job is the ring;
+`@ui5/webcomponents/dist/BusyIndicator.d.ts` composes the two differently from a slot. `delay` (same
+file) - a product threshold, not a component one: guessing it adds a visible delay to work that is
+genuinely fast. `active` / `focusForward` (same file) - that is the blocking overlay form, a different
+component with a real focus contract; `aria-busy` on a region plus a spinner inside it is the
+composition, and it is recorded as a gap in the component README.
+
+Neither library attaches an accessibility surface to a progress indicator at all - no role, no label, no
+live-region policy. The `label`-decides-the-role fork here is therefore this component's own answer, and
+it is recorded as such because an unlabelled `progressbar` is an accessibility failure rather than a
+style choice.
+
+### Loader - `src/components/loader/`
+
+| Concern            | Source                                                                                                                                                                                    |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Range props        | `@mui/material/LinearProgress/LinearProgress.d.ts` - `value`, `min`, `max`                                                                                                                |
+| Mode vocabulary    | `@mui/material/LinearProgress/LinearProgress.d.ts` - `variant: 'determinate' \| 'indeterminate' \| 'buffer' \| 'query'`                                                                   |
+| Percentage scale   | `@ui5/webcomponents/dist/ProgressIndicator.d.ts` - `value: number`, documented "in percent for the length of the component"                                                               |
+| Out-of-range value | `@ui5/webcomponents/dist/ProgressIndicator.d.ts` - "If a value greater than 100 is provided, the percentValue is set to 100"                                                              |
+| Show the number    | `@ui5/webcomponents/dist/ProgressIndicator.d.ts` - `hideValue: boolean`, `displayValue?: string`                                                                                          |
+| Status tint        | `@ui5/webcomponents/dist/ProgressIndicator.d.ts` - `valueState`; values from `@ui5/webcomponents-base/dist/types/ValueState.d.ts` (`None`/`Positive`/`Critical`/`Negative`/`Information`) |
+| Fill and remainder | `@ui5/webcomponents/dist/ProgressIndicator.d.ts` - `@csspart bar`, `@csspart remaining-bar`                                                                                               |
+
+Rejected: `variant` (`LinearProgress.d.ts`) - both references express determinate and indeterminate as
+one component with a flag, and it is a reasonable API. Not used here because a caller choosing between
+"I know how much is left" and "I do not" is describing their own data, and a flag makes the two shapes
+interchangeable in a way they are not. `Spinner` and `Loader` are separate components instead: the value
+is optional, and an absent value is the specified indeterminate form of the role (no `aria-valuenow`)
+rather than a `0`. `min` (`LinearProgress.d.ts`) - a bar whose zero is not zero cannot be drawn as a
+proportion, so the low end is fixed and only `max` is exposed. `buffer` / `query`
+(same file) - the buffered amount of a stream is not knowable by a general-purpose loader, so exposing
+the variant would be exposing a prop that cannot be honoured. `hideValue` / `displayValue`
+(`ProgressIndicator.d.ts`) - two props for one decision, split here into `showValue` for the visible
+number and `valueLabel` for text describing the current step, because the two answer different questions
+and callers need them independently. `valueState` (same file) - a visual status tint is `tone`, which
+this library already has, and the semantic states do not survive the trip to a progress value: a "failed"
+bar at 40% tells a screen reader the work is a third done when it has stopped, so there is no dedicated
+failure state. Recorded as a gap in the component README.
+
+`@ui5/webcomponents/dist/ProgressIndicator.d.ts` clamps an over-range value to 100 and an invalid one to
+0; the same clamp is applied here in JS rather than CSS, because CSS can correct what is drawn and has
+no way to correct what is announced.
+
 ### Avatar - `src/components/avatar/`
 
 | Concern            | Source                                                                                                                                                                                          |
@@ -587,18 +779,35 @@ primitives, and none of it is traced from either library. What both libraries we
 the _API_ above.
 
 Which glyphs to draw, and which to decline, was settled against the same two libraries: a name
-that already ships here under another spelling is not drawn again. `Build` is a toothed cog,
-so there is no `Settings`; `Automatic` is a three-quarter ring with an arrowhead, so there is
-no `Refresh`; `Create` is a pencil, so there is no `Edit`; `Approve` is a disc with a tick cut
-out of it, so there is no `Success`; `Cancel` is a ring with a cross, so there is no `Error`;
-`Checklist` is three ticked rows, so there is neither `Task` nor `Priority`; `FullScreen` is
-the four arrows, so `Expand` and `Collapse` were drawn twice and discarded twice - the
-box-and-arrow form is the same eight pixels either way at 20px.
+that already ships here under another spelling is not drawn again. `Automatic` is a
+three-quarter ring with an arrowhead, so there is no `Refresh`; `Create` is a pencil, so there
+is no `Edit`; `Approve` is a disc with a tick cut out of it, so there is no `Success`; `Cancel`
+is a ring with a cross, so there is no `Error`; `Checklist` is three ticked rows, so there is
+neither `Task` nor `Priority`; `FullScreen` is the four arrows, so `Expand` and `Collapse` were
+drawn twice and discarded twice - the box-and-arrow form is the same eight pixels either way at
+20px.
 
-Path data is restricted to `M`, `L`, `H`, `V`, `A` and `Z`. That is a consequence of how the
-set is checked rather than of either library's drawing style: `src/icons/icons.test.tsx`
-bounds-checks each glyph by parsing its own `d`, because jsdom implements neither `getBBox`
-nor canvas, and a parser that only has six commands to understand is one that can be read.
+`Build` is the one entry here that has changed rather than held: it shipped as a toothed cog,
+which is a settings glyph under a build glyph's name, so adding `Settings` meant `Build` had to
+give the gear up. It is a spanner now, which is what the name always meant. The rule itself is
+unchanged - one glyph, one name - and the reason it is recorded is that this was the only way to
+add `Settings` without shipping two cogs.
+
+Declined on the same grounds after the third batch of a hundred: `Sms` (`ChatBubble` is already
+a bubble with lines), `NavigateBefore` / `NavigateNext` (`SkipPrevious` / `SkipNext` stood up),
+`Description` (`Note`), `Percent` (the inside of `LocalOffer`), `Replay` (`Automatic`), `Clear`
+(a second `Cancel`), `Pending` / `Brightness` / `Storage` / `Inventory` (against `Timer`, `Sun`,
+`Database`, `Dns`), `Hub` (against `Lan`), and `Forum` - the set already had `Chat`,
+`ChatBubble` and `Comment`, and a fourth speech bubble is not a fourth idea. `Pin` was drawn,
+looked next to `PushPin`, and was withdrawn for the same reason.
+
+Path data is restricted to the moveto, lineto, `H`, `V`, arc and closepath commands and their
+relative forms. That is a consequence of how the set is checked rather than of either library's
+drawing style: `src/icons/icons.test.tsx` bounds-checks each glyph by parsing its own `d`,
+because jsdom implements neither `getBBox` nor canvas, and a parser that only has a handful of
+commands to understand is one that can be read. A cubic may appear, but nothing relative may
+follow it in the same subpath, because the parser reads `C`/`S`/`Q` as bare point lists without
+advancing the current point; the drawn-out curves in the set are arcs, which advance correctly.
 
 ## Versions
 

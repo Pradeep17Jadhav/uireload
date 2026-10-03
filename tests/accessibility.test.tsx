@@ -790,6 +790,256 @@ describe("Skeleton", () => {
   });
 });
 
+describe("Spinner", () => {
+  it("has no accessibility violations in every size, thickness and tone", async () => {
+    const { Spinner } = await import("uireload/components/spinner");
+
+    for (const size of ["sm", "md", "lg"] as const) {
+      for (const thickness of ["thin", "md", "thick"] as const) {
+        const { container, unmount } = render(<Spinner size={size} thickness={thickness} />);
+
+        await expectNoViolations(container);
+        unmount();
+      }
+    }
+  });
+
+  it("has no violations when labelled, which is the form that reaches the tree", async () => {
+    const { Spinner } = await import("uireload/components/spinner");
+
+    /*
+     * The labelled form is the one axe has anything to check: an unlabelled spinner is
+     * `aria-hidden` and therefore invisible to every rule. Both are run because the decorative
+     * form is only safe *because* it is hidden, and that is a claim worth testing.
+     */
+    const { container, unmount } = render(<Spinner label="Loading your projects" />);
+    await expectNoViolations(container);
+    unmount();
+
+    const decorative = render(<Spinner />);
+    await expectNoViolations(decorative.container);
+  });
+});
+
+describe("Loader", () => {
+  it("has no accessibility violations when determinate, in every tone", async () => {
+    const { Loader } = await import("uireload/components/loader");
+
+    for (const tone of ["neutral", "accent", "positive", "danger"] as const) {
+      const { container, unmount } = render(<Loader value={40} tone={tone} />);
+
+      await expectNoViolations(container);
+      unmount();
+    }
+  });
+
+  it("has no violations when indeterminate, or carrying a value label", async () => {
+    const { Loader } = await import("uireload/components/loader");
+
+    const { container, rerender } = render(<Loader />);
+    await expectNoViolations(container);
+
+    rerender(<Loader value={20} showValue />);
+    await expectNoViolations(container);
+
+    rerender(<Loader value={20} valueLabel="Step 2 of 7 - verifying" showValue />);
+    await expectNoViolations(container);
+  });
+
+  it("has no violations with an out-of-range value", async () => {
+    const { Loader } = await import("uireload/components/loader");
+
+    const { container } = render(<Loader value={140} showValue />);
+    await expectNoViolations(container);
+  });
+});
+
+describe("Accordion", () => {
+  it("has no accessibility violations with a panel open", async () => {
+    const { Accordion } = await import("uireload/components/accordion");
+
+    const { container, unmount } = render(
+      <Accordion
+        items={[
+          { id: "one", title: "What is included?", children: <p>Everything in the base plan.</p> },
+          { id: "two", title: "Can I cancel?", children: <p>At any time.</p> },
+        ]}
+        defaultValue="one"
+      />
+    );
+
+    await expectNoViolations(container);
+    unmount();
+  });
+
+  it("has no violations when everything is collapsed", async () => {
+    const { Accordion } = await import("uireload/components/accordion");
+
+    /*
+     * The collapsed form is the one that can go wrong: a hidden panel whose region is still exposed, or a
+     * header with `aria-controls` pointing at nothing. Both are structural, so they are checked here rather
+     * than only in the component's own suite.
+     */
+    const { container } = render(
+      <Accordion
+        items={[
+          { id: "one", title: "Question one", children: <p>Answer one.</p> },
+          { id: "two", title: "Question two", children: <p>Answer two.</p> },
+          { id: "three", title: "Question three", children: <p>Answer three.</p> },
+        ]}
+      />
+    );
+
+    await expectNoViolations(container);
+  });
+
+  it("has no violations with a permanently open panel, a disabled item, or multiple selection", async () => {
+    const { Accordion } = await import("uireload/components/accordion");
+
+    const items = [
+      { id: "one", title: "Step one", children: <input aria-label="First" /> },
+      { id: "two", title: "Step two", children: <input aria-label="Second" />, disabled: true },
+    ];
+
+    const pinned = render(<Accordion items={items} defaultValue="one" allowAllClosed={false} />);
+    await expectNoViolations(pinned.container);
+    pinned.unmount();
+
+    const multiple = render(
+      <Accordion items={items} selectionMode="multiple" defaultValue={["one", "two"]} />
+    );
+    await expectNoViolations(multiple.container);
+    multiple.unmount();
+
+    const headings = render(<Accordion items={items} headingLevel={4} defaultValue="one" />);
+    await expectNoViolations(headings.container);
+  });
+});
+
+describe("Menu", () => {
+  /*
+   * Run against `document.body` rather than a container, because the menu renders into a portal and would
+   * otherwise not be in the tree axe inspects. A menu test that silently inspects an empty container is the
+   * easiest way to have an accessibility suite that never actually looked at the menu.
+   */
+  it("has no accessibility violations for a menu of actions", async () => {
+    const { Menu } = await import("uireload/components/menu");
+
+    render(
+      <Menu
+        anchor={document.body}
+        open
+        label="Edit menu"
+        items={[
+          { id: "cut", label: "Cut" },
+          { id: "copy", label: "Copy" },
+          { id: "sep", type: "separator" },
+          { id: "bold", label: "Bold", role: "menuitemcheckbox" },
+          { id: "locked", label: "Locked", disabled: true },
+        ]}
+      />
+    );
+
+    await expectNoViolations(document.body);
+  });
+
+  it("has no violations when an item is checked or radio-selected", async () => {
+    const { Menu } = await import("uireload/components/menu");
+
+    render(
+      <Menu
+        anchor={document.body}
+        open
+        label="View menu"
+        items={[
+          { id: "grid", label: "Grid", role: "menuitemradio", checked: true },
+          { id: "list", label: "List", role: "menuitemradio" },
+          { id: "ruler", label: "Ruler", role: "menuitemcheckbox", checked: false },
+        ]}
+      />
+    );
+
+    await expectNoViolations(document.body);
+  });
+
+  it("has no violations with an icon, a description, or no explicit label", async () => {
+    const { Menu } = await import("uireload/components/menu");
+
+    render(
+      <Menu
+        anchor={document.body}
+        open
+        items={[{ id: "share", label: "Share", description: "Anyone with the link", icon: "•" }]}
+      />
+    );
+
+    // Falls back to the catalogue name rather than rendering an unnamed menu.
+    await expectNoViolations(document.body);
+  });
+});
+
+describe("Navbar", () => {
+  it("has no accessibility violations as a horizontal bar", async () => {
+    const { Navbar } = await import("uireload/components/navbar");
+
+    const { container, unmount } = render(
+      <Navbar
+        label="Main"
+        current="projects"
+        brand={<span>Acme</span>}
+        items={[
+          { id: "home", label: "Home", href: "/" },
+          { id: "projects", label: "Projects", href: "/projects" },
+          { id: "admin", label: "Admin", href: "/admin", disabled: true },
+        ]}
+      />
+    );
+
+    await expectNoViolations(container);
+    unmount();
+  });
+
+  it("has no violations as a vertical sidebar, or with mixed item kinds", async () => {
+    const { Navbar } = await import("uireload/components/navbar");
+
+    /*
+     * The mixed case is the one worth checking: a link, a button and inert text in one list is three
+     * different element types, and the inert entry in particular must not be announced as a control.
+     */
+    const { container, unmount } = render(
+      <Navbar
+        label="Account"
+        orientation="vertical"
+        items={[
+          { id: "home", label: "Home", href: "/", description: "Back to the dashboard" },
+          { id: "signout", label: "Sign out", onSelect: () => {} },
+          { id: "soon", label: "Coming soon" },
+        ]}
+      />
+    );
+
+    await expectNoViolations(container);
+    unmount();
+  });
+
+  it("has no violations with an icon and the catalogue name", async () => {
+    const { Navbar } = await import("uireload/components/navbar");
+
+    // No `label`, so the landmark takes the catalogue's name rather than being announced as "navigation".
+    const { container } = render(
+      <Navbar
+        current="home"
+        items={[
+          { id: "home", label: "Home", href: "/", icon: "★" },
+          { id: "starred", label: "Starred", href: "/starred" },
+        ]}
+      />
+    );
+
+    await expectNoViolations(container);
+  });
+});
+
 describe("Avatar", () => {
   it("has no accessibility violations for each of its three fallbacks", async () => {
     const { Avatar } = await import("uireload/components/avatar");

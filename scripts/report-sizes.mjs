@@ -35,7 +35,7 @@ const BUDGETS = {
 /**
  * Aggregate budgets, in kB gzipped, applied to the sum of a whole directory.
  *
- * The icon set is reported as one row rather than one row per icon, because 285 rows of
+ * The icon set is reported as one row rather than one row per icon, because 452 rows of
  * the same number is not a report. The per-icon budget above still runs on every one.
  *
  * This number is a growth tripwire, not a download size. A consumer imports the four
@@ -44,13 +44,18 @@ const BUDGETS = {
  * path data accumulating without anyone noticing, which is the one way an icon set gets
  * expensive.
  *
- * Raised from 120 to 200 for the second batch of 129 icons, which took the set from 108
- * to 195 kB gzipped. Justified rather than merely permitted: the growth is 129 more
- * glyphs in a library whose per-icon cost did not move, and the tripwire still has to
- * bite, so the ceiling sits just above the current figure rather than being removed.
+ * Raised twice, and both raises are the same argument: more glyphs, same per-glyph cost.
+ *
+ *   120 -> 200  129 icons, 108 -> 195 kB. 344 B per module.
+ *   200 -> 320  167 icons, 195 -> 306 kB. 347 B per module.
+ *
+ * The per-module figure is the part that matters and it has not moved: a hundred more
+ * glyphs cost the same as the last hundred did, which is what says the path data is not
+ * accumulating per glyph. The ceiling sits just above the current total rather than being
+ * removed, so it still bites if a future batch starts emitting heavier paths.
  */
 const TOTALS = {
-  "icons/*": 200,
+  "icons/*": 320,
 };
 
 const KIB = 1024;

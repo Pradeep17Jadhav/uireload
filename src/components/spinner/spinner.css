@@ -1,0 +1,173 @@
+/*
+ * Spinner styles.
+ *
+ * Two boxes, and the reason is geometric: a ring drawn as a single circle has no
+ * landmarks, so rotating it in place is invisible. The track is a full circle that
+ * does not move, and the arc is a quarter of one that turns — the gap is what makes
+ * the rotation readable.
+ *
+ * `currentcolor` throughout, so the spinner is correct in every colour scheme and
+ * needs nothing extra in forced colours.
+ */
+
+@layer uireload.components {
+  .uir-spinner,
+  .uir-spinner__track,
+  .uir-spinner__arc {
+    box-sizing: border-box;
+  }
+
+  /* ---- Root ---------------------------------------------------------- */
+
+  .uir-spinner {
+    /*
+     * The size is the diameter, and every other dimension is a fraction of it.
+     *
+     * Written as a token so the track, the arc, the ring's width and the two
+     * thicknesses all scale from one number. Four separate values per size would
+     * drift, and the first thing to drift would be the arc's gap — which is the
+     * only thing making the rotation visible.
+     */
+    --uir-spinner-size: 1.5rem;
+    --uir-spinner-track-width: calc(var(--uir-spinner-size) * 0.12);
+    /*
+     * A quarter of the circumference, less the ring's width, which is what leaves
+     * the visible gap. Expressed against the diameter so it is exact at any size.
+     */
+    --uir-spinner-arc: calc(75% - var(--uir-spinner-track-width));
+    --uir-spinner-fill: var(--uir-accent);
+    --uir-spinner-track: var(--uir-border);
+    --uir-spinner-duration: 0.8s;
+
+    display: inline-block;
+    flex-shrink: 0;
+    /*
+     * `inline-block` rather than `inline-flex`: a spinner has no children that need
+     * laying out, and an inline-block takes its height from the diameter without a
+     * line box fighting it.
+     */
+    vertical-align: middle;
+  }
+
+  .uir-spinner[data-size="sm"] {
+    --uir-spinner-size: 1rem;
+  }
+
+  /* No `md` rule: the root's own value *is* `md`, and restating it would be a second
+     place to change the default. */
+
+  .uir-spinner[data-size="lg"] {
+    --uir-spinner-size: 2.5rem;
+  }
+
+  /*
+   * Ring width.
+   *
+   * A fraction of the diameter rather than a length, so a thick spinner is
+   * proportionally thicker rather than a heavier-looking small one — and so the arc
+   * gap above stays proportional too, which a fixed width would close up at `sm`
+   * until the ring read as a solid disc.
+   */
+  .uir-spinner[data-thickness="thin"] {
+    --uir-spinner-track-width: calc(var(--uir-spinner-size) * 0.08);
+    --uir-spinner-arc: calc(75% - var(--uir-spinner-size) * 0.08);
+  }
+
+  .uir-spinner[data-thickness="thick"] {
+    --uir-spinner-track-width: calc(var(--uir-spinner-size) * 0.18);
+    --uir-spinner-arc: calc(75% - var(--uir-spinner-size) * 0.18);
+  }
+
+  /* ---- Tone ---------------------------------------------------------- */
+
+  .uir-spinner[data-tone="neutral"] {
+    --uir-spinner-fill: var(--uir-text-muted);
+  }
+
+  .uir-spinner[data-tone="accent"] {
+    --uir-spinner-fill: var(--uir-accent);
+  }
+
+  .uir-spinner[data-tone="positive"] {
+    --uir-spinner-fill: var(--uir-success);
+  }
+
+  .uir-spinner[data-tone="danger"] {
+    --uir-spinner-fill: var(--uir-danger);
+  }
+
+  /* ---- Track and arc -------------------------------------------------- */
+
+  .uir-spinner__track,
+  .uir-spinner__arc {
+    block-size: 100%;
+    border-radius: 50%;
+    display: block;
+    inline-size: 100%;
+  }
+
+  /*
+   * The track: the whole ring, in a colour quiet enough to read as the absence of
+   * progress rather than as progress.
+   */
+  .uir-spinner__track {
+    border: var(--uir-spinner-track-width) solid var(--uir-spinner-track);
+  }
+
+  /*
+   * The arc: three-quarters of the ring, which is what turns.
+   *
+   * `border-color` with the fill on the block-start and inline-end sides only — two
+   * borders, not four, so the gap needs no masking and no background patch that
+   * would have to match whatever it sits on.
+   *
+   * The rotation is a `transform`, so it is a compositing change and costs no
+   * layout, and `transform-origin: center` is explicit because a transform about the
+   * default origin would make the ring orbit rather than turn.
+   */
+  .uir-spinner__arc {
+    animation: uir-spinner-rotate var(--uir-spinner-duration) linear infinite;
+    border: var(--uir-spinner-track-width) solid transparent;
+    border-block-start-color: var(--uir-spinner-fill);
+    border-inline-end-color: var(--uir-spinner-fill);
+    box-sizing: border-box;
+    inline-size: var(--uir-spinner-arc);
+    margin-block-start: calc((var(--uir-spinner-size) - var(--uir-spinner-arc)) / 2);
+    margin-inline-start: calc((var(--uir-spinner-size) - var(--uir-spinner-arc)) / 2);
+    transform-origin: center;
+  }
+
+  @keyframes uir-spinner-rotate {
+    to {
+      transform: rotate(1turn);
+    }
+  }
+
+  /* ---- Reduced motion ------------------------------------------------ */
+
+  /*
+   * The rotation stops; the ring does not.
+   *
+   * A stopped ring is a grey circle, which says nothing about whether anything is
+   * happening — so what remains has to carry the meaning on its own. The arc keeps
+   * its gap and its colour and loses only the motion, which is the one thing a
+   * motion-sensitive user asked to lose.
+   *
+   * Recorded rather than left as an omission, because "the spinner disappeared" is
+   * the outcome this rule exists to prevent.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .uir-spinner__arc {
+      animation: none;
+    }
+  }
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * `currentcolor` on both rings already resolves to the system's text colour, so
+   * there is nothing to override. The rule exists to say so, because "no
+   * forced-colours block" here means "already correct" and that is worth stating
+   * where a reader would look for it.
+   */
+}

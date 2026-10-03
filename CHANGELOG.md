@@ -9,7 +9,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 
-- **An icon set: 285 vector glyphs, one module each.** Imported by name, so an
+- **An icon set: 449 vector glyphs, one module each.** Imported by name, so an
   application that uses four icons ships four icons.
 
   ```ts
@@ -20,12 +20,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - **Naming.** Every icon is `PascalCase`, because the module name *is* the
     identifier written at the call site. A base name is always either `Filled`
     **and** `Outlined`, or bare — never a lone variant, and never a bare form
-    *and* a pair. Twenty-seven icons have only one honest form and carry no
-    postfix at all: `At`, `BatteryLow`, `BatteryFull`, `BatteryCharging`,
-    `Bluetooth`, `BlurOn`, `BlurOff`, `Moon`, `Sun`, `CalendarToday`,
-    `ChevronDown`, `ChevronUp`, `ChevronLeft`, `ChevronRight`, `DragHandle`,
-    `Undo`, `Redo`, `Select`, `Loader`, `Play`, `Pause`, `Stop`, `Mic`,
-    `ZoomIn`, `ZoomOut`, `Power`, `Wifi`.
+    *and* a pair. Sixty-three icons have only one honest form and carry no postfix
+    at all; the full list is in [`src/icons/README.md`](./src/icons/README.md), and it
+    runs longer than it looks because a *mark* — an arrow, a transport control, a text
+    alignment, a slashed thing — has no solid form that is better than the mark.
   - **No aliases.** A name that already ships under another name is not added
     again: `Build` is the cog, `Automatic` is the refresh, `Create` is the
     pencil, `Approve` is the disc-and-tick, `Cancel` is the ring-and-cross,
@@ -53,12 +51,16 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     and cannot be set apart on purpose: `role="img"` with no name is worse than
     either alternative.
   - **Vector throughout, on one 24 unit grid.** No raster, no font glyph, no
-    external reference. The geometry is original, and the grid is what makes 285
+    external reference. The geometry is original, and the grid is what makes 449
     separate files look like one set — so the test suite asserts it for every one
     of them, including that each glyph stays inside its own viewport.
-  - **Path data is `M`/`L`/`H`/`V`/`A`/`Z` and nothing else**, because that bounds
+  - **Path data stays inside a grammar the test suite can read.** The bounds
     check parses each glyph's own path data — jsdom has neither `getBBox` nor
-    canvas — and a six-command parser is one that can be read.
+    canvas — so the vocabulary is the moveto, lineto, `H`, `V`, arc and closepath
+    commands, and anything wider has to justify itself. A cubic may appear, but
+    nothing relative may follow it in the same subpath, because the parser reads
+    `C`/`S`/`Q` as bare point lists. An arc advances correctly, which is why the
+    drawn-out curves in this set are arcs.
   - **One module per icon, not a registry.** `uireload/icons/*` is the single
     pattern subpath in the export map; the reason, and why components do not get
     one, is written up in `scripts/build-exports.mjs`.
@@ -77,6 +79,42 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `PersonAdd`, `Star`, `Favorite`, `Power`, `Wifi`. 56 shapes ship as a
   `Filled`/`Outlined` pair and 17 as one bare module, taking the set from 156
   glyphs to 285.
+- **100 more icons: the ones still missing after two rounds.** Chosen by how often a
+  page reaches for them rather than by what is easy to draw, so the conspicuous gaps
+  went first. `Mail` was the most glaring absence in the whole set. `Settings` and
+  `Notifications` are the two most-used glyphs in any interface and neither was
+  present. Also `CheckBox`, `ConfirmationNumber`, `Fingerprint`, `Shield`,
+  `Password`, `VerifiedUser`, `Apps`, `Devices`, `SdCard`, `Usb`, `Route`,
+  `Database`, `Dns`, `Lan`, `Webhook`, `Schema`, `BugReport`, `Headphones`,
+  `Movie`, `ShoppingBag`, `Storefront`, `LocalOffer`, `Receipt`, `CardGiftcard`,
+  `Article`, `MenuBook`, `AutoStories`, `EmojiEmotions`, `SportsSoccer`, `Quiz`,
+  `FactCheck`, `Event`, `Explore`, `Map`, `Hotel`, `Restaurant`,
+  `DirectionsBus`, `Terminal`, `DataObject`, `DataArray`, `CodeOff`, `LinkOff`,
+  `PushPin`, `SkipNext`, `SkipPrevious`, `FastForward`, `FastRewind`, `Reply`,
+  `ReplyAll`, `Forward`, `SwapHoriz`, `SwapVert`, `CompareArrows`, `FirstPage`,
+  `LastPage`, `MoreTime`, `FormatQuote`, `FormatAlignLeft`, `FormatAlignCenter`,
+  `FormatAlignRight`, `FormatListNumbered`, `Translate`, `TrendingUp`, `ThumbUp`,
+  `ThumbDown`, `AddCircle`, `RemoveCircle`, `Remove`, `RadioButtonChecked`,
+  `ToggleOn`, `ToggleOff`, `RssFeed`, `BatterySaver`, `ScreenShare`, `Vibration`,
+  `Airplanemode`, `DoNotDisturb`, `Restore`, `CloudDone`, `CloudOff`, `CloudSync`,
+  `CloudDownload`, `Contacts`, `Voicemail`, `AlternateEmail`, `Badge`, `Groups`,
+  `SupervisorAccount`, `SupportAgent`, `FilterAlt`, `FilterDrama`, `TextFields`,
+  `Spellcheck`. 64 shapes ship as a `Filled`/`Outlined` pair and 36 as one bare
+  module, taking the set from 285 to 449.
+  - **`Build` is a wrench now, not a cog.** `Settings` needs the gear, and a cog
+    named `Build` was never what the name meant — it is the one icon in the set
+    whose *label* was wrong rather than its drawing. Two cogs in one set is one cog
+    too many.
+  - **Names that would have been a second answer were cut, not drawn.** `Sms`
+    because `ChatBubble` is already a bubble with lines; `NavigateBefore` /
+    `NavigateNext` because they are `SkipPrevious` / `SkipNext` stood up;
+    `Description` because it is `Note`; `Percent` because it is the inside of
+    `LocalOffer`; `Replay` because it is `Automatic`; `Clear` because it is a second
+    `Cancel`; `Pending`, `Brightness`, `Storage` and `Inventory` against
+    `Timer`, `Sun`, `Database` and `Dns`; `Hub` against `Lan`; and `Forum`,
+    because the set already had three speech bubbles and a fourth is not a fourth
+    idea. `Refresh`, `Success`, `Error`, `Task`, `Edit`, `Expand` and `Collapse`
+    remain declined for the reasons given above.
 - **48 of the original icons redrawn** (91 modules). The first 156 had been
   proof-sheeted but never actually looked at, and a review found five distinct kinds
   of failure. Each is now a rule rather than a one-off fix:
@@ -180,11 +218,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The "no wildcard subpath" rule is now scoped to `./components/*`, which is where
   it was actually about explicit per-component entries; the rationale is in
   `scripts/build-exports.mjs`.
-- **The aggregate `icons/*` size budget goes from 120 to 200 kB gzipped**, which is
-  the cost of the whole catalogue: 285 icons at 191 kB. It is a growth tripwire
+- **The aggregate `icons/*` size budget goes from 120 to 320 kB gzipped**, which is
+  the cost of the whole catalogue: 449 icons at 305 kB. It is a growth tripwire
   rather than a download size — an application imports the four glyphs its page
   uses — so the ceiling sits just above the current figure instead of being
-  removed, and the per-icon 1 kB budget still runs on all 285.
+  removed, and the per-icon 1 kB budget still runs on all 449. The per-glyph cost
+  is what justifies the raise and it has not moved: 344 bytes per module at 285
+  icons, 347 at 449. Two hundred and eighty-nine more glyphs cost what the last
+  hundred and twenty-nine did, which is what says path data is not accumulating.
 
 ### Fixed
 
@@ -215,6 +256,43 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   union — the existing check reads "lone variant" and "both variants", and all
   three at once satisfies both — so `tests/package-structure.test.ts` now rejects
   the mixture.
+- **A filled icon could lose its detail without failing anything.** `filledIcon`
+  paints `fill: currentColor` with `stroke: none`, so a filled variant whose detail
+  is a *stroke* paints that detail in the same ink as the shape it sits on, and it
+  disappears. `DoNotDisturbFilled` was a plain black disc, `ExploreFilled` had no
+  needle, `LocalOfferFilled` had a bare tag, `BatterySaverFilled` had no leaf,
+  `EmojiEmotionsFilled` had no mouth, `HotelFilled` had no headboard,
+  `LanFilled` had no link, `ScreenShareFilled` had no arrow, `TextFieldsFilled`
+  had no stem, `VerifiedUserFilled` had no person, `StorefrontFilled` had no shop
+  and `AttachMoneyFilled` had no currency sign. Every one passed the bounds check,
+  because the glyph was perfectly in bounds — it was just missing. Detail inside a
+  filled icon is now a knockout in the same `fillRule="evenodd"` path as its shape.
+- **Two knockouts in one shape painted their overlap back in.** Where two knockout
+  regions cross, the count reaches three and `evenodd` fills it, so `AddCircleFilled`
+  grew a diamond instead of a plus. A plus is now drawn as one closed outline, and
+  knockout regions are kept disjoint; `Fingerprint`, `FormatListNumbered` and
+  `OfflineBolt` became single modules instead, because neither admits an honest
+  solid form.
+- **A glyph could be geometrically fine and still wrong.** `Badge` was two
+  overlapping circles, one of which bulged 4.4 units off the grid; `RssFeed`'s
+  arcs swept *below* the dot instead of above it; `FilterDrama`'s hill bulged
+  sideways; `SupervisorAccount`'s ring ran off the left edge; `EmojiEmotions`'s
+  mouth was a crescent down the right-hand side. Each is one wrong angle or one
+  wrong sign, and the test suite passes all of them, because a mirrored or
+  rotated glyph is still inside its own viewport.
+- **A cubic left the bounds parser measuring from the wrong point.** `C`, `S` and
+  `Q` are read as bare point lists without advancing the current point, so a
+  relative command after one is measured from the subpath's start.
+  `DatabaseFilled` reported a left bound of −4 while drawing nothing left of `x=4`.
+  Every curve drawn out that way is now an arc, which advances correctly.
+- **A wide flat arc reported a bound far wider than it draws.** The parser models
+  every arc as a circle of radius `max(rx, ry)`, so `A8 3.4` claimed a bottom of 26
+  on a 24 unit grid. `Database`'s lid is now four circular arcs, which measure
+  themselves exactly.
+- **`Redeem` and `CompareArrows` said something else.** `Redeem` was a gift box
+  with a bar, which reads as a blob; it is a voucher with an arrow going into it.
+  `CompareArrows`' two arrows overlapped into a single shape; they are now
+  side by side.
 
 ## [0.3.0] - 2026-10-02
 

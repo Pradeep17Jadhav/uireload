@@ -27,11 +27,17 @@ A base name is always either `Filled` **and** `Outlined`, or bare. A lone `Fille
 `Outlined` sibling is not a thing: it reads as an unfinished pair, and nothing downstream
 can tell it apart from a decision. `tests/package-structure.test.ts` enforces both halves.
 
-Twenty-seven icons ship once, because a glyph with no solid form is not made better by
+Sixty-three icons ship once, because a glyph with no solid form is not made better by
 inventing one: `At`, `BatteryLow`, `BatteryFull`, `BatteryCharging`, `Bluetooth`,
 `BlurOn`, `BlurOff`, `Moon`, `Sun`, `CalendarToday`, `ChevronDown`, `ChevronUp`,
 `ChevronLeft`, `ChevronRight`, `DragHandle`, `Undo`, `Redo`, `Select`, `Loader`, `Play`,
-`Pause`, `Stop`, `Mic`, `ZoomIn`, `ZoomOut`, `Power`, `Wifi`.
+`Pause`, `Stop`, `Mic`, `ZoomIn`, `ZoomOut`, `Power`, `Wifi`, `CloudDone`, `CloudOff`,
+`CloudSync`, `CloudDownload`, `CodeOff`, `LinkOff`, `Reply`, `ReplyAll`, `Forward`,
+`History`, `MoreTime`, `FirstPage`, `LastPage`, `CompareArrows`, `SwapHoriz`, `SwapVert`,
+`FormatQuote`, `FormatAlignLeft`, `FormatAlignCenter`, `FormatAlignRight`,
+`FormatListNumbered`, `DataObject`, `DataArray`, `Terminal`, `Spellcheck`, `SkipNext`,
+`SkipPrevious`, `FastForward`, `FastRewind`, `Translate`, `TrendingUp`, `Redeem`,
+`Restore`, `RadioButtonChecked`, `Fingerprint`, `OfflineBolt`.
 
 ## What the two variants mean
 
@@ -125,23 +131,34 @@ a filled background.
 ## The grid
 
 Every glyph is drawn on `viewBox="0 0 24 24"`, with about two units of optical padding, and
-paints with `currentColor` and nothing else. The grid is what makes 285 separate files
+paints with `currentColor` and nothing else. The grid is what makes 449 separate files
 look like one set, and `src/icons/icons.test.tsx` asserts it for all of them — including
 that each glyph's geometry stays inside its own viewport, which is the failure that shows
 up as a glyph clipped at the corner.
 
-Path data is written in `M`, `L`, `H`, `V`, `A` and `Z`, and nothing else. That is not
-asceticism: `src/icons/icons.test.tsx` bounds-checks every glyph by parsing its own path
-data, because jsdom has no `getBBox`, and a parser that only has to understand six
-commands is a parser that can be read. A cubic curve would be checked by different code
-from the one that drew it.
+Path data is written in the moveto, lineto, `H`, `V`, arc and closepath commands and their
+relative forms. That is not asceticism: `src/icons/icons.test.tsx` bounds-checks every
+glyph by parsing its own path data, because jsdom has no `getBBox`, and a parser that has
+to understand six commands is a parser that can be read. Cubics are the exception, and
+they come with a rule:
+
+> A `C`, `S` or `Q` may appear, but nothing **relative** may follow it in the same subpath.
+
+The parser reads those three as bare point lists and does not advance the current point, so
+a following `h` or `v` is measured from the wrong place. That is how a database reported a
+left bound of −4 while drawing nothing left of `x=4`. An `A` advances correctly and has no
+such caveat, which is why the drawn-out curves in this set are arcs.
+
+The parser also models every arc as a circle of radius `max(rx, ry)`, so a wide flat arc
+such as `A8 3.4` reports a bound four and a half units taller than it draws. An ellipse is
+therefore written as four *circular* arcs, which measure themselves exactly.
 
 There is no raster anywhere in the set, no font glyph, and no external reference, so an
 icon is infinitely scalable and costs a few hundred bytes.
 
 ## Adding one
 
-1. Add `src/icons/<Name>.<Filled|Outlined>.tsx`. One call to one of the two factories in
+1. Add `src/icons/<Name>.<Filled|Outlined>.tsx`. One call to one of the three factories in
    `_create-icon.tsx` — `filledIcon`, `outlinedIcon`, or `heavyIcon` for a mark with no
    solid form:
 
@@ -154,6 +171,35 @@ icon is infinitely scalable and costs a few hundred bytes.
 2. Run `npm run sync:exports`. The icon needs no `typesVersions` line by hand, but the
    manifest is generated and `--check` fails without it.
 3. Run `npm run verify`.
+
+### Drawing a filled variant
+
+`filledIcon` paints `fill: currentColor` with `stroke: none`. Every test passes, every
+glyph stays inside its own box, and a filled variant whose detail is a *stroke* renders as
+a featureless blob — because the detail is painted in the same ink as the shape it sits
+on. A minus, a slash, a percent sign, the leaf on a battery, the needle in a compass: all
+of those have to become holes.
+
+The rule is: **inside a filled icon, any detail is a knockout in the same
+`fillRule="evenodd"` path as its shape.**
+
+```tsx
+// A disc with a bar cut out of it, not a disc with a bar painted on it.
+<path
+  fillRule="evenodd"
+  d={`${circlePath(12, 12, 10)}${rectPathRev(7.4, 10.7, 9.2, 2.6, 1.3)}`}
+/>
+```
+
+Two knockouts have their own trap, and it is the reason some glyphs became marks instead
+of pairs. Where two knockout regions **overlap**, the crossing count reaches three and the
+rule paints the overlap back in: two crossing bars produce a diamond, not a plus. So:
+
+- Draw the knockout as **one closed outline**. A plus is twelve points, not two bars.
+- Keep knockout regions **disjoint** from each other.
+- If neither is possible, the glyph has no honest solid form — ship it once, bare.
+
+The geometry tests cannot catch any of this. It is found by looking at the glyph.
 
 **Do not add a glyph that already ships under another name.** The set has no aliases: a
 `Settings` that is `Build` again, or a `Success` that is `Approve` again, is a second

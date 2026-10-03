@@ -1,0 +1,193 @@
+/*
+ * Loader styles.
+ *
+ * The fill's width comes from `--uir-loader-percent`, set inline by the component
+ * from `value / max`. A percentage rather than a pixel width so the same rule serves
+ * any `max`, and so a consumer who changes the maximum needs no arithmetic.
+ */
+
+@layer uireload.components {
+  .uir-loader,
+  .uir-loader__track,
+  .uir-loader__fill,
+  .uir-loader__value {
+    box-sizing: border-box;
+  }
+
+  /* ---- Root ---------------------------------------------------------- */
+
+  .uir-loader {
+    --uir-loader-height: 0.5rem;
+    --uir-loader-fill: var(--uir-accent);
+    --uir-loader-track: var(--uir-neutral-wash);
+
+    display: grid;
+    font-family: var(--uir-font-family);
+    /*
+     * The value sits on the row below the bar rather than inside it, so a long
+     * `valueLabel` widens the row instead of being squeezed against the fill's end
+     * — and so the bar's height is the bar's height, whatever the text does.
+     */
+    gap: var(--uir-space-xs);
+    grid-template-columns: minmax(0, 1fr) auto;
+    inline-size: 100%;
+  }
+
+  .uir-loader[data-size="sm"] {
+    --uir-loader-height: 0.25rem;
+  }
+
+  /* No `md` rule: the root's own value *is* `md`. */
+
+  .uir-loader[data-size="lg"] {
+    --uir-loader-height: 0.75rem;
+  }
+
+  /* ---- Tone ---------------------------------------------------------- */
+
+  .uir-loader[data-tone="neutral"] {
+    --uir-loader-fill: var(--uir-text-muted);
+  }
+
+  .uir-loader[data-tone="accent"] {
+    --uir-loader-fill: var(--uir-accent);
+  }
+
+  .uir-loader[data-tone="positive"] {
+    --uir-loader-fill: var(--uir-success);
+  }
+
+  .uir-loader[data-tone="danger"] {
+    --uir-loader-fill: var(--uir-danger);
+  }
+
+  /* ---- Track and fill ------------------------------------------------ */
+
+  /*
+   * The track: the whole range, in a colour quiet enough to read as "what is left"
+   * rather than as "what is done".
+   */
+  .uir-loader__track {
+    background-color: var(--uir-loader-track);
+    border-radius: calc(var(--uir-loader-height) / 2);
+    block-size: var(--uir-loader-height);
+    grid-column: 1;
+    overflow: hidden;
+  }
+
+  /*
+   * The fill.
+   *
+   * `--uir-loader-percent` is set inline when the loader is determinate and left
+   * unset when it is not, so the indeterminate rule below is the only thing that has
+   * to know about the difference.
+   */
+  .uir-loader__fill {
+    /*
+     * Declared here as well as set inline, so the rule is complete on its own: a fill with no
+     * value set on it is a full bar, which is the correct reading of a loader whose value was
+     * cleared rather than a bar of unknown width.
+     */
+    --uir-loader-percent: 100%;
+
+    background-color: var(--uir-loader-fill);
+    block-size: 100%;
+    inline-size: var(--uir-loader-percent);
+    /*
+     * The fill grows from the inline start, which is what makes it mirror in RTL and
+     * in a vertical writing mode without a second rule.
+     */
+    transform-origin: inline-start;
+  }
+
+  /*
+   * The indeterminate bar.
+   *
+   * A bar that never reaches either end and loops, so it reads as *ongoing* rather
+   * than as a stalled full bar or an empty one. The width is a third of the track and
+   * the travel is the track's own width plus the fill's, so the bar enters from
+   * outside and leaves outside instead of teleporting at the ends.
+   *
+   * `translateX` rather than `margin` or `inset` so it is a compositing change and
+   * the track never reflows.
+   */
+  .uir-loader:not([data-determinate]) .uir-loader__fill {
+    animation: uir-loader-slide 1.4s var(--uir-easing) infinite;
+    inline-size: 33.333%;
+  }
+
+  @keyframes uir-loader-slide {
+    from {
+      transform: translateX(-100%);
+    }
+
+    to {
+      transform: translateX(calc(200% + var(--uir-loader-height) * 6));
+    }
+  }
+
+  /* ---- Value --------------------------------------------------------- */
+
+  /*
+   * The number, or whatever `valueLabel` said.
+   *
+   * `tabular-nums` because it changes as the bar moves: proportional figures make the
+   * digits change width, which makes the text jitter beside a bar that is otherwise
+   * perfectly smooth.
+   */
+  .uir-loader__value {
+    color: var(--uir-text-muted);
+    font-size: var(--uir-control-font-size-sm);
+    font-variant-numeric: tabular-nums;
+    grid-column: 2;
+    grid-row: 1;
+    line-height: var(--uir-line-height);
+  }
+
+  /*
+   * Children take the row below both, so a caller can put anything under the bar
+   * without displacing the value.
+   */
+  .uir-loader > *:not([class]) {
+    grid-column: 1 / -1;
+  }
+
+  /* ---- Reduced motion ------------------------------------------------ */
+
+  /*
+   * The bar stops sweeping and stays full.
+   *
+   * A full bar reads as "complete", which is its own wrong answer — but an
+   * indeterminate bar that does not move reads as a *stuck* determinate one, which is
+   * worse: it tells the user the work has stopped. There is no motion-free way to
+   * say "ongoing" in a bar, so the fill holds and the fact is recorded here rather
+   * than hidden.
+   *
+   * A determinate loader is unaffected: its bar is not animated, so there is nothing
+   * to stop.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .uir-loader:not([data-determinate]) .uir-loader__fill {
+      animation: none;
+    }
+  }
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * The fill becomes `Highlight`, the one colour a forced-colours theme guarantees
+   * to mean "the system chose this". Left to `currentcolor` it would be the label's
+   * colour, which is legible but carries no sense of being the filled portion.
+   */
+  @media (forced-colors: active) {
+    .uir-loader__track {
+      background-color: Canvas;
+      border: 1px solid CanvasText;
+    }
+
+    .uir-loader__fill {
+      background-color: Highlight;
+      forced-color-adjust: none;
+    }
+  }
+}

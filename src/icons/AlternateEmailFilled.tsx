@@ -1,0 +1,12 @@
+/**
+ * AlternateEmailFilled.
+ *
+ * Drawn on the shared 24 unit grid, so it optically matches every other filled icon in the set.
+ */
+
+import { filledIcon } from "./_create-icon";
+
+export default filledIcon("AlternateEmailFilled", <>
+<path fillRule="evenodd" d="M3.4 6.4h17.2a1.4 1.4 0 0 1 1.4 1.4v8.4a1.4 1.4 0 0 1-1.4 1.4H3.4A1.4 1.4 0 0 1 2 16.2V7.8a1.4 1.4 0 0 1 1.4-1.4ZM3.4 7.6 12 13.2l8.6-5.6" />
+<path d="M14.6 2.6h6.8v2.4h-4.4v3.4h3.8v2.4h-3.8v6h-2.4V2.6Z" />
+</>);

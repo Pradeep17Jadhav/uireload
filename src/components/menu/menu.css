@@ -1,0 +1,223 @@
+/*
+ * Menu styles.
+ *
+ * `position: fixed` lives here rather than being set inline, so the surface is shrink-to-fit when it is
+ * measured. The inline `top`/`left` come from the positioning calculation and are the only thing that has to
+ * be inline; everything else a consumer might want to reach for is a token here.
+ */
+
+@layer uireload.components {
+  .uir-menu,
+  .uir-menu__item,
+  .uir-menu__icon,
+  .uir-menu__label,
+  .uir-menu__description,
+  .uir-menu__check,
+  .uir-menu__separator {
+    box-sizing: border-box;
+  }
+
+  /* ---- Surface ------------------------------------------------------- */
+
+  .uir-menu {
+    --uir-menu-min-width: 12rem;
+    --uir-menu-surface: var(--uir-surface-raised);
+    --uir-menu-border: var(--uir-border);
+    --uir-menu-text: var(--uir-text);
+    --uir-menu-muted: var(--uir-text-muted);
+    --uir-menu-item-height: 2rem;
+
+    background-color: var(--uir-menu-surface);
+    border: 1px solid var(--uir-menu-border);
+    border-radius: var(--uir-radius-large);
+    box-shadow: var(--uir-shadow);
+    display: flex;
+    flex-direction: column;
+    font-family: var(--uir-font-family);
+    /*
+     * A `menu` is padded by the row's own padding rather than by a gap around it, so a row's hover and
+     * focus background reaches the surface's edge. A `gap` here would leave an uncoloured gutter beside
+     * every row, which is the visual signature of a list that was not built for this.
+     */
+    gap: 0;
+    font-size: var(--uir-control-font-size-md);
+    line-height: var(--uir-line-height);
+    min-inline-size: var(--uir-menu-min-width);
+    /*
+     * A menu sizes to its content and must never be wider than the space it was opened into. `max-inline-size`
+     * against the viewport rather than against a container, because the positioning code already keeps the
+     * surface inside the viewport and a `max-width` here is what stops a long label wrapping the row
+     * instead of pushing the menu off screen.
+     */
+    max-inline-size: calc(100vw - 1rem);
+    overflow-y: auto;
+    padding-block: var(--uir-space-xs);
+    position: fixed;
+    /*
+     * The trigger, so an open menu never paints under the button that opened it and the two do not read as
+     * one shape.
+     *
+     * The same layer the popover surface uses, deliberately: a menu and a popover are both transient
+     * overlays and neither should stack over the other by accident. Which of the two is "later" in the
+     * stacking order is decided by the DOM they are rendered into, not by this rule.
+     */
+    z-index: var(--uir-z-index-overlay);
+  }
+
+  /* ---- Item ---------------------------------------------------------- */
+
+  .uir-menu__item {
+    align-items: center;
+    color: var(--uir-menu-text);
+    cursor: pointer;
+    display: grid;
+    /*
+     * `auto auto 1fr auto` — icon, label, description, check.
+     *
+     * The description takes the slack so a short label does not pull a long description into the middle of
+     * the row, and the check column is a fixed slot so ticked and unticked rows align with each other
+     * rather than the tick hanging off the end of the text.
+     */
+    gap: var(--uir-space-sm);
+    grid-template-areas: "icon label check" ". description check";
+    grid-template-columns: auto auto 1fr auto;
+    inline-size: 100%;
+    min-block-size: var(--uir-menu-item-height);
+    padding-block: var(--uir-space-xs);
+    padding-inline: var(--uir-space-sm);
+    text-align: start;
+    user-select: none;
+  }
+
+  .uir-menu__item:hover:not([data-disabled]),
+  .uir-menu__item:focus-visible {
+    background-color: var(--uir-accent-wash);
+  }
+
+  /*
+   * `:focus-visible` rather than `:focus`, and the outline is drawn on the row itself.
+   *
+   * A menu is opened by click as often as by keyboard, so a ring on `:focus` would appear on every
+   * mouse-opened menu and be noise. The row is the focused element under roving tabindex, so the ring lands
+   * on the row without an extra wrapper.
+   */
+  .uir-menu__item:focus-visible {
+    outline: var(--uir-focus-ring-width) solid var(--uir-focus-ring-color);
+    outline-offset: calc(-1 * var(--uir-focus-ring-width));
+  }
+
+  /*
+   * A disabled row is still focusable, per the pattern, so it has to look different rather than absent. The
+   * cursor is `default` rather than `not-allowed`: the pointer never does anything here, and an arrow
+   * cursor is the honest signal for a row you can reach with the keyboard but cannot activate.
+   */
+  .uir-menu__item[data-disabled] {
+    color: var(--uir-text-disabled);
+    cursor: default;
+  }
+
+  .uir-menu__icon {
+    align-items: center;
+    display: flex;
+    grid-area: icon;
+    justify-content: center;
+  }
+
+  .uir-menu__label {
+    grid-area: label;
+    /*
+     * `min-inline-size: 0` so a long single-word label shrinks and wraps inside the grid row rather than
+     * forcing the surface wider than the viewport.
+     */
+    min-inline-size: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .uir-menu__description {
+    color: var(--uir-menu-muted);
+    font-size: var(--uir-control-font-size-sm);
+    grid-area: description;
+    min-inline-size: 0;
+    overflow-wrap: anywhere;
+  }
+
+  /* ---- Check --------------------------------------------------------- */
+
+  /*
+   * The tick.
+   *
+   * Drawn as a rotated square with a block-end and inline-end border — the same two-edge trick the
+   * pagination chevrons use, and it mirrors in RTL with no second rule. `aria-hidden`, because `aria-checked`
+   * on the row already carries the state and a tick announced as a character says it twice.
+   */
+  .uir-menu__check {
+    block-size: 0.3125rem;
+    border-block-end: 2px solid currentcolor;
+    border-inline-end: 2px solid currentcolor;
+    display: block;
+    grid-area: check;
+    inline-size: 0.625rem;
+    rotate: 45deg;
+    /*
+     * Optical centring: a rotated square's bounding box sits low and left of where it looks centred, and
+     * without this the tick reads as a few pixels below the row's middle.
+     */
+    translate: 0 -0.0625rem;
+  }
+
+  /* ---- Separator ----------------------------------------------------- */
+
+  /*
+   * `role="separator"` with no tab stop.
+   *
+   * `aria-orientation` is stated because the pattern requires it to be consistent with the separator's
+   * orientation, and the default for `separator` is horizontal — which is correct here, but stating it means
+   * the contract does not depend on the reader knowing that.
+   */
+  .uir-menu__separator {
+    background-color: var(--uir-menu-border);
+    block-size: 1px;
+    /*
+     * Inset from the edges so the divider lines up with the *text* column rather than the surface's border,
+     * which is what a menu of grouped items looks like in every native menu.
+     */
+    margin-block: var(--uir-space-xs);
+    margin-inline: var(--uir-space-sm);
+  }
+
+  /* ---- Reduced motion ------------------------------------------------ */
+
+  /*
+   * Nothing to suppress.
+   *
+   * A menu has no animation of its own — it appears where it was asked to appear. This block is absent
+   * deliberately rather than as an omission: the open and close transitions are the caller's, applied to
+   * whatever they put in `anchor`, and a library that animated its own surface would be animating something
+   * a motion-sensitive user did not ask to see.
+   */
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * The surface, its border and the check all become system colours.
+   *
+   * Left on our own tokens a menu in forced-colours mode renders with a transparent background, which makes
+   * it indistinguishable from the page behind it — and a menu you cannot see is a menu nobody can use.
+   */
+  @media (forced-colors: active) {
+    .uir-menu {
+      background-color: Canvas;
+      border-color: CanvasText;
+    }
+
+    .uir-menu__item[data-checked],
+    .uir-menu__item:focus-visible {
+      background-color: Highlight;
+      color: HighlightText;
+    }
+
+    .uir-menu__check {
+      border-color: currentcolor;
+    }
+  }
+}

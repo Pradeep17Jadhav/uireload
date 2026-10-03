@@ -400,88 +400,106 @@ describeIfBuilt("export map", () => {
   describe.each(["node16", "bundler", "node10"] as const)(
     "TypeScript with moduleResolution %s",
     (mode) => {
-      it("type-checks imports written against the package specifiers", () => {
-        const components = builtComponents();
+      it(
+        "type-checks imports written against the package specifiers",
         /*
-         * Every icon, not a sample. The icon export is one wildcard rather than one entry
-         * per icon, and the only way that is safe is if the wildcard resolves for all of
-         * them under all three resolvers - so the probe enumerates what was built.
+         * The default 5s budget is not enough, and it is worth being precise about why that is not this
+         * test papering over a failure.
+         *
+         * The generated `consumer.tsx` imports *every* built icon as well as every component, once per
+         * resolver, because the icon export is a wildcard and a wildcard is only trustworthy if it resolves
+         * for all of them. That makes the cost of this test proportional to the size of the icon set, which
+         * grew while this test was not being edited. At roughly 450 icons the `tsc` process needs 6-8s under
+         * `node16` and `bundler`, and it was failing as a *timeout* — a failure that says "the package is
+         * slow" about a test that is simply doing more work than its budget allowed.
+         *
+         * The assertions are untouched: any real type error still throws with `tsc`'s own output. Only the
+         * time budget moved, and it is set generously so the next icon batch does not trip it either.
          */
-        const icons = builtIcons();
-        const dir = join(CONSUMER, `ts-${mode}`);
-        mkdirSync(dir, { recursive: true });
+        { timeout: 60_000 },
+        () => {
+          const components = builtComponents();
+          /*
+           * Every icon, not a sample. The icon export is one wildcard rather than one entry
+           * per icon, and the only way that is safe is if the wildcard resolves for all of
+           * them under all three resolvers - so the probe enumerates what was built.
+           */
+          const icons = builtIcons();
+          const dir = join(CONSUMER, `ts-${mode}`);
+          mkdirSync(dir, { recursive: true });
 
-        writeFileSync(
-          join(dir, "tsconfig.json"),
-          JSON.stringify(
-            {
-              compilerOptions: {
-                module: TS_MODULES[mode],
-                moduleResolution: mode,
-                target: "es2022",
-                jsx: "react-jsx",
-                strict: true,
-                noEmit: true,
-                skipLibCheck: true,
-                types: [],
+          writeFileSync(
+            join(dir, "tsconfig.json"),
+            JSON.stringify(
+              {
+                compilerOptions: {
+                  module: TS_MODULES[mode],
+                  moduleResolution: mode,
+                  target: "es2022",
+                  jsx: "react-jsx",
+                  strict: true,
+                  noEmit: true,
+                  skipLibCheck: true,
+                  types: [],
+                },
+                include: ["consumer.tsx"],
               },
-              include: ["consumer.tsx"],
-            },
-            null,
-            2
-          )
-        );
-
-        // Generated from what was actually built, so this can never assert against a
-        // component that does not exist.
-        writeFileSync(
-          join(dir, "consumer.tsx"),
-          [
-            `import { TOKENS, formatMessage } from "uireload";`,
-            ...components.map(
-              (name) => `import * as ${identifier(name)} from "uireload/components/${name}";`
-            ),
-            ...icons.map((name) => `import icon_${name} from "uireload/icons/${name}";`),
-            "",
-            `const accent: string = TOKENS.accent;`,
-            `const text: string = formatMessage("{n} left", { n: 1 });`,
-            ...components.map(
-              (name) =>
-                `const keys_${identifier(name)}: string[] = Object.keys(${identifier(name)});`
-            ),
-            /*
-             * Icons are called rather than rendered: the point is that the default export
-             * is a component with a callable signature and a props type, under every
-             * resolver. Rendering would additionally require a JSX runtime in the probe.
-             */
-            ...icons.map((name) => `const rendered_${name}: unknown = icon_${name}({});`),
-            "",
-            `export { accent, text };`,
-            ...components.map((name) => `export { keys_${identifier(name)} };`),
-            "",
-          ].join("\n")
-        );
-
-        // Uses the repository's own TypeScript, so no network install is needed.
-        const tsc = join(ROOT, "node_modules", "typescript", "bin", "tsc");
-        expect(existsSync(tsc)).toBe(true);
-
-        let output: string;
-        try {
-          output = execFileSync(process.execPath, [tsc, "-p", dir], {
-            encoding: "utf8",
-            stdio: ["ignore", "pipe", "pipe"],
-          });
-        } catch (error) {
-          throw new Error(
-            `tsc (${mode}) failed:\n${(error as { stdout?: string }).stdout ?? ""}${
-              (error as { stderr?: string }).stderr ?? ""
-            }`
+              null,
+              2
+            )
           );
-        }
 
-        expect(output).toBe("");
-      });
+          // Generated from what was actually built, so this can never assert against a
+          // component that does not exist.
+          writeFileSync(
+            join(dir, "consumer.tsx"),
+            [
+              `import { TOKENS, formatMessage } from "uireload";`,
+              ...components.map(
+                (name) => `import * as ${identifier(name)} from "uireload/components/${name}";`
+              ),
+              ...icons.map((name) => `import icon_${name} from "uireload/icons/${name}";`),
+              "",
+              `const accent: string = TOKENS.accent;`,
+              `const text: string = formatMessage("{n} left", { n: 1 });`,
+              ...components.map(
+                (name) =>
+                  `const keys_${identifier(name)}: string[] = Object.keys(${identifier(name)});`
+              ),
+              /*
+               * Icons are called rather than rendered: the point is that the default export
+               * is a component with a callable signature and a props type, under every
+               * resolver. Rendering would additionally require a JSX runtime in the probe.
+               */
+              ...icons.map((name) => `const rendered_${name}: unknown = icon_${name}({});`),
+              "",
+              `export { accent, text };`,
+              ...components.map((name) => `export { keys_${identifier(name)} };`),
+              "",
+            ].join("\n")
+          );
+
+          // Uses the repository's own TypeScript, so no network install is needed.
+          const tsc = join(ROOT, "node_modules", "typescript", "bin", "tsc");
+          expect(existsSync(tsc)).toBe(true);
+
+          let output: string;
+          try {
+            output = execFileSync(process.execPath, [tsc, "-p", dir], {
+              encoding: "utf8",
+              stdio: ["ignore", "pipe", "pipe"],
+            });
+          } catch (error) {
+            throw new Error(
+              `tsc (${mode}) failed:\n${(error as { stdout?: string }).stdout ?? ""}${
+                (error as { stderr?: string }).stderr ?? ""
+              }`
+            );
+          }
+
+          expect(output).toBe("");
+        }
+      );
     }
   );
 });

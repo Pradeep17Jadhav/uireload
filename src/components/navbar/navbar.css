@@ -1,0 +1,275 @@
+/*
+ * Navbar styles.
+ *
+ * The current item is marked by a filled block rather than by colour alone: colour is the one thing a
+ * high-contrast theme and a monochrome print both discard, and "which page am I on" has to survive that.
+ */
+
+@layer uireload.components {
+  .uir-navbar,
+  .uir-navbar__list,
+  .uir-navbar__item,
+  .uir-navbar__link,
+  .uir-navbar__icon,
+  .uir-navbar__label,
+  .uir-navbar__description,
+  .uir-navbar__brand,
+  .uir-navbar__actions {
+    box-sizing: border-box;
+  }
+
+  /* ---- Root ---------------------------------------------------------- */
+
+  .uir-navbar {
+    --uir-navbar-surface: var(--uir-surface);
+    --uir-navbar-border: var(--uir-border);
+    --uir-navbar-text: var(--uir-text);
+    --uir-navbar-muted: var(--uir-text-muted);
+    --uir-navbar-accent: var(--uir-accent);
+    --uir-navbar-accent-wash: var(--uir-accent-wash);
+    --uir-navbar-gap: var(--uir-space);
+    --uir-navbar-item-padding-block: var(--uir-space-xs);
+    --uir-navbar-item-padding-inline: var(--uir-space-sm);
+    --uir-navbar-font-size: var(--uir-control-font-size-md);
+    --uir-navbar-min-block: var(--uir-control-height-lg);
+
+    align-items: center;
+    background-color: var(--uir-navbar-surface);
+    border-block-end: 1px solid var(--uir-navbar-border);
+    color: var(--uir-navbar-text);
+    display: flex;
+    font-family: var(--uir-font-family);
+    font-size: var(--uir-navbar-font-size);
+    gap: var(--uir-navbar-gap);
+    line-height: var(--uir-line-height);
+    padding-inline: var(--uir-space);
+    position: relative;
+  }
+
+  .uir-navbar[data-size="sm"] {
+    --uir-navbar-item-padding-block: 0;
+    --uir-navbar-font-size: var(--uir-control-font-size-sm);
+    --uir-navbar-min-block: var(--uir-control-height-md);
+  }
+
+  .uir-navbar[data-size="lg"] {
+    --uir-navbar-item-padding-block: var(--uir-space-sm);
+    --uir-navbar-font-size: var(--uir-control-font-size-lg);
+    --uir-navbar-min-block: var(--uir-control-height-lg);
+  }
+
+  /*
+   * `sticky` and `fixed` both take the bar out of the flow; only `sticky` leaves its space behind.
+   *
+   * The `inset-block-start: 0` is what makes either of them stick to the top, and it is logical so a
+   * horizontal bar pinned in a vertically-scrolling page reads the same in both writing modes.
+   */
+  .uir-navbar[data-position="sticky"] {
+    inset-block-start: 0;
+    position: sticky;
+  }
+
+  /*
+   * `fixed` removes the bar's space from the document, so whatever follows it slides underneath. Padding that
+   * keeps content clear is the consumer's to add — the bar cannot know what is below it, and guessing would
+   * add a gap to every page that does not need one.
+   */
+  .uir-navbar[data-position="fixed"] {
+    inset-block-start: 0;
+    inset-inline: 0;
+    position: fixed;
+  }
+
+  /*
+   * A vertical bar is a sidebar: full height, items stacked, and a border down the inline end rather than
+   * across the block end.
+   *
+   * Written against the logical axes, so `data-orientation="vertical"` is the only difference — the same
+   * rules produce a sidebar in a vertical writing mode without a second set of physical overrides.
+   */
+  .uir-navbar[data-orientation="vertical"] {
+    align-items: stretch;
+    border-block-end: 0;
+    border-inline-end: 1px solid var(--uir-navbar-border);
+    block-size: 100%;
+    flex-direction: column;
+    padding-block: var(--uir-space);
+    padding-inline: 0;
+  }
+
+  /* ---- Brand and actions --------------------------------------------- */
+
+  /*
+   * The brand and the actions are shrink-proof.
+   *
+   * A long product name must not squeeze the navigation out of the row, and the trailing controls must not be
+   * pushed off the end by it. `min-inline-size: 0` on the brand lets a long name wrap or ellipsize rather
+   * than pushing everything else out.
+   */
+  .uir-navbar__brand {
+    align-items: center;
+    display: flex;
+    flex-shrink: 0;
+    font-weight: var(--uir-control-font-weight);
+    gap: var(--uir-space-xs);
+    min-inline-size: 0;
+  }
+
+  .uir-navbar__actions {
+    align-items: center;
+    display: flex;
+    flex-shrink: 0;
+    gap: var(--uir-space-xs);
+    margin-inline-start: auto;
+  }
+
+  .uir-navbar[data-orientation="vertical"] .uir-navbar__actions {
+    margin-block-start: var(--uir-space);
+    margin-inline-start: 0;
+  }
+
+  /* ---- List ---------------------------------------------------------- */
+
+  /*
+   * The list is a real `<ul>`, so the UA's bullets and padding are reset rather than worked around.
+   *
+   * A navigation bar is a list of places, and that is what lets a screen reader user jump it as a list. The
+   * `<ul>` is in the markup; this only removes the rendering that does not apply to a horizontal bar.
+   */
+  .uir-navbar__list {
+    align-items: center;
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .uir-navbar[data-orientation="vertical"] .uir-navbar__list {
+    align-items: stretch;
+    flex-direction: column;
+    gap: var(--uir-space-xs);
+  }
+
+  .uir-navbar__item {
+    display: flex;
+    list-style: none;
+  }
+
+  /* ---- Link ---------------------------------------------------------- */
+
+  .uir-navbar__link {
+    align-items: center;
+    background-color: transparent;
+    border: 0;
+    border-radius: var(--uir-radius-small);
+    color: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    font: inherit;
+    gap: var(--uir-space-xs);
+    justify-content: center;
+    min-block-size: var(--uir-navbar-min-block);
+    padding-block: var(--uir-navbar-item-padding-block);
+    padding-inline: var(--uir-navbar-item-padding-inline);
+    text-decoration: none;
+    /* Stated rather than relied on the UA default, which differs between a link and a button. */
+    text-align: center;
+  }
+
+  .uir-navbar__link:hover:not([data-disabled]):not([data-current]) {
+    background-color: var(--uir-navbar-accent-wash);
+  }
+
+  /*
+   * One focus rule for both elements.
+   *
+   * `:focus-visible` rather than `:focus`, and an `outline` rather than a shadow: the ring is the one thing
+   * that must survive a forced-colours theme, and `outline` follows the border-radius in every engine.
+   */
+  .uir-navbar__link:focus-visible {
+    outline: var(--uir-focus-ring-width) solid var(--uir-focus-ring-color);
+    outline-offset: calc(-1 * var(--uir-focus-ring-width));
+  }
+
+  /*
+   * The current page.
+   *
+   * A filled block and a weight change, not a colour change alone. "Which page am I on" has to survive a
+   * monochrome print and a high-contrast theme, and both of those discard a subtle foreground tint — the
+   * one thing that must not be the sole signal is the most important thing on the bar.
+   */
+  .uir-navbar__link[data-current] {
+    background-color: var(--uir-navbar-accent-wash);
+    color: var(--uir-navbar-accent);
+    font-weight: var(--uir-control-font-weight);
+  }
+
+  .uir-navbar__link[data-disabled] {
+    color: var(--uir-text-disabled);
+    cursor: default;
+  }
+
+  /*
+   * A non-interactive entry: a section name that is not yet a page.
+   *
+   * It is still rendered as a link-shaped element so the bar's rhythm matches, but with no pointer cursor,
+   * because there is nothing to press.
+   */
+  .uir-navbar__link--static {
+    cursor: default;
+  }
+
+  .uir-navbar__icon {
+    align-items: center;
+    display: flex;
+    flex-shrink: 0;
+  }
+
+  .uir-navbar__label {
+    min-inline-size: 0;
+  }
+
+  .uir-navbar__description {
+    color: var(--uir-navbar-muted);
+    font-size: var(--uir-control-font-size-sm);
+  }
+
+  /*
+   * A vertical bar stacks the description under its label; a horizontal one has no room for it and it is not
+   * rendered at all, which is why the `description` prop's documentation mentions vertical bars.
+   */
+  .uir-navbar[data-orientation="horizontal"] .uir-navbar__description {
+    display: none;
+  }
+
+  .uir-navbar[data-orientation="vertical"] .uir-navbar__link {
+    align-items: start;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * The current item's wash becomes `Highlight`.
+   *
+   * A translucent accent wash can resolve to nothing under a forced-colours theme, which would leave the
+   * current page marked by nothing but a font-weight change — the one signal that has just been removed.
+   */
+  @media (forced-colors: active) {
+    .uir-navbar {
+      border-color: CanvasText;
+    }
+
+    .uir-navbar__link[data-current] {
+      background-color: Highlight;
+      color: HighlightText;
+      forced-color-adjust: none;
+    }
+
+    .uir-navbar__link:hover:not([data-disabled]):not([data-current]) {
+      background-color: Canvas;
+      outline: var(--uir-focus-ring-width) solid CanvasText;
+    }
+  }
+}

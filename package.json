@@ -40,6 +40,16 @@
     "./styles.css": "./dist/index.css",
     "./tokens.css": "./dist/theme/tokens.css",
     "./package.json": "./package.json",
+    "./components/accordion": {
+      "import": {
+        "types": "./dist/components/accordion/index.d.ts",
+        "default": "./dist/components/accordion/index.js"
+      },
+      "require": {
+        "types": "./dist/components/accordion/index.d.cts",
+        "default": "./dist/components/accordion/index.cjs"
+      }
+    },
     "./components/alert": {
       "import": {
         "types": "./dist/components/alert/index.d.ts",
@@ -140,6 +150,36 @@
         "default": "./dist/components/link/index.cjs"
       }
     },
+    "./components/loader": {
+      "import": {
+        "types": "./dist/components/loader/index.d.ts",
+        "default": "./dist/components/loader/index.js"
+      },
+      "require": {
+        "types": "./dist/components/loader/index.d.cts",
+        "default": "./dist/components/loader/index.cjs"
+      }
+    },
+    "./components/menu": {
+      "import": {
+        "types": "./dist/components/menu/index.d.ts",
+        "default": "./dist/components/menu/index.js"
+      },
+      "require": {
+        "types": "./dist/components/menu/index.d.cts",
+        "default": "./dist/components/menu/index.cjs"
+      }
+    },
+    "./components/navbar": {
+      "import": {
+        "types": "./dist/components/navbar/index.d.ts",
+        "default": "./dist/components/navbar/index.js"
+      },
+      "require": {
+        "types": "./dist/components/navbar/index.d.cts",
+        "default": "./dist/components/navbar/index.cjs"
+      }
+    },
     "./components/pagination": {
       "import": {
         "types": "./dist/components/pagination/index.d.ts",
@@ -208,6 +248,16 @@
       "require": {
         "types": "./dist/components/snackbar/index.d.cts",
         "default": "./dist/components/snackbar/index.cjs"
+      }
+    },
+    "./components/spinner": {
+      "import": {
+        "types": "./dist/components/spinner/index.d.ts",
+        "default": "./dist/components/spinner/index.js"
+      },
+      "require": {
+        "types": "./dist/components/spinner/index.d.cts",
+        "default": "./dist/components/spinner/index.cjs"
       }
     },
     "./components/stepper": {
@@ -316,6 +366,9 @@
       "*": [
         "./dist/index.d.ts"
       ],
+      "components/accordion": [
+        "./dist/components/accordion/index.d.ts"
+      ],
       "components/alert": [
         "./dist/components/alert/index.d.ts"
       ],
@@ -346,6 +399,15 @@
       "components/link": [
         "./dist/components/link/index.d.ts"
       ],
+      "components/loader": [
+        "./dist/components/loader/index.d.ts"
+      ],
+      "components/menu": [
+        "./dist/components/menu/index.d.ts"
+      ],
+      "components/navbar": [
+        "./dist/components/navbar/index.d.ts"
+      ],
       "components/pagination": [
         "./dist/components/pagination/index.d.ts"
       ],
@@ -366,6 +428,9 @@
       ],
       "components/snackbar": [
         "./dist/components/snackbar/index.d.ts"
+      ],
+      "components/spinner": [
+        "./dist/components/spinner/index.d.ts"
       ],
       "components/stepper": [
         "./dist/components/stepper/index.d.ts"
@@ -412,11 +477,23 @@
       "icons/AccountRectOutlined": [
         "./dist/icons/AccountRectOutlined.d.ts"
       ],
+      "icons/AddCircleFilled": [
+        "./dist/icons/AddCircleFilled.d.ts"
+      ],
+      "icons/AddCircleOutlined": [
+        "./dist/icons/AddCircleOutlined.d.ts"
+      ],
       "icons/AddFilled": [
         "./dist/icons/AddFilled.d.ts"
       ],
       "icons/AddOutlined": [
         "./dist/icons/AddOutlined.d.ts"
+      ],
+      "icons/AirplanemodeFilled": [
+        "./dist/icons/AirplanemodeFilled.d.ts"
+      ],
+      "icons/AirplanemodeOutlined": [
+        "./dist/icons/AirplanemodeOutlined.d.ts"
       ],
       "icons/AlarmFilled": [
         "./dist/icons/AlarmFilled.d.ts"
@@ -436,6 +513,12 @@
       "icons/AlertOutlined": [
         "./dist/icons/AlertOutlined.d.ts"
       ],
+      "icons/AlternateEmailFilled": [
+        "./dist/icons/AlternateEmailFilled.d.ts"
+      ],
+      "icons/AlternateEmailOutlined": [
+        "./dist/icons/AlternateEmailOutlined.d.ts"
+      ],
       "icons/AnnouncementFilled": [
         "./dist/icons/AnnouncementFilled.d.ts"
       ],
@@ -447,6 +530,12 @@
       ],
       "icons/ApproveOutlined": [
         "./dist/icons/ApproveOutlined.d.ts"
+      ],
+      "icons/AppsFilled": [
+        "./dist/icons/AppsFilled.d.ts"
+      ],
+      "icons/AppsOutlined": [
+        "./dist/icons/AppsOutlined.d.ts"
       ],
       "icons/ArchiveFilled": [
         "./dist/icons/ArchiveFilled.d.ts"
@@ -478,8 +567,20 @@
       "icons/ArrowUpOutlined": [
         "./dist/icons/ArrowUpOutlined.d.ts"
       ],
+      "icons/ArticleFilled": [
+        "./dist/icons/ArticleFilled.d.ts"
+      ],
+      "icons/ArticleOutlined": [
+        "./dist/icons/ArticleOutlined.d.ts"
+      ],
       "icons/At": [
         "./dist/icons/At.d.ts"
+      ],
+      "icons/AttachMoneyFilled": [
+        "./dist/icons/AttachMoneyFilled.d.ts"
+      ],
+      "icons/AttachMoneyOutlined": [
+        "./dist/icons/AttachMoneyOutlined.d.ts"
       ],
       "icons/AttachmentFilled": [
         "./dist/icons/AttachmentFilled.d.ts"
@@ -493,11 +594,23 @@
       "icons/AudioOutlined": [
         "./dist/icons/AudioOutlined.d.ts"
       ],
+      "icons/AutoStoriesFilled": [
+        "./dist/icons/AutoStoriesFilled.d.ts"
+      ],
+      "icons/AutoStoriesOutlined": [
+        "./dist/icons/AutoStoriesOutlined.d.ts"
+      ],
       "icons/AutomaticFilled": [
         "./dist/icons/AutomaticFilled.d.ts"
       ],
       "icons/AutomaticOutlined": [
         "./dist/icons/AutomaticOutlined.d.ts"
+      ],
+      "icons/BadgeFilled": [
+        "./dist/icons/BadgeFilled.d.ts"
+      ],
+      "icons/BadgeOutlined": [
+        "./dist/icons/BadgeOutlined.d.ts"
       ],
       "icons/BarChartFilled": [
         "./dist/icons/BarChartFilled.d.ts"
@@ -519,6 +632,12 @@
       ],
       "icons/BatteryLow": [
         "./dist/icons/BatteryLow.d.ts"
+      ],
+      "icons/BatterySaverFilled": [
+        "./dist/icons/BatterySaverFilled.d.ts"
+      ],
+      "icons/BatterySaverOutlined": [
+        "./dist/icons/BatterySaverOutlined.d.ts"
       ],
       "icons/BedFilled": [
         "./dist/icons/BedFilled.d.ts"
@@ -565,6 +684,12 @@
       "icons/BugOutlined": [
         "./dist/icons/BugOutlined.d.ts"
       ],
+      "icons/BugReportFilled": [
+        "./dist/icons/BugReportFilled.d.ts"
+      ],
+      "icons/BugReportOutlined": [
+        "./dist/icons/BugReportOutlined.d.ts"
+      ],
       "icons/BuildFilled": [
         "./dist/icons/BuildFilled.d.ts"
       ],
@@ -610,6 +735,12 @@
       "icons/CancelOutlined": [
         "./dist/icons/CancelOutlined.d.ts"
       ],
+      "icons/CardGiftcardFilled": [
+        "./dist/icons/CardGiftcardFilled.d.ts"
+      ],
+      "icons/CardGiftcardOutlined": [
+        "./dist/icons/CardGiftcardOutlined.d.ts"
+      ],
       "icons/CartFilled": [
         "./dist/icons/CartFilled.d.ts"
       ],
@@ -645,6 +776,12 @@
       ],
       "icons/ChatOutlined": [
         "./dist/icons/ChatOutlined.d.ts"
+      ],
+      "icons/CheckBoxFilled": [
+        "./dist/icons/CheckBoxFilled.d.ts"
+      ],
+      "icons/CheckBoxOutlined": [
+        "./dist/icons/CheckBoxOutlined.d.ts"
       ],
       "icons/CheckedFilled": [
         "./dist/icons/CheckedFilled.d.ts"
@@ -694,14 +831,29 @@
       "icons/ClosedOutlined": [
         "./dist/icons/ClosedOutlined.d.ts"
       ],
+      "icons/CloudDone": [
+        "./dist/icons/CloudDone.d.ts"
+      ],
+      "icons/CloudDownload": [
+        "./dist/icons/CloudDownload.d.ts"
+      ],
       "icons/CloudFilled": [
         "./dist/icons/CloudFilled.d.ts"
+      ],
+      "icons/CloudOff": [
+        "./dist/icons/CloudOff.d.ts"
       ],
       "icons/CloudOutlined": [
         "./dist/icons/CloudOutlined.d.ts"
       ],
+      "icons/CloudSync": [
+        "./dist/icons/CloudSync.d.ts"
+      ],
       "icons/CodeFilled": [
         "./dist/icons/CodeFilled.d.ts"
+      ],
+      "icons/CodeOff": [
+        "./dist/icons/CodeOff.d.ts"
       ],
       "icons/CodeOutlined": [
         "./dist/icons/CodeOutlined.d.ts"
@@ -724,11 +876,20 @@
       "icons/CommentOutlined": [
         "./dist/icons/CommentOutlined.d.ts"
       ],
+      "icons/CompareArrows": [
+        "./dist/icons/CompareArrows.d.ts"
+      ],
       "icons/ComputerFilled": [
         "./dist/icons/ComputerFilled.d.ts"
       ],
       "icons/ComputerOutlined": [
         "./dist/icons/ComputerOutlined.d.ts"
+      ],
+      "icons/ConfirmationNumberFilled": [
+        "./dist/icons/ConfirmationNumberFilled.d.ts"
+      ],
+      "icons/ConfirmationNumberOutlined": [
+        "./dist/icons/ConfirmationNumberOutlined.d.ts"
       ],
       "icons/ConnectedFilled": [
         "./dist/icons/ConnectedFilled.d.ts"
@@ -747,6 +908,12 @@
       ],
       "icons/ContactlessOutlined": [
         "./dist/icons/ContactlessOutlined.d.ts"
+      ],
+      "icons/ContactsFilled": [
+        "./dist/icons/ContactsFilled.d.ts"
+      ],
+      "icons/ContactsOutlined": [
+        "./dist/icons/ContactsOutlined.d.ts"
       ],
       "icons/ContrastFilled": [
         "./dist/icons/ContrastFilled.d.ts"
@@ -850,11 +1017,47 @@
       "icons/DashboardOutlined": [
         "./dist/icons/DashboardOutlined.d.ts"
       ],
+      "icons/DataArray": [
+        "./dist/icons/DataArray.d.ts"
+      ],
+      "icons/DataObject": [
+        "./dist/icons/DataObject.d.ts"
+      ],
+      "icons/DatabaseFilled": [
+        "./dist/icons/DatabaseFilled.d.ts"
+      ],
+      "icons/DatabaseOutlined": [
+        "./dist/icons/DatabaseOutlined.d.ts"
+      ],
       "icons/DeleteFilled": [
         "./dist/icons/DeleteFilled.d.ts"
       ],
       "icons/DeleteOutlined": [
         "./dist/icons/DeleteOutlined.d.ts"
+      ],
+      "icons/DevicesFilled": [
+        "./dist/icons/DevicesFilled.d.ts"
+      ],
+      "icons/DevicesOutlined": [
+        "./dist/icons/DevicesOutlined.d.ts"
+      ],
+      "icons/DirectionsBusFilled": [
+        "./dist/icons/DirectionsBusFilled.d.ts"
+      ],
+      "icons/DirectionsBusOutlined": [
+        "./dist/icons/DirectionsBusOutlined.d.ts"
+      ],
+      "icons/DnsFilled": [
+        "./dist/icons/DnsFilled.d.ts"
+      ],
+      "icons/DnsOutlined": [
+        "./dist/icons/DnsOutlined.d.ts"
+      ],
+      "icons/DoNotDisturbFilled": [
+        "./dist/icons/DoNotDisturbFilled.d.ts"
+      ],
+      "icons/DoNotDisturbOutlined": [
+        "./dist/icons/DoNotDisturbOutlined.d.ts"
       ],
       "icons/DownloadFilled": [
         "./dist/icons/DownloadFilled.d.ts"
@@ -871,11 +1074,41 @@
       "icons/DragHandle": [
         "./dist/icons/DragHandle.d.ts"
       ],
+      "icons/EmojiEmotionsFilled": [
+        "./dist/icons/EmojiEmotionsFilled.d.ts"
+      ],
+      "icons/EmojiEmotionsOutlined": [
+        "./dist/icons/EmojiEmotionsOutlined.d.ts"
+      ],
+      "icons/EventFilled": [
+        "./dist/icons/EventFilled.d.ts"
+      ],
+      "icons/EventOutlined": [
+        "./dist/icons/EventOutlined.d.ts"
+      ],
+      "icons/ExploreFilled": [
+        "./dist/icons/ExploreFilled.d.ts"
+      ],
+      "icons/ExploreOutlined": [
+        "./dist/icons/ExploreOutlined.d.ts"
+      ],
       "icons/ExternalLinkFilled": [
         "./dist/icons/ExternalLinkFilled.d.ts"
       ],
       "icons/ExternalLinkOutlined": [
         "./dist/icons/ExternalLinkOutlined.d.ts"
+      ],
+      "icons/FactCheckFilled": [
+        "./dist/icons/FactCheckFilled.d.ts"
+      ],
+      "icons/FactCheckOutlined": [
+        "./dist/icons/FactCheckOutlined.d.ts"
+      ],
+      "icons/FastForward": [
+        "./dist/icons/FastForward.d.ts"
+      ],
+      "icons/FastRewind": [
+        "./dist/icons/FastRewind.d.ts"
       ],
       "icons/FavoriteFilled": [
         "./dist/icons/FavoriteFilled.d.ts"
@@ -889,11 +1122,29 @@
       "icons/FileOutlined": [
         "./dist/icons/FileOutlined.d.ts"
       ],
+      "icons/FilterAltFilled": [
+        "./dist/icons/FilterAltFilled.d.ts"
+      ],
+      "icons/FilterAltOutlined": [
+        "./dist/icons/FilterAltOutlined.d.ts"
+      ],
+      "icons/FilterDramaFilled": [
+        "./dist/icons/FilterDramaFilled.d.ts"
+      ],
+      "icons/FilterDramaOutlined": [
+        "./dist/icons/FilterDramaOutlined.d.ts"
+      ],
       "icons/FilterFilled": [
         "./dist/icons/FilterFilled.d.ts"
       ],
       "icons/FilterOutlined": [
         "./dist/icons/FilterOutlined.d.ts"
+      ],
+      "icons/Fingerprint": [
+        "./dist/icons/Fingerprint.d.ts"
+      ],
+      "icons/FirstPage": [
+        "./dist/icons/FirstPage.d.ts"
       ],
       "icons/FlagFilled": [
         "./dist/icons/FlagFilled.d.ts"
@@ -906,6 +1157,24 @@
       ],
       "icons/FolderOutlined": [
         "./dist/icons/FolderOutlined.d.ts"
+      ],
+      "icons/FormatAlignCenter": [
+        "./dist/icons/FormatAlignCenter.d.ts"
+      ],
+      "icons/FormatAlignLeft": [
+        "./dist/icons/FormatAlignLeft.d.ts"
+      ],
+      "icons/FormatAlignRight": [
+        "./dist/icons/FormatAlignRight.d.ts"
+      ],
+      "icons/FormatListNumbered": [
+        "./dist/icons/FormatListNumbered.d.ts"
+      ],
+      "icons/FormatQuote": [
+        "./dist/icons/FormatQuote.d.ts"
+      ],
+      "icons/Forward": [
+        "./dist/icons/Forward.d.ts"
       ],
       "icons/FullScreenCloseFilled": [
         "./dist/icons/FullScreenCloseFilled.d.ts"
@@ -925,17 +1194,38 @@
       "icons/GiftOutlined": [
         "./dist/icons/GiftOutlined.d.ts"
       ],
+      "icons/GroupsFilled": [
+        "./dist/icons/GroupsFilled.d.ts"
+      ],
+      "icons/GroupsOutlined": [
+        "./dist/icons/GroupsOutlined.d.ts"
+      ],
+      "icons/HeadphonesFilled": [
+        "./dist/icons/HeadphonesFilled.d.ts"
+      ],
+      "icons/HeadphonesOutlined": [
+        "./dist/icons/HeadphonesOutlined.d.ts"
+      ],
       "icons/HelpFilled": [
         "./dist/icons/HelpFilled.d.ts"
       ],
       "icons/HelpOutlined": [
         "./dist/icons/HelpOutlined.d.ts"
       ],
+      "icons/History": [
+        "./dist/icons/History.d.ts"
+      ],
       "icons/HomeFilled": [
         "./dist/icons/HomeFilled.d.ts"
       ],
       "icons/HomeOutlined": [
         "./dist/icons/HomeOutlined.d.ts"
+      ],
+      "icons/HotelFilled": [
+        "./dist/icons/HotelFilled.d.ts"
+      ],
+      "icons/HotelOutlined": [
+        "./dist/icons/HotelOutlined.d.ts"
       ],
       "icons/HourglassFilled": [
         "./dist/icons/HourglassFilled.d.ts"
@@ -961,11 +1251,20 @@
       "icons/KeyOutlined": [
         "./dist/icons/KeyOutlined.d.ts"
       ],
+      "icons/LanFilled": [
+        "./dist/icons/LanFilled.d.ts"
+      ],
+      "icons/LanOutlined": [
+        "./dist/icons/LanOutlined.d.ts"
+      ],
       "icons/LanguageFilled": [
         "./dist/icons/LanguageFilled.d.ts"
       ],
       "icons/LanguageOutlined": [
         "./dist/icons/LanguageOutlined.d.ts"
+      ],
+      "icons/LastPage": [
+        "./dist/icons/LastPage.d.ts"
       ],
       "icons/LayersFilled": [
         "./dist/icons/LayersFilled.d.ts"
@@ -982,11 +1281,20 @@
       "icons/LinkFilled": [
         "./dist/icons/LinkFilled.d.ts"
       ],
+      "icons/LinkOff": [
+        "./dist/icons/LinkOff.d.ts"
+      ],
       "icons/LinkOutlined": [
         "./dist/icons/LinkOutlined.d.ts"
       ],
       "icons/Loader": [
         "./dist/icons/Loader.d.ts"
+      ],
+      "icons/LocalOfferFilled": [
+        "./dist/icons/LocalOfferFilled.d.ts"
+      ],
+      "icons/LocalOfferOutlined": [
+        "./dist/icons/LocalOfferOutlined.d.ts"
       ],
       "icons/LocationFilled": [
         "./dist/icons/LocationFilled.d.ts"
@@ -999,6 +1307,24 @@
       ],
       "icons/LogoutOutlined": [
         "./dist/icons/LogoutOutlined.d.ts"
+      ],
+      "icons/MailFilled": [
+        "./dist/icons/MailFilled.d.ts"
+      ],
+      "icons/MailOutlined": [
+        "./dist/icons/MailOutlined.d.ts"
+      ],
+      "icons/MapFilled": [
+        "./dist/icons/MapFilled.d.ts"
+      ],
+      "icons/MapOutlined": [
+        "./dist/icons/MapOutlined.d.ts"
+      ],
+      "icons/MenuBookFilled": [
+        "./dist/icons/MenuBookFilled.d.ts"
+      ],
+      "icons/MenuBookOutlined": [
+        "./dist/icons/MenuBookOutlined.d.ts"
       ],
       "icons/MenuFilled": [
         "./dist/icons/MenuFilled.d.ts"
@@ -1018,11 +1344,20 @@
       "icons/MoreHorizOutlined": [
         "./dist/icons/MoreHorizOutlined.d.ts"
       ],
+      "icons/MoreTime": [
+        "./dist/icons/MoreTime.d.ts"
+      ],
       "icons/MoreVertFilled": [
         "./dist/icons/MoreVertFilled.d.ts"
       ],
       "icons/MoreVertOutlined": [
         "./dist/icons/MoreVertOutlined.d.ts"
+      ],
+      "icons/MovieFilled": [
+        "./dist/icons/MovieFilled.d.ts"
+      ],
+      "icons/MovieOutlined": [
+        "./dist/icons/MovieOutlined.d.ts"
       ],
       "icons/MusicFilled": [
         "./dist/icons/MusicFilled.d.ts"
@@ -1041,6 +1376,21 @@
       ],
       "icons/NoteOutlined": [
         "./dist/icons/NoteOutlined.d.ts"
+      ],
+      "icons/NotificationsFilled": [
+        "./dist/icons/NotificationsFilled.d.ts"
+      ],
+      "icons/NotificationsOutlined": [
+        "./dist/icons/NotificationsOutlined.d.ts"
+      ],
+      "icons/OfflineBolt": [
+        "./dist/icons/OfflineBolt.d.ts"
+      ],
+      "icons/PasswordFilled": [
+        "./dist/icons/PasswordFilled.d.ts"
+      ],
+      "icons/PasswordOutlined": [
+        "./dist/icons/PasswordOutlined.d.ts"
       ],
       "icons/PasteContentFilled": [
         "./dist/icons/PasteContentFilled.d.ts"
@@ -1075,20 +1425,101 @@
       "icons/PrintOutlined": [
         "./dist/icons/PrintOutlined.d.ts"
       ],
+      "icons/PushPinFilled": [
+        "./dist/icons/PushPinFilled.d.ts"
+      ],
+      "icons/PushPinOutlined": [
+        "./dist/icons/PushPinOutlined.d.ts"
+      ],
       "icons/QrCodeFilled": [
         "./dist/icons/QrCodeFilled.d.ts"
       ],
       "icons/QrCodeOutlined": [
         "./dist/icons/QrCodeOutlined.d.ts"
       ],
+      "icons/QuizFilled": [
+        "./dist/icons/QuizFilled.d.ts"
+      ],
+      "icons/QuizOutlined": [
+        "./dist/icons/QuizOutlined.d.ts"
+      ],
+      "icons/RadioButtonChecked": [
+        "./dist/icons/RadioButtonChecked.d.ts"
+      ],
+      "icons/ReceiptFilled": [
+        "./dist/icons/ReceiptFilled.d.ts"
+      ],
+      "icons/ReceiptOutlined": [
+        "./dist/icons/ReceiptOutlined.d.ts"
+      ],
+      "icons/Redeem": [
+        "./dist/icons/Redeem.d.ts"
+      ],
       "icons/Redo": [
         "./dist/icons/Redo.d.ts"
+      ],
+      "icons/RemoveCircleFilled": [
+        "./dist/icons/RemoveCircleFilled.d.ts"
+      ],
+      "icons/RemoveCircleOutlined": [
+        "./dist/icons/RemoveCircleOutlined.d.ts"
+      ],
+      "icons/RemoveFilled": [
+        "./dist/icons/RemoveFilled.d.ts"
+      ],
+      "icons/RemoveOutlined": [
+        "./dist/icons/RemoveOutlined.d.ts"
+      ],
+      "icons/Reply": [
+        "./dist/icons/Reply.d.ts"
+      ],
+      "icons/ReplyAll": [
+        "./dist/icons/ReplyAll.d.ts"
+      ],
+      "icons/RestaurantFilled": [
+        "./dist/icons/RestaurantFilled.d.ts"
+      ],
+      "icons/RestaurantOutlined": [
+        "./dist/icons/RestaurantOutlined.d.ts"
+      ],
+      "icons/Restore": [
+        "./dist/icons/Restore.d.ts"
+      ],
+      "icons/RouteFilled": [
+        "./dist/icons/RouteFilled.d.ts"
+      ],
+      "icons/RouteOutlined": [
+        "./dist/icons/RouteOutlined.d.ts"
+      ],
+      "icons/RssFeedFilled": [
+        "./dist/icons/RssFeedFilled.d.ts"
+      ],
+      "icons/RssFeedOutlined": [
+        "./dist/icons/RssFeedOutlined.d.ts"
       ],
       "icons/SaveFilled": [
         "./dist/icons/SaveFilled.d.ts"
       ],
       "icons/SaveOutlined": [
         "./dist/icons/SaveOutlined.d.ts"
+      ],
+      "icons/SchemaFilled": [
+        "./dist/icons/SchemaFilled.d.ts"
+      ],
+      "icons/SchemaOutlined": [
+        "./dist/icons/SchemaOutlined.d.ts"
+      ],
+      "icons/ScreenShareFilled": [
+        "./dist/icons/ScreenShareFilled.d.ts"
+      ],
+      "icons/ScreenShareOutlined": [
+        "./dist/icons/ScreenShareOutlined.d.ts"
+      ],
+      "icons/SdCardFilled": [
+        "./dist/icons/SdCardFilled.d.ts"
+      ],
+      "icons/SdCardOutlined": [
+        "./dist/icons/SdCardOutlined.d.ts"
       ],
       "icons/SearchFilled": [
         "./dist/icons/SearchFilled.d.ts"
@@ -1105,17 +1536,50 @@
       "icons/SendOutlined": [
         "./dist/icons/SendOutlined.d.ts"
       ],
+      "icons/SettingsFilled": [
+        "./dist/icons/SettingsFilled.d.ts"
+      ],
+      "icons/SettingsOutlined": [
+        "./dist/icons/SettingsOutlined.d.ts"
+      ],
       "icons/ShareFilled": [
         "./dist/icons/ShareFilled.d.ts"
       ],
       "icons/ShareOutlined": [
         "./dist/icons/ShareOutlined.d.ts"
       ],
+      "icons/ShieldFilled": [
+        "./dist/icons/ShieldFilled.d.ts"
+      ],
+      "icons/ShieldOutlined": [
+        "./dist/icons/ShieldOutlined.d.ts"
+      ],
+      "icons/ShoppingBagFilled": [
+        "./dist/icons/ShoppingBagFilled.d.ts"
+      ],
+      "icons/ShoppingBagOutlined": [
+        "./dist/icons/ShoppingBagOutlined.d.ts"
+      ],
+      "icons/SkipNext": [
+        "./dist/icons/SkipNext.d.ts"
+      ],
+      "icons/SkipPrevious": [
+        "./dist/icons/SkipPrevious.d.ts"
+      ],
       "icons/SortFilled": [
         "./dist/icons/SortFilled.d.ts"
       ],
       "icons/SortOutlined": [
         "./dist/icons/SortOutlined.d.ts"
+      ],
+      "icons/Spellcheck": [
+        "./dist/icons/Spellcheck.d.ts"
+      ],
+      "icons/SportsSoccerFilled": [
+        "./dist/icons/SportsSoccerFilled.d.ts"
+      ],
+      "icons/SportsSoccerOutlined": [
+        "./dist/icons/SportsSoccerOutlined.d.ts"
       ],
       "icons/StarFilled": [
         "./dist/icons/StarFilled.d.ts"
@@ -1126,8 +1590,32 @@
       "icons/Stop": [
         "./dist/icons/Stop.d.ts"
       ],
+      "icons/StorefrontFilled": [
+        "./dist/icons/StorefrontFilled.d.ts"
+      ],
+      "icons/StorefrontOutlined": [
+        "./dist/icons/StorefrontOutlined.d.ts"
+      ],
       "icons/Sun": [
         "./dist/icons/Sun.d.ts"
+      ],
+      "icons/SupervisorAccountFilled": [
+        "./dist/icons/SupervisorAccountFilled.d.ts"
+      ],
+      "icons/SupervisorAccountOutlined": [
+        "./dist/icons/SupervisorAccountOutlined.d.ts"
+      ],
+      "icons/SupportAgentFilled": [
+        "./dist/icons/SupportAgentFilled.d.ts"
+      ],
+      "icons/SupportAgentOutlined": [
+        "./dist/icons/SupportAgentOutlined.d.ts"
+      ],
+      "icons/SwapHoriz": [
+        "./dist/icons/SwapHoriz.d.ts"
+      ],
+      "icons/SwapVert": [
+        "./dist/icons/SwapVert.d.ts"
       ],
       "icons/SystemFilled": [
         "./dist/icons/SystemFilled.d.ts"
@@ -1153,17 +1641,56 @@
       "icons/TargetOutlined": [
         "./dist/icons/TargetOutlined.d.ts"
       ],
+      "icons/Terminal": [
+        "./dist/icons/Terminal.d.ts"
+      ],
+      "icons/TextFieldsFilled": [
+        "./dist/icons/TextFieldsFilled.d.ts"
+      ],
+      "icons/TextFieldsOutlined": [
+        "./dist/icons/TextFieldsOutlined.d.ts"
+      ],
       "icons/TextFormatFilled": [
         "./dist/icons/TextFormatFilled.d.ts"
       ],
       "icons/TextFormatOutlined": [
         "./dist/icons/TextFormatOutlined.d.ts"
       ],
+      "icons/ThumbDownFilled": [
+        "./dist/icons/ThumbDownFilled.d.ts"
+      ],
+      "icons/ThumbDownOutlined": [
+        "./dist/icons/ThumbDownOutlined.d.ts"
+      ],
+      "icons/ThumbUpFilled": [
+        "./dist/icons/ThumbUpFilled.d.ts"
+      ],
+      "icons/ThumbUpOutlined": [
+        "./dist/icons/ThumbUpOutlined.d.ts"
+      ],
       "icons/TimerFilled": [
         "./dist/icons/TimerFilled.d.ts"
       ],
       "icons/TimerOutlined": [
         "./dist/icons/TimerOutlined.d.ts"
+      ],
+      "icons/ToggleOffFilled": [
+        "./dist/icons/ToggleOffFilled.d.ts"
+      ],
+      "icons/ToggleOffOutlined": [
+        "./dist/icons/ToggleOffOutlined.d.ts"
+      ],
+      "icons/ToggleOnFilled": [
+        "./dist/icons/ToggleOnFilled.d.ts"
+      ],
+      "icons/ToggleOnOutlined": [
+        "./dist/icons/ToggleOnOutlined.d.ts"
+      ],
+      "icons/Translate": [
+        "./dist/icons/Translate.d.ts"
+      ],
+      "icons/TrendingUp": [
+        "./dist/icons/TrendingUp.d.ts"
       ],
       "icons/Undo": [
         "./dist/icons/Undo.d.ts"
@@ -1186,6 +1713,12 @@
       "icons/UploadOutlined": [
         "./dist/icons/UploadOutlined.d.ts"
       ],
+      "icons/UsbFilled": [
+        "./dist/icons/UsbFilled.d.ts"
+      ],
+      "icons/UsbOutlined": [
+        "./dist/icons/UsbOutlined.d.ts"
+      ],
       "icons/UsersFilled": [
         "./dist/icons/UsersFilled.d.ts"
       ],
@@ -1197,6 +1730,18 @@
       ],
       "icons/VerifiedOutlined": [
         "./dist/icons/VerifiedOutlined.d.ts"
+      ],
+      "icons/VerifiedUserFilled": [
+        "./dist/icons/VerifiedUserFilled.d.ts"
+      ],
+      "icons/VerifiedUserOutlined": [
+        "./dist/icons/VerifiedUserOutlined.d.ts"
+      ],
+      "icons/VibrationFilled": [
+        "./dist/icons/VibrationFilled.d.ts"
+      ],
+      "icons/VibrationOutlined": [
+        "./dist/icons/VibrationOutlined.d.ts"
       ],
       "icons/VideoFilled": [
         "./dist/icons/VideoFilled.d.ts"
@@ -1222,6 +1767,12 @@
       "icons/VisibilityOutlined": [
         "./dist/icons/VisibilityOutlined.d.ts"
       ],
+      "icons/VoicemailFilled": [
+        "./dist/icons/VoicemailFilled.d.ts"
+      ],
+      "icons/VoicemailOutlined": [
+        "./dist/icons/VoicemailOutlined.d.ts"
+      ],
       "icons/VolumeFilled": [
         "./dist/icons/VolumeFilled.d.ts"
       ],
@@ -1239,6 +1790,12 @@
       ],
       "icons/WarningOutlined": [
         "./dist/icons/WarningOutlined.d.ts"
+      ],
+      "icons/WebhookFilled": [
+        "./dist/icons/WebhookFilled.d.ts"
+      ],
+      "icons/WebhookOutlined": [
+        "./dist/icons/WebhookOutlined.d.ts"
       ],
       "icons/Wifi": [
         "./dist/icons/Wifi.d.ts"

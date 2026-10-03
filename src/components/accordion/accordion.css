@@ -1,0 +1,326 @@
+/*
+ * Accordion styles.
+ *
+ * One thing here is a correctness requirement rather than a look: a collapsed panel is hidden with the
+ * `hidden` attribute in the markup, not with `height: 0`. `hidden` is what takes the panel out of the tab
+ * sequence, so a panel hidden by CSS alone would keep its links reachable by Tab while being invisible.
+ */
+
+@layer uireload.components {
+  .uir-accordion,
+  .uir-accordion__item,
+  .uir-accordion__heading,
+  .uir-accordion__trigger,
+  .uir-accordion__title,
+  .uir-accordion__icon,
+  .uir-accordion__panel {
+    box-sizing: border-box;
+  }
+
+  /* ---- Root ---------------------------------------------------------- */
+
+  .uir-accordion {
+    --uir-accordion-border: var(--uir-border);
+    --uir-accordion-surface: var(--uir-surface);
+    --uir-accordion-tone-text: var(--uir-text);
+    --uir-accordion-tone-accent: var(--uir-accent);
+
+    display: grid;
+    font-family: var(--uir-font-family);
+    /*
+     * The items are adjacent siblings, so a plain grid gap cannot draw the seams between them: a gap is
+     * transparent, and the surfaces would read as separate cards rather than as one divided list. The
+     * separator is a border on the item instead, and `border-block-start` is removed from every item but
+     * the first.
+     */
+    gap: 0;
+    inline-size: 100%;
+  }
+
+  .uir-accordion[data-variant="outlined"] {
+    background-color: var(--uir-accordion-surface);
+    border: 1px solid var(--uir-accordion-border);
+    border-radius: var(--uir-radius-large);
+    /* The outline is drawn around the group, so the items' own seams must not reach the rounded corner. */
+    overflow: hidden;
+  }
+
+  .uir-accordion[data-variant="plain"] {
+    --uir-accordion-border: transparent;
+
+    gap: var(--uir-space-xs);
+  }
+
+  /* ---- Item ---------------------------------------------------------- */
+
+  .uir-accordion__item {
+    /*
+     * Not the first child rather than not the first of type, because the markup between items is stable
+     * today and `:first-child` would break the moment a consumer could insert something. `:not(:first-child)`
+     * on the item is the direct statement of "not the top of the group".
+     */
+    position: relative;
+  }
+
+  .uir-accordion__item:not(:first-child)::before {
+    background-color: var(--uir-accordion-border);
+    block-size: 1px;
+    content: "";
+    /*
+     * Full-bleed to the item's edges so the seam reaches the group's border in the outlined variant. A seam
+     * inset to the text column stops short of the outline and leaves a notch at each side.
+     */
+    inset-inline: 0;
+    position: absolute;
+    inset-block-start: 0;
+  }
+
+  /* The seam must not cross an open panel's text, so it is dropped while the item is expanded. */
+  .uir-accordion__item[data-expanded]::before {
+    display: none;
+  }
+
+  /* ---- Heading ------------------------------------------------------- */
+
+  /*
+   * The heading element carries no margin of its own.
+   *
+   * `<h2>`–`<h6>` have a UA margin that would push the first item off the group's rounded corner and open
+   * a gap between two adjacent items' seams. It is reset here rather than fought with a negative margin.
+   */
+  .uir-accordion__heading {
+    font: inherit;
+    margin: 0;
+  }
+
+  /* ---- Trigger ------------------------------------------------------- */
+
+  .uir-accordion__trigger {
+    --uir-accordion-trigger-height: var(--uir-control-height-lg);
+
+    align-items: center;
+    background-color: transparent;
+    border: 0;
+    color: var(--uir-accordion-tone-text);
+    cursor: pointer;
+    display: flex;
+    font-family: inherit;
+    font-size: var(--uir-control-font-size-md);
+    font-weight: var(--uir-control-font-weight);
+    gap: var(--uir-space-sm);
+    inline-size: 100%;
+    justify-content: space-between;
+    line-height: var(--uir-line-height);
+    min-block-size: var(--uir-accordion-trigger-height);
+    padding-block: var(--uir-space-sm);
+    padding-inline: var(--uir-space);
+    text-align: start;
+    transition: background-color var(--uir-duration-fast) var(--uir-easing);
+  }
+
+  .uir-accordion[data-size="sm"] .uir-accordion__trigger {
+    --uir-accordion-trigger-height: var(--uir-control-height-sm);
+
+    font-size: var(--uir-control-font-size-sm);
+    padding-inline: var(--uir-space-sm);
+  }
+
+  .uir-accordion[data-size="lg"] .uir-accordion__trigger {
+    /*
+     * Derived rather than a fourth control-height token.
+     *
+     * The height ladder stops at `--uir-control-height-lg`, and an accordion header is not a control — it
+     * is a full-width row of text, so it only needs to be visibly taller than the buttons inside its panels,
+     * not to hit a minimum target size. One `--uir-space` step above `lg` gives that without adding a token
+     * whose only user would be this one rule.
+     */
+    --uir-accordion-trigger-height: calc(var(--uir-control-height-lg) + var(--uir-space));
+
+    font-size: var(--uir-control-font-size-lg);
+    padding-inline: var(--uir-space);
+  }
+
+  .uir-accordion__trigger:hover:not(:disabled) {
+    background-color: var(--uir-accent-wash);
+  }
+
+  /*
+   * The focus ring belongs on the trigger, and it is drawn with `outline` rather than a box-shadow or a
+   * sibling element, because `outline` follows the border-radius in every engine and cannot be missed by a
+   * consumer rule that sets `overflow: hidden` on the group.
+   *
+   * The offset is the ring's own width, pulled inward so the ring sits *inside* the row. An outline drawn
+   * outside would be clipped by the group's `overflow: hidden` on the first and last items, which is exactly
+   * where a user tabbing through the list is looking.
+   */
+  .uir-accordion__trigger:focus-visible {
+    outline: var(--uir-focus-ring-width) solid var(--uir-focus-ring-color);
+    outline-offset: calc(-1 * var(--uir-focus-ring-width));
+  }
+
+  /*
+   * A disabled header is `display: block` so it is still announced as disabled by a screen reader that
+   * walks the heading, but it must not look pressable.
+   */
+  .uir-accordion__trigger:disabled {
+    background-color: transparent;
+    color: var(--uir-text-disabled);
+    cursor: not-allowed;
+  }
+
+  /*
+   * `aria-disabled` on an *open* header that will not collapse. Not styled as disabled — it still has to
+   * look like the active item, because it is the open one. The only signal is that the chevron stops
+   * turning, which is honest: the control really does nothing.
+   */
+  .uir-accordion__trigger[aria-disabled="true"] {
+    cursor: default;
+  }
+
+  /* ---- Title --------------------------------------------------------- */
+
+  .uir-accordion__title {
+    /*
+     * `min-inline-size: 0` so a long unbroken title can shrink and wrap inside the flex row. Without it the
+     * title's min-content width pushes the chevron out of the trigger rather than the text wrapping.
+     */
+    min-inline-size: 0;
+    overflow-wrap: anywhere;
+  }
+
+  /* ---- Chevron ------------------------------------------------------- */
+
+  /*
+   * A rotated square with two borders, which is a chevron without an SVG.
+   *
+   * `border-block-start` and `border-inline-start` are the two edges that form the point, so the shape
+   * mirrors in RTL on its own: the `rotate` that opens the panel then turns the same way in both reading
+   * directions, which a `border-top`/`border-left` pair could not do.
+   */
+  .uir-accordion__icon {
+    border-block-start: 2px solid currentcolor;
+    border-inline-start: 2px solid currentcolor;
+    block-size: 0.5em;
+    display: block;
+    flex-shrink: 0;
+    font-size: 1.25em;
+    inline-size: 0.5em;
+    rotate: 45deg;
+    transition: rotate var(--uir-duration) var(--uir-easing);
+  }
+
+  /*
+   * Rotated a further quarter turn to point down when open.
+   *
+   * Written as a separate rule on the *item* rather than on the trigger's `aria-expanded`, so the chevron's
+   * state is derived from the same source as the panel's and cannot disagree with it.
+   */
+  .uir-accordion__item[data-expanded] .uir-accordion__icon {
+    rotate: 225deg;
+  }
+
+  /* ---- Panel --------------------------------------------------------- */
+
+  .uir-accordion__panel {
+    color: var(--uir-text);
+    /*
+     * `padding-inline` matches the trigger's so the panel's text lines up with the title above it. The
+     * `lg` variant is overridden because the trigger's own padding is size-dependent and the two must
+     * agree at every size.
+     */
+    padding-block-end: var(--uir-space);
+    padding-inline: var(--uir-space);
+  }
+
+  .uir-accordion[data-size="sm"] .uir-accordion__panel {
+    padding-block-end: var(--uir-space-sm);
+    padding-inline: var(--uir-space-sm);
+  }
+
+  .uir-accordion[data-size="lg"] .uir-accordion__panel {
+    padding-block-end: var(--uir-space);
+    padding-inline: var(--uir-space);
+  }
+
+  .uir-accordion[data-variant="plain"] .uir-accordion__panel {
+    padding-inline-start: 0;
+  }
+
+  /*
+   * `hidden` sets `display: none`, which a `display` declaration here would override — so the panel is
+   * restated as hidden explicitly rather than relying on the attribute winning a cascade. Without this, a
+   * future `display: flex` on the panel would silently make every collapsed panel visible again.
+   */
+  .uir-accordion__panel[hidden] {
+    display: none;
+  }
+
+  /* ---- Item tone ----------------------------------------------------- */
+
+  .uir-accordion__item[data-tone="neutral"] {
+    --uir-accordion-tone-text: var(--uir-text);
+    --uir-accordion-tone-accent: var(--uir-text-muted);
+  }
+
+  .uir-accordion__item[data-tone="accent"] {
+    --uir-accordion-tone-text: var(--uir-accent);
+    --uir-accordion-tone-accent: var(--uir-accent);
+  }
+
+  .uir-accordion__item[data-tone="positive"] {
+    --uir-accordion-tone-text: var(--uir-success);
+    --uir-accordion-tone-accent: var(--uir-success);
+  }
+
+  .uir-accordion__item[data-tone="danger"] {
+    --uir-accordion-tone-text: var(--uir-danger);
+    --uir-accordion-tone-accent: var(--uir-danger);
+  }
+
+  /*
+   * An open item's title takes the accent.
+   *
+   * Keyed on the item's own `data-expanded` rather than on a class, so the visual state and the state
+   * announced through `aria-expanded` come from one attribute and cannot drift.
+   */
+  .uir-accordion__item[data-expanded] .uir-accordion__trigger {
+    color: var(--uir-accordion-tone-accent);
+  }
+
+  /* ---- Reduced motion ------------------------------------------------ */
+
+  /*
+   * The chevron stops turning.
+   *
+   * There is no height animation to suppress here — the panel is hidden with `hidden` rather than collapsed
+   * — so the motion being removed is exactly the rotation and nothing else. The chevron keeps its open
+   * position, so the state is still visible without any of the movement.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .uir-accordion__icon,
+    .uir-accordion__trigger {
+      transition: none;
+    }
+  }
+
+  /* ---- Forced colours ------------------------------------------------ */
+
+  /*
+   * The seam becomes `CanvasText`, the one colour a forced-colours theme guarantees to be visible against
+   * `Canvas`. Left as a translucent token it can resolve to nothing at all, which turns a divided list into
+   * an undifferentiated block with several indistinguishable headers.
+   */
+  @media (forced-colors: active) {
+    .uir-accordion[data-variant="outlined"] {
+      border-color: CanvasText;
+    }
+
+    .uir-accordion__item:not(:first-child)::before {
+      background-color: CanvasText;
+    }
+
+    .uir-accordion__icon {
+      border-color: CanvasText;
+    }
+  }
+}
