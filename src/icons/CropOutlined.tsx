@@ -7,6 +7,6 @@
 import { outlinedIcon } from "./_create-icon";
 
 export default outlinedIcon("CropOutlined", <>
-<path d="M6.4 2.6v13.6a1.8 1.8 0 0 0 1.8 1.8h12" />
-<path d="M17.6 21.4V7.8a1.8 1.8 0 0 0-1.8-1.8h-12" />
+<path d="M6.8 3.4v15.2h13.4" />
+<path d="M17.2 20.6H3.8V5.4" />
 </>);

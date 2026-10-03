@@ -7,6 +7,6 @@
 import { outlinedIcon } from "./_create-icon";
 
 export default outlinedIcon("ChatBubbleOutlined", <>
-<path d="M6.6 3.6h10.8a3 3 0 0 1 3 3v11a3 3 0 0 1-3 3H10l-4.5 3V6.6a3 3 0 0 1 3-3Z" />
-<path d="M7.8 8.4h8.4M7.8 12.3h5.4" />
+<path d="M7.8 4.4h8.4a3.6 3.6 0 0 1 3.6 3.6v5a3.6 3.6 0 0 1-3.6 3.6h-4.4l-3.9 3.1a.7.7 0 0 1-1.1-.6v-2.5H7.8a3.6 3.6 0 0 1-3.6-3.6V8a3.6 3.6 0 0 1 3.6-3.6Z" />
+<path d="M7.6 7.8h8.8M7.6 11h5.6" />
 </>);

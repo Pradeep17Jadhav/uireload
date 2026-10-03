@@ -7,8 +7,7 @@
 import { outlinedIcon } from "./_create-icon";
 
 export default outlinedIcon("BugOutlined", <>
-<circle cx="12" cy="6.6" r="3" />
-<rect x="6.6" y="10.2" width="10.8" height="9.4" rx="4.5" />
-<path d="M6.9 12.6 3.6 10.6M17.1 12.6l3.3-2M6.9 16.6l-3.3 2M17.1 16.6l3.3 2" />
-<path d="m10.3 4.5-1.5-2.5M13.7 4.5l1.5-2.5" />
+<circle cx="12" cy="15.2" r="5" />
+<circle cx="12" cy="7.6" r="2.6" />
+<path d="M12 10.4v9M7.4 12.4 3.6 10.2M7 15H3.2M7.4 17.6 3.6 19.8M16.6 12.4l3.8-2.2M17 15h3.8M16.6 17.6l3.8 2.2M10.6 5 8.4 2.6M13.4 5l2.2-2.4" />
 </>);

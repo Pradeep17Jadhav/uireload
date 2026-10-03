@@ -6,7 +6,4 @@
 
 import { outlinedIcon } from "./_create-icon";
 
-export default outlinedIcon("CurrencyRupeeOutlined", <>
-<circle cx="12" cy="12" r="9" />
-<path d="M8.4 6.4h7.4M8.4 9.8h7.4M8.4 13.2h3.4M8.4 6.4h3.2a3.4 3.4 0 0 1 0 6.8H8.4M11.6 13.2l6.4 4.4" />
-</>);
+export default outlinedIcon("CurrencyRupeeOutlined", <path d="M7.6 6.2h8.8M7.6 9.8h8.8M7.6 13.4h3.8M7.6 6.2h3.6a3.6 3.6 0 0 1 0 7.2H7.6M11.4 13.4l7 4.8" />);

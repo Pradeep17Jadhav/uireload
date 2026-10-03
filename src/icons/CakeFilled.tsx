@@ -7,9 +7,9 @@
 import { filledIcon } from "./_create-icon";
 
 export default filledIcon("CakeFilled", <>
-<path d="M3.2 13.6h17.6v4a2.4 2.4 0 0 1-2.4 2.4H5.6A2.4 2.4 0 0 1 3.2 17.6v-4Z" />
-<rect x="3.2" y="8.4" width="17.6" height="4.4" rx="1.2" />
-<rect x="5.6" y="3.6" width="2" height="4.8" rx="1" />
-<rect x="11" y="3.6" width="2" height="4.8" rx="1" />
-<rect x="16.4" y="3.6" width="2" height="4.8" rx="1" />
+<path d="M3.4 12.4c1.7-1.7 3.4-1.7 5.1 0s3.4 1.7 5.1 0 3.4-1.7 5.1 0v1.5H3.4Z" />
+<path d="M4.6 14.4h14.8v3.9a2.2 2.2 0 0 1-2.2 2.2H6.8a2.2 2.2 0 0 1-2.2-2.2Z" />
+<path d="M7.5 9.2h1.8v3.4H7.5zM14.7 9.2h1.8v3.4h-1.8z" />
+<circle cx="8.4" cy="6.1" r="1.3" />
+<circle cx="15.6" cy="6.1" r="1.3" />
 </>);

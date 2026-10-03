@@ -7,13 +7,12 @@
 import { outlinedIcon } from "./_create-icon";
 
 export default outlinedIcon("CalendarMonthOutlined", <>
-<rect x="3" y="4.8" width="18" height="16.2" rx="2.4" />
-<path d="M3 9.6h18" />
-<path d="M7.4 2.8v4M16.6 2.8v4" />
-<rect x="6.4" y="12.2" width="3.2" height="3.2" rx="0.9" />
-<rect x="10.4" y="12.2" width="3.2" height="3.2" rx="0.9" />
-<rect x="14.4" y="12.2" width="3.2" height="3.2" rx="0.9" />
-<rect x="6.4" y="16.6" width="3.2" height="3.2" rx="0.9" />
-<rect x="10.4" y="16.6" width="3.2" height="3.2" rx="0.9" />
-<rect x="14.4" y="16.6" width="3.2" height="3.2" rx="0.9" />
+<rect x="3.4" y="4.6" width="17.2" height="15.8" rx="2.2" />
+<path d="M3.4 9.2h17.2M8.2 4.6V2.6M15.8 4.6V2.6" />
+<circle cx="7.8" cy="11.6" r="1.2" />
+<circle cx="12" cy="11.6" r="1.2" />
+<circle cx="16.2" cy="11.6" r="1.2" />
+<circle cx="7.8" cy="16" r="1.2" />
+<circle cx="12" cy="16" r="1.2" />
+<circle cx="16.2" cy="16" r="1.2" />
 </>);

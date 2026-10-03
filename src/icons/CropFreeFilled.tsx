@@ -6,7 +6,4 @@
 
 import { filledIcon } from "./_create-icon";
 
-export default filledIcon("CropFreeFilled", <>
-<path d="M3.4 3.4h5.2v2.1H5.5v3.1H3.4V3.4Zm12 0h5.2v5.2h-2.1V5.5h-3.1V3.4Zm5.2 12h2.1v5.2h-5.2v-2.1h3.1v-3.1ZM8.6 18.5v2.1H3.4v-5.2h2.1v3.1h3.1Z" />
-<rect x="8.4" y="8.4" width="7.2" height="7.2" rx="1.4" />
-</>);
+export default filledIcon("CropFreeFilled", <path d="M8.6 3.4H15.4A1 1 0 0 1 16.4 4.4V4.8A1 1 0 0 1 15.4 5.8H8.6A1 1 0 0 1 7.6 4.8V4.4A1 1 0 0 1 8.6 3.4ZM4.4 7.6H4.8A1 1 0 0 1 5.8 8.6V15.4A1 1 0 0 1 4.8 16.4H4.4A1 1 0 0 1 3.4 15.4V8.6A1 1 0 0 1 4.4 7.6ZM19.2 7.6H19.6A1 1 0 0 1 20.6 8.6V15.4A1 1 0 0 1 19.6 16.4H19.2A1 1 0 0 1 18.2 15.4V8.6A1 1 0 0 1 19.2 7.6ZM8.6 18.2H15.4A1 1 0 0 1 16.4 19.2V19.6A1 1 0 0 1 15.4 20.6H8.6A1 1 0 0 1 7.6 19.6V19.2A1 1 0 0 1 8.6 18.2Z" />);

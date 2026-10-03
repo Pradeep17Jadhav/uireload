@@ -47,8 +47,15 @@
    * for a checkbox and a switch, which are boxes a finger has to hit; a radio is a small mark inside a
    * large hit area — and the hit area is already the whole row, because the input covers it.
    *
-   * So the dot is 16 / 18 / 20px and the *row* keeps the control height, which is what `sm` / `md` / `lg`
+   * So the dot is 16 / 20 / 24px and the *row* keeps the control height, which is what `sm` / `md` / `lg`
    * still scale. `checkbox.css` derives its box from the control height and is not changed here.
+   *
+   * **Every step is a multiple of 4px, and that is load-bearing.** The mark is `calc(dot * 0.5)` and the
+   * dot carries a 1px border, so the flex centring offset is `(dot - 2 - mark) / 2` — which is a whole
+   * pixel only when `dot / 2` is even, i.e. only when the dot is a multiple of 4. An 18px dot gave a 9px
+   * mark and a 3.5px offset, so at `md` and *only* at `md` the mark was rasterised across two columns and
+   * read as off-centre. `sm` (16) and `lg` (20) were fine, which is why it looked size-specific rather
+   * than broken.
    */
   .uir-radio-group {
     --uir-radio-dot: 1rem;
@@ -56,11 +63,11 @@
   }
 
   .uir-radio-group[data-size="md"] {
-    --uir-radio-dot: 1.125rem;
+    --uir-radio-dot: 1.25rem;
   }
 
   .uir-radio-group[data-size="lg"] {
-    --uir-radio-dot: 1.25rem;
+    --uir-radio-dot: 1.5rem;
   }
 
   /* ---- Legend and description ----------------------------------------- */

@@ -6,4 +6,4 @@
 
 import { outlinedIcon } from "./_create-icon";
 
-export default outlinedIcon("AddOutlined", <path d="M12 4.5v15M4.5 12h15" />);
+export default outlinedIcon("AddOutlined", <path d="M12 4.6v14.8M4.6 12h14.8" />);

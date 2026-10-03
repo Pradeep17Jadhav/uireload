@@ -12,7 +12,14 @@
  */
 
 import { useCallback, useEffect, useId, useMemo, useRef } from "react";
-import { composeHandlers, composeRefs, cx, useControllableState } from "../../internal";
+import {
+  composeHandlers,
+  composeRefs,
+  cx,
+  fractionFromPointer,
+  nearestThumbIndex,
+  useControllableState,
+} from "../../internal";
 
 /*
  * NOTE: this file deliberately does NOT import "./slider.css".
@@ -226,7 +233,19 @@ export function Slider(props: SliderProps) {
    * Without this, a keyboard user moves the thumb and `onValueCommit` never fires — so a form
    * submitted on blur has no committed value to read.
    */
-  const dragging = useRef(false);
+  /**
+   * Which thumb a pointer gesture owns, or `null` when none is in progress.
+   *
+   * An index rather than a boolean, because a two-thumb slider has to remember *which* one the
+   * gesture claimed — a boolean can only say that something is moving.
+   */
+  const dragIndex = useRef<number | null>(null);
+
+  /** The rail, which is the box the pointer maths is measured against. */
+  const railRef = useRef<HTMLDivElement>(null);
+
+  /** The real inputs, so a gesture can focus the thumb it owns. */
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const emit = useCallback(
     (next: number[], phase: "change" | "commit") => {
@@ -337,60 +356,148 @@ export function Slider(props: SliderProps) {
     }
   }, onKeyDownProp);
 
+  /* ---- Pointer on the rail ------------------------------------------- */
+
+  /**
+   * The value under the pointer, from the rail's own box.
+   *
+   * The **rail**, not the root. The root also holds the header, the readout, the marks and the helper
+   * text, so it is 64px tall where the rail is 4px; measuring the root mapped a press on the visible
+   * line across a box sixteen times its height, which is what made a click land somewhere the user had
+   * not clicked.
+   *
+   * `bottom - clientY` rather than `clientY - top` on the block axis, because a vertical slider's low
+   * end is at the **bottom**: the value grows upward, which is what `--uir-slider-at` and the drawn thumb
+   * both assume. Getting this backwards is why a vertical slider jumped between the two ends instead of
+   * tracking the pointer.
+   */
+  const valueFromPointer = (event: React.PointerEvent<HTMLElement>): number | null => {
+    const box = railRef.current?.getBoundingClientRect();
+    if (box === undefined || box.width === 0 || box.height === 0) return null;
+
+    const vertical = orientation === "vertical";
+
+    /*
+     * Measured from the end the orientation implies: the inline start for a horizontal rail, and the
+     * **bottom** for a vertical one, because a vertical slider's minimum is at the bottom. Reading the
+     * block axis from the top is the obvious transcription and it transposes the two ends — which is why a
+     * vertical slider used to snap between its extremes instead of tracking the pointer.
+     *
+     * The mapping is `fractionFromPointer`: a pure function, tested as one. It has to be, because this
+     * environment cannot deliver a pointer gesture to a component at all — `jsdom` has no
+     * `PointerEvent` and no `setPointerCapture`. See `src/internal/track.ts`.
+     */
+    const position = vertical ? box.bottom - event.clientY : event.clientX - box.left;
+
+    const fraction = fractionFromPointer(
+      { length: vertical ? box.height : box.width, thumb: vertical ? box.width : box.height },
+      position
+    );
+
+    return min + fraction * (max - min);
+  };
+
+  /**
+   * The thumb a gesture should move: the one nearest the pointer.
+   *
+   * This is the whole reason the pointer is handled here rather than by the native inputs. A range
+   * slider draws two full-length `<input type="range">` elements over one rail, so exactly one of them
+   * is on top and receives every pointer event — whichever is later in the DOM. The result was that
+   * pressing the **left** thumb moved the **right** one, on every click and every drag, because the
+   * right input was the only one the pointer ever reached.
+   *
+   * Narrowing the inputs would not fix it either: a native input maps its own value across its own
+   * width, so giving each thumb half the rail would also halve the value range it could represent, and
+   * the drawn thumb would stop agreeing with `aria-valuenow`.
+   *
+   * So the inputs keep the full range and the full rail and stop taking the pointer
+   * (`pointer-events: none`, in the stylesheet), and the nearest-thumb rule is applied here where the
+   * whole rail is one target. The inputs stay focusable and keep the platform keyboard and the form.
+   */
+  const nearestThumb = (value: number): number => nearestThumbIndex(values, value);
+
+  /**
+   * Begin a gesture.
+   *
+   * On the rail, so a press anywhere on the line — on a thumb or on the track beside one — is the same
+   * gesture. `beginInteraction` runs here, on the *press*, so `Escape` has the value from before the
+   * gesture rather than from one pixel into it.
+   */
+  const onPointerDown = (event: React.PointerEvent<HTMLDivElement>): void => {
+    if (disabled) return;
+
+    /*
+     * `isPrimary === false`, not `!isPrimary`.
+     *
+     * The point is to ignore the *second* finger of a two-finger gesture. Treating a missing
+     * `isPrimary` as "not primary" quietly disables the control outright in any environment that does not
+     * populate the property — which is not hypothetical: it is exactly what happened under jsdom, where
+     * `PointerEvent` drops it from the init dictionary, so every press was ignored and the suite passed
+     * because it had no pointer tests at all. Unknown is not false.
+     */
+    if (event.isPrimary === false) return;
+    if (event.button !== 0 && event.pointerType === "mouse") return;
+
+    const value = valueFromPointer(event);
+    if (value === null) return;
+
+    beginInteraction();
+
+    const index = nearestThumb(value);
+    dragIndex.current = index;
+
+    /*
+     * Capture on the rail, so a drag that leaves the rail still reports. Without it a pointer that
+     * outruns the control stops moving the thumb and the value sticks where the pointer left the box.
+     *
+     * Wrapped because it can throw, and a throw here would take the rest of the handler with it — no
+     * focus, no value, no gesture. Capture is an enhancement to the drag, not a precondition for it, so
+     * failing to capture must still leave a working press.
+     */
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      /* No capture available; the gesture still works while the pointer stays over the rail. */
+    }
+
+    /*
+     * Focus the thumb this gesture owns, so the focus ring is on it and the arrow keys continue to work
+     * from where the pointer left off. `preventDefault` first: the platform would otherwise also select
+     * the rail's text on a drag.
+     */
+    event.preventDefault();
+    inputRefs.current[index]?.focus({ preventScroll: true });
+
+    move(index, value, "change");
+  };
+
+  /** Continue the gesture, against the thumb that claimed it. */
+  const onPointerMove = (event: React.PointerEvent<HTMLDivElement>): void => {
+    const index = dragIndex.current;
+    if (index === null || disabled) return;
+
+    const value = valueFromPointer(event);
+    if (value === null) return;
+
+    move(index, value, "change");
+  };
+
   /**
    * Commit once the pointer is released.
    *
-   * On the root rather than on each input, because `change` bubbles from whichever thumb was
-   * dragged and there is one thing to say about it. `pointerup` also covers a drag that started on
-   * the track rather than on a thumb.
+   * The guard is "a gesture is in progress", not the event target: a `pointerup` on the rail can mean
+   * either that a drag finished or that a press with no movement finished, and both are one completed
+   * decision worth committing. `pointercancel` is the platform taking the gesture away, which is not a
+   * decision the user made, so it commits nothing.
    */
   const onPointerSettled = (event: React.PointerEvent<HTMLDivElement>): void => {
-    if (!dragging.current) return;
-    dragging.current = false;
+    if (dragIndex.current === null) return;
+    dragIndex.current = null;
 
-    /*
-     * `pointerup` on the root itself means the press began on the track, not on a thumb. That is
-     * still a settled gesture and still worth committing — the guard is `dragging`, not the target.
-     */
     if (event.type === "pointercancel") return;
 
     emit(values, "commit");
   };
-
-  /* ---- Pointer on the track ------------------------------------------ */
-
-  /**
-   * Note that a press has begun, so the gesture commits when it ends.
-   *
-   * There is deliberately no value arithmetic here. An earlier version derived the value under the
-   * pointer and moved the nearest thumb to it, and it was wrong in two ways at once:
-   *
-   * - It measured the **root**, not the rail. The root also holds the label, the value readout and the
-   *   helper text, so it is 64px tall where the rail is 4px. On the block axis the press position was
-   *   mapped across a box sixteen times the track's height, so the thumb landed somewhere the user
-   *   had not clicked and appeared "not centred".
-   * - It fought the platform. The input underneath is a real `<input type="range">` and already
-   *   tracks the pointer exactly; deriving a second value from a second box on the same gesture is how
-   *   a slider ends up jumping between two systems' answers.
-   *
-   * So the rail is now the input's hit target and the pointer maths is the browser's, which is what
-   * makes `aria-valuenow` and the drawn thumb unable to disagree. The nearest-thumb-on-track-click
-   * behaviour this gave up is recorded as a gap in the README, with the reason.
-   */
-  const onPointerBegan = (): void => {
-    if (disabled) return;
-
-    /*
-     * Record the value from *before* the gesture, so `Escape` can restore it.
-     *
-     * This is what the old track handler did too, and it has to happen on the press rather than on
-     * the first `change`: by the time a `change` fires the pointer has already moved the value, and
-     * "before the interaction" would then mean "one step into it".
-     */
-    beginInteraction();
-    dragging.current = true;
-  };
-
   /* ---- A11y wiring --------------------------------------------------- */
 
   const baseId = id ?? generatedId;
@@ -429,9 +536,6 @@ export function Slider(props: SliderProps) {
       data-range={thumbCount > 1 ? "" : undefined}
       data-track={trackProp}
       onKeyDown={handleKeyDown}
-      onPointerUp={onPointerSettled}
-      onPointerDown={onPointerBegan}
-      onPointerCancel={onPointerSettled}
     >
       <div className="uir-slider__header">
         {/*
@@ -459,7 +563,14 @@ export function Slider(props: SliderProps) {
         it depicts is on the inputs below, and announcing the geometry as well would restate the
         thumb's own value in a second role.
       */}
-      <div className="uir-slider__rail">
+      <div
+        className="uir-slider__rail"
+        ref={railRef}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerSettled}
+        onPointerCancel={onPointerSettled}
+      >
         <div
           aria-hidden="true"
           className="uir-slider__track"
@@ -480,19 +591,28 @@ export function Slider(props: SliderProps) {
         ))}
 
         {/*
-          The real controls. Visually hidden but present and focusable, so the pointer maths, the
-          step snapping, the platform keyboard and the form submission are all the browser's — and so
-          `aria-valuenow` cannot drift from the drawn position.
-        */}
+          The real controls: transparent, `pointer-events: none`, and full length.
+          *
+          * `pointer-events: none` because the rail above is the pointer target and a gesture has to
+          * reach the *nearest* thumb. Two full-length inputs over one rail cannot do that — one is on
+          * top and takes every event, so pressing one thumb moved the other. See `nearestThumb`.
+          *
+          * Still focusable, still the platform's keyboard, still a real form control, and still what
+          * `aria-valuenow` reads. The value is written through `move`, so the drawn thumb and the
+          * announced value cannot disagree — which is the property the native pointer maths used to
+          * provide, and the reason it had to be given up deliberately rather than by accident.
+          */}
         <div className="uir-slider__inputs">
           {thumbs.map((thumb, index) => (
             <input
               key={`input-${index}`}
-              ref={
-                index === 0
-                  ? composeRefs<HTMLInputElement>(ref)
-                  : /* Later thumbs get no consumer ref: one ref has to mean one thing. */ undefined
-              }
+              ref={composeRefs<HTMLInputElement>(
+                (node: HTMLInputElement | null) => {
+                  inputRefs.current[index] = node;
+                },
+                // Later thumbs get no consumer ref: one ref has to mean one thing.
+                index === 0 ? ref : undefined
+              )}
               id={`${baseId}-${index}`}
               type="range"
               className="uir-slider__input"
@@ -520,13 +640,32 @@ export function Slider(props: SliderProps) {
                  * one step, no drag in progress — so it commits as well as changing. A change during a
                  * drag does not: it is mid-gesture, and its commit belongs to `pointerup`.
                  */
-                const phase = dragging.current ? "change" : "commit";
+                const phase = dragIndex.current === null ? "commit" : "change";
 
                 move(index, Number(event.target.value), phase);
               }, onChange)}
             />
           ))}
         </div>
+
+        {/*
+          The value bubble. Rendered only when asked for, and driven by CSS from the same
+          `--uir-slider-at` custom property the thumb uses, so it cannot be positioned independently
+          of the thumb it belongs to.
+        */}
+        {valueLabelDisplay === "off" ? null : (
+          <div className="uir-slider__labels" aria-hidden="true">
+            {thumbs.map((thumb, index) => (
+              <span
+                key={`bubble-${index}`}
+                className="uir-slider__value-label"
+                style={{ "--uir-slider-at": thumb.at } as React.CSSProperties}
+              >
+                {getAriaValueText?.(thumb.value, index) ?? thumb.value}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {marks && marks.length > 0 ? (
@@ -544,25 +683,6 @@ export function Slider(props: SliderProps) {
           ))}
         </div>
       ) : null}
-
-      {/*
-        The value bubble. Rendered only when asked for, and driven by CSS from the same
-        `--uir-slider-at` custom property the thumb uses, so it cannot be positioned independently
-        of the thumb it belongs to.
-      */}
-      {valueLabelDisplay === "off" ? null : (
-        <div className="uir-slider__labels" aria-hidden="true">
-          {thumbs.map((thumb, index) => (
-            <span
-              key={`bubble-${index}`}
-              className="uir-slider__value-label"
-              style={{ "--uir-slider-at": thumb.at } as React.CSSProperties}
-            >
-              {getAriaValueText?.(thumb.value, index) ?? thumb.value}
-            </span>
-          ))}
-        </div>
-      )}
 
       {hasHelper ? (
         <span className="uir-slider__helper" id={helperId}>

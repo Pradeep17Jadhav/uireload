@@ -95,6 +95,42 @@ export const Tones: Story = {
  * `labelPosition="start"` puts the label before the control, for layouts that read
  * top-to-bottom. It is a logical direction, so it mirrors in RTL with no extra rule.
  */
+/*
+ * The dark scheme, which is where the handle used to disappear.
+ *
+ * The handle was one fixed surface in every state and every tone. That works in the light scheme — white
+ * on a saturated blue — and does not work here, where the surface is a dark navy and the checked track
+ * is a *lighter* version of the same hue. Measured before the fix, the handle/track contrast was 2.06 for
+ * neutral and 3.11 for positive, and 3:1 is the floor for a non-text control boundary.
+ *
+ * The handle now takes `--uir-<tone>-contrast`, which the palette already defines per scheme for
+ * exactly this question, so the separation is a property of the palette rather than a coincidence of
+ * two unrelated tokens pointing in opposite directions.
+ *
+ * Both states are shown per tone, because the off state is a different pair of colours and it is the one
+ * that has to keep reading as a handle sitting in a groove.
+ */
+export const Dark: Story = {
+  globals: { scheme: "dark" },
+  args: { checked: undefined, defaultChecked: true },
+  render: (args) => (
+    <div style={{ display: "grid", gap: "var(--uir-space)" }}>
+      {(["neutral", "accent", "positive", "danger"] as const).map((tone) => (
+        <div key={tone} style={{ display: "grid", gap: "var(--uir-space-xs)" }}>
+          <Switch {...args} tone={tone} id={`dark-${tone}`} label={`Tone ${tone}`} />
+          <Switch
+            {...args}
+            tone={tone}
+            id={`dark-off-${tone}`}
+            label={`Tone ${tone}, off`}
+            checked={false}
+          />
+        </div>
+      ))}
+    </div>
+  ),
+};
+
 export const LabelBefore: Story = {
   args: { labelPosition: "start", label: "Enable notifications" },
 };

@@ -6,4 +6,4 @@
 
 import { filledIcon } from "./_create-icon";
 
-export default filledIcon("ChatFilled", <path d="M5 3.4h14a1.8 1.8 0 0 1 1.8 1.8v9.6a1.8 1.8 0 0 1-1.8 1.8H9.6l-4.3 3.7a.7.7 0 0 1-1.1-.57V5.2A1.8 1.8 0 0 1 5 3.4Z" />);
+export default filledIcon("ChatFilled", <path d="M7.8 5.2h8.4a3.6 3.6 0 0 1 3.6 3.6v5a3.6 3.6 0 0 1-3.6 3.6h-4.4l-3.9 3.1a.7.7 0 0 1-1.1-.6v-2.5H7.8a3.6 3.6 0 0 1-3.6-3.6v-5a3.6 3.6 0 0 1 3.6-3.6Z" />);

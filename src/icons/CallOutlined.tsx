@@ -6,4 +6,4 @@
 
 import { outlinedIcon } from "./_create-icon";
 
-export default outlinedIcon("CallOutlined", <g transform="rotate(-30 12 12)"><path d="M7.4 7h9.2a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-1.2v-3.2H8.6V17H7.4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z" /></g>);
+export default outlinedIcon("CallOutlined", <path d="M4.8 9.6 9.6 4.8M7.2 7.2l9.6 9.6M14.4 19.2l4.8-4.8" />);

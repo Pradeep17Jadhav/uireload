@@ -8,11 +8,46 @@
 
 @layer uireload.components {
   .uir-toggle-button-group {
+    /*
+     * A unit, not a row.
+     *
+     * The group is a container and its members come from `Button`, so it was doing layout and nothing
+     * else: no gap, collapsed interior borders, a negative-margin seam, rounded outer ends. Correct, and
+     * it looked like a row of buttons that happened to touch — because nothing about the group's *own*
+     * box said "one control", and a pressed member only tinted itself.
+     *
+     * A surface behind the members is the smallest change that makes the strip read as a single object:
+     * the gaps between segments become gaps in one surface rather than page showing through, which is
+     * what a segmented control actually is. `--uir-surface` rather than a new token, so it follows every
+     * scheme and a consumer's theme without a second declaration.
+     */
+    background-color: var(--uir-surface);
     display: inline-flex;
     /* Members butt against each other with no gap, so the seams read as one control. */
     gap: 0;
     /* A group must not inherit a stray radius from a flex ancestor. */
     vertical-align: middle;
+  }
+
+  /*
+   * The pressed member breaks the outline.
+   *
+   * This is the one treatment that makes a segmented control legible, and it is purely geometric — it
+   * touches no colour, so it cannot fight the member's own `variant` or `tone` and cannot change a
+   * contrast ratio.
+   *
+   * The seam works by collapsing each member's start border and pulling it back over the previous
+   * member's end border, which puts every member's border at the same depth. A pressed member is then
+   * indistinguishable from its neighbours: you see a tint, not a selection. Lifting it by one stacking
+   * step draws its own border and fill *over* both neighbours', so the selected segment reads as cut out
+   * of the strip — which is how a segmented control shows selection without relying on colour alone.
+   *
+   * `position: relative` because `z-index` needs a positioned box, and it is what the focus ring below
+   * already relies on.
+   */
+  .uir-toggle-button-group > [data-pressed] {
+    position: relative;
+    z-index: 1;
   }
 
   .uir-toggle-button-group[data-orientation="horizontal"] {

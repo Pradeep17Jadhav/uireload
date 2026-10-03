@@ -157,8 +157,83 @@ export const Discrete: Story = {
 };
 
 /** Inverted: the fill is on the side the thumb is moving away from. */
+/**
+ * An inverted track, which takes **two** thumbs.
+ *
+ * The prop only does something with two of them: a single thumb has no centre to be symmetrical about,
+ * so the component falls back to a normal fill. This story used to pass one thumb, which made the prop
+ * look inert — and an inert `track` reads as a broken slider rather than as a deliberate fallback.
+ *
+ * Both cases are shown, because the fallback is the part worth being able to see.
+ */
 export const Inverted: Story = {
-  args: { track: "inverted", defaultValue: [40] },
+  args: { track: "inverted" },
+  render: (args) => (
+    <div style={{ display: "grid", gap: "var(--uir-space)", padding: "2rem", maxWidth: "32rem" }}>
+      <Slider
+        {...args}
+        label="Deviation from target"
+        defaultValue={[30, 70]}
+        marks={[
+          { value: 0, label: "0" },
+          { value: 50, label: "50" },
+          { value: 100, label: "100" },
+        ]}
+      />
+      <Slider {...args} label="One thumb, so it falls back to a normal fill" defaultValue={[40]} />
+      <Text tone="muted">
+        With two thumbs the fill runs outward from the centre to whichever thumb is further out.
+        With one there is no centre, so the fill runs from the minimum — the fallback is recorded in
+        the README.
+      </Text>
+    </div>
+  ),
+};
+
+/**
+ * Step sizes.
+ *
+ * `step` is the value's granularity, and the three cases behave differently enough to be worth seeing
+ * together:
+ *
+ * - `step={5}` snaps to a whole multiple, so a drag lands on 5, 10, 15 — and the drawn thumb can only
+ *   ever be at those positions, because the value and the drawing are the same number.
+ * - `step={0.5}` is a fractional step, which is where floating point would show if the snapping were
+ *   done by arithmetic rather than by the platform. The readout proves it: 2.5, not 2.4999999999999996.
+ * - `step="any"` is the default and snaps to nothing, so a drag is continuous.
+ *
+ * The marks are at multiples of the step in each case, which is what makes a stepped slider usable: the
+ * user can see where it will land before they let go.
+ */
+export const Steps: Story = {
+  render: () => (
+    <div
+      style={{ display: "grid", gap: "var(--uir-space-xl)", padding: "2rem", maxWidth: "32rem" }}
+    >
+      <Slider
+        label="Whole steps of 5"
+        defaultValue={[20]}
+        step={5}
+        marks={[
+          { value: 0, label: "0" },
+          { value: 25, label: "25" },
+          { value: 50, label: "50" },
+          { value: 75, label: "75" },
+          { value: 100, label: "100" },
+        ]}
+        valueLabelDisplay="on"
+      />
+      <Slider
+        label="A fractional step of 0.5"
+        defaultValue={[2.5]}
+        min={0}
+        max={10}
+        step={0.5}
+        valueLabelDisplay="on"
+      />
+      <Slider label="No step, so a drag is continuous" defaultValue={[37]} valueLabelDisplay="on" />
+    </div>
+  ),
 };
 
 /** Vertical. One real input, rotated — the keyboard contract is identical. */
@@ -178,6 +253,37 @@ export const Vertical: Story = {
  * become permanent furniture. `hideValueText` keeps the bubble but stops it from being the thumb's
  * accessible name — which is the case where the value is already announced by the marks.
  */
+/**
+ * Vertical, with the value bubble showing.
+ *
+ * The two features were never on screen together, which is how the bubble came to track *sideways* across
+ * a vertical slider: it was positioned with `inset-inline-start`, which on a vertical rail is the axis
+ * it should not move along, so it slid across the control instead of travelling with the thumb.
+ *
+ * Shown next to the horizontal case because that is the comparison that makes the transposition obvious.
+ */
+export const VerticalValueLabel: Story = {
+  args: { orientation: "vertical", valueLabelDisplay: "on", defaultValue: [40] },
+  render: (args) => (
+    <div
+      style={{
+        display: "flex",
+        gap: "var(--uir-space-xl)",
+        alignItems: "flex-start",
+        padding: "2rem",
+      }}
+    >
+      <div style={{ display: "grid", gap: "var(--uir-space)", justifyItems: "center" }}>
+        <Slider {...args} label="Vertical" />
+        <Slider {...args} label="Vertical, at the top" defaultValue={[90]} />
+      </div>
+      <div style={{ display: "grid", gap: "var(--uir-space)", minInlineSize: "18rem" }}>
+        <Slider {...args} label="Horizontal, for comparison" orientation="horizontal" />
+      </div>
+    </div>
+  ),
+};
+
 export const ValueLabel: Story = {
   render: () => (
     <div style={{ display: "grid", gap: "2rem", padding: "2rem", maxWidth: "28rem" }}>

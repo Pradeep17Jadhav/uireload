@@ -7,8 +7,7 @@
 import { outlinedIcon } from "./_create-icon";
 
 export default outlinedIcon("CelebrateOutlined", <>
-<path d="M3.1 20.9a1.4 1.4 0 0 1-.3-2L12.9 8.8a1.4 1.4 0 0 1 2 0l.4.4a1.4 1.4 0 0 1 0 2L5.2 21.3a1.4 1.4 0 0 1-2.1-.4Z" />
-<path d="m7.4 16.6 4.6-4.6" />
-<path d="M19 2.6v3.2M17.4 4.2h3.2" />
-<circle cx="7.4" cy="3.6" r="1.3" />
+<path d="M5.2 20.2 10 8.2 21 11.4Z" />
+<path d="M7.6 3.2 9.4 5M15.6 2.6l1.4 1.4" />
+<circle cx="12.6" cy="2.6" r="1.1" />
 </>);

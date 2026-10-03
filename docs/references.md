@@ -586,6 +586,20 @@ The geometry is original. Every glyph is drawn on a shared 24 unit grid from a s
 primitives, and none of it is traced from either library. What both libraries were read for is
 the _API_ above.
 
+Which glyphs to draw, and which to decline, was settled against the same two libraries: a name
+that already ships here under another spelling is not drawn again. `Build` is a toothed cog,
+so there is no `Settings`; `Automatic` is a three-quarter ring with an arrowhead, so there is
+no `Refresh`; `Create` is a pencil, so there is no `Edit`; `Approve` is a disc with a tick cut
+out of it, so there is no `Success`; `Cancel` is a ring with a cross, so there is no `Error`;
+`Checklist` is three ticked rows, so there is neither `Task` nor `Priority`; `FullScreen` is
+the four arrows, so `Expand` and `Collapse` were drawn twice and discarded twice - the
+box-and-arrow form is the same eight pixels either way at 20px.
+
+Path data is restricted to `M`, `L`, `H`, `V`, `A` and `Z`. That is a consequence of how the
+set is checked rather than of either library's drawing style: `src/icons/icons.test.tsx`
+bounds-checks each glyph by parsing its own `d`, because jsdom implements neither `getBBox`
+nor canvas, and a parser that only has six commands to understand is one that can be read.
+
 ## Versions
 
 Read from `../referenceUILibraries/package.json` and the installed `package.json` before citing a

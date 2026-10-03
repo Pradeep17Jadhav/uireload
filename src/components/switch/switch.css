@@ -27,6 +27,8 @@
      */
     --uir-switch-track-width: 2.5rem;
     --uir-switch-track-height: var(--uir-control-height-sm);
+    /* Every tone sets this below; the value here only covers a switch with no tone. */
+    --uir-switch-handle-checked: var(--uir-surface);
     --uir-switch-handle-size: calc(
       var(--uir-switch-track-height) - var(--uir-control-border-width) * 4
     );
@@ -143,7 +145,20 @@
   /* ---- Handle -------------------------------------------------------- */
 
   .uir-switch__handle {
-    background-color: var(--uir-surface-raised);
+    /*
+     * The off-state fill.
+     *
+     * `--uir-control-handle`, not `--uir-surface-raised`. The latter is a *card* colour — white in the
+     * light scheme and a dark navy in the dark one — which is right for a handle resting on a card and
+     * wrong for one inside a dark track, where it measured 1.09:1 against the track's own
+     * `--uir-surface` and the handle vanished into it. The dark scheme has no light-on-light edge to fall
+     * back on, so the handle has to be light there.
+     *
+     * In the light scheme both tokens are white, and white on a near-white track is about 1.06:1 — which
+     * is the convention every switch follows, because the track's border is what defines the handle's
+     * edge. That is why the track keeps a border rather than being distinguished by fill alone.
+     */
+    background-color: var(--uir-control-handle);
     block-size: var(--uir-switch-handle-size);
     border-radius: 50%;
     inline-size: var(--uir-switch-handle-size);
@@ -158,6 +173,17 @@
    * so a change to any of the three updates this automatically. A handle that does not reach
    * the end of its track is the specific failure this exists to prevent.
    */
+  /*
+   * The on-state fill, chosen against the checked track rather than fixed.
+   *
+   * Stated as a separate rule rather than folded into the checked position rule above, because the two
+   * answer different questions — `transform` says *where* the handle is, this says what it looks like
+   * against the colour now behind it.
+   */
+  .uir-switch[data-checked] .uir-switch__handle {
+    background-color: var(--uir-switch-handle-checked);
+  }
+
   .uir-switch[data-checked] .uir-switch__handle {
     transform: translateX(
       calc(
@@ -241,6 +267,20 @@
     --uir-switch-track-border-checked: var(--uir-text-muted);
     --uir-switch-track-active: var(--uir-neutral-fill-active);
     --uir-switch-track-checked-active: var(--uir-text);
+    /*
+     * The opposite end of the track from `--uir-control-handle`, and deliberately so.
+     *
+     * The other three tones check to a saturated colour — an accent, a green, a red — so the handle wants
+     * to be the far end of *that*, which `--uir-<tone>-contrast` already is. Neutral checks to
+     * `--uir-text-muted`, a mid grey that is **light in the dark scheme and dark in the light one**, so a
+     * single handle token cannot serve it: pointing it at `--uir-control-handle` measured 6.09:1 against
+     * that track in the dark scheme and 2.08:1 in the light one — one of the two always failing.
+     *
+     * `--uir-surface` is the far end of `--uir-text-muted` in **both** schemes, because it is the track's
+     * own fill: the checked track is the muted text colour and the handle is the surface, which is the
+     * inversion that reads as a filled pill.
+     */
+    --uir-switch-handle-checked: var(--uir-surface);
   }
 
   .uir-switch[data-tone="accent"] {
@@ -250,6 +290,7 @@
     --uir-switch-track-border-checked: var(--uir-accent);
     --uir-switch-track-active: var(--uir-accent-active);
     --uir-switch-track-checked-active: var(--uir-accent-active);
+    --uir-switch-handle-checked: var(--uir-accent-contrast);
   }
 
   .uir-switch[data-tone="positive"] {
@@ -259,6 +300,7 @@
     --uir-switch-track-border-checked: var(--uir-success);
     --uir-switch-track-active: var(--uir-success-active);
     --uir-switch-track-checked-active: var(--uir-success-active);
+    --uir-switch-handle-checked: var(--uir-success-contrast);
   }
 
   .uir-switch[data-tone="danger"] {
@@ -268,6 +310,7 @@
     --uir-switch-track-border-checked: var(--uir-danger);
     --uir-switch-track-active: var(--uir-danger-active);
     --uir-switch-track-checked-active: var(--uir-danger-active);
+    --uir-switch-handle-checked: var(--uir-danger-contrast);
   }
 
   /* ---- Hover --------------------------------------------------------- */

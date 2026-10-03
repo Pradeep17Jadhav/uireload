@@ -6,8 +6,4 @@
 
 import { outlinedIcon } from "./_create-icon";
 
-export default outlinedIcon("BarChartOutlined", <>
-<rect x="3.4" y="11.6" width="4.2" height="8" rx="1.3" />
-<rect x="9.9" y="5.6" width="4.2" height="14" rx="1.3" />
-<rect x="16.4" y="2.2" width="4.2" height="17.4" rx="1.3" />
-</>);
+export default outlinedIcon("BarChartOutlined", <path d="M6.3 18.4v-6.2M12 18.4V6.2M17.7 18.4V9.4M3.4 20.3h17.2" />);

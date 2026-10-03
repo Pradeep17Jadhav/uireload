@@ -6,8 +6,4 @@
 
 import { outlinedIcon } from "./_create-icon";
 
-export default outlinedIcon("BedOutlined", <>
-<path d="M2.8 18.4V6a1.4 1.4 0 0 1 1.4-1.4h1.4A1.4 1.4 0 0 1 7 6v7.4h13.6a1.4 1.4 0 0 1 1.4 1.4v3.6" />
-<rect x="7.6" y="6.4" width="5.6" height="3.6" rx="1.8" />
-<path d="M2.8 15.8h18.4" />
-</>);
+export default outlinedIcon("BedOutlined", <path d="M3.75 6.2v14.4M3.75 13.4h16.5v7.2M6.6 12.7V9.4h5.6v3.3M20.25 13.4v7.2" />);

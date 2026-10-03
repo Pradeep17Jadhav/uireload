@@ -6,4 +6,4 @@
 
 import { filledIcon } from "./_create-icon";
 
-export default filledIcon("ApproveFilled", <path fillRule="evenodd" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm5.1 7.4-6.1 6.6a1 1 0 0 1-1.46.03L7.1 12.9a1 1 0 0 1 1.42-1.4l1.9 1.93 5.4-5.85a1 1 0 0 1 1.28 1.52Z" />);
+export default filledIcon("ApproveFilled", <path fillRule="evenodd" d="M2 12a10 10 0 1 1 20 0a10 10 0 1 1 -20 0ZM7.75 11.42l2.65 2.65 4.69 -5a1.02 1.02 0 1 0 1.43 1.43l-5.3 5.61a1.02 1.02 0 0 1 -1.43 0Z" />);

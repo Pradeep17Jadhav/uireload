@@ -22,6 +22,13 @@
     --uir-tab-pad-inline: var(--uir-control-pad-inline-md);
     --uir-tab-pad-block: var(--uir-control-pad-block-md);
     --uir-tab-indicator-size: 2px;
+    /*
+     * The selected tab's fill, and its text on that fill.
+     *
+     * Transparent by default and set per tone below, so a tab with no tone of its own still has a
+     * *selected* state rather than none. Selection is never carried by colour alone here.
+     */
+    --uir-tab-wash: transparent;
 
     display: grid;
     font-family: var(--uir-font-family);
@@ -187,21 +194,29 @@
   .uir-tab-bar__tab[data-tone="neutral"] {
     --uir-tab-indicator: transparent;
     --uir-tab-text: var(--uir-text-muted);
+    --uir-tab-wash: var(--uir-neutral-wash);
+    --uir-tab-text-selected: var(--uir-neutral-on-wash);
   }
 
   .uir-tab-bar__tab[data-tone="accent"] {
     --uir-tab-indicator: var(--uir-accent);
     --uir-tab-text: var(--uir-accent);
+    --uir-tab-wash: var(--uir-accent-wash);
+    --uir-tab-text-selected: var(--uir-accent-on-wash);
   }
 
   .uir-tab-bar__tab[data-tone="positive"] {
     --uir-tab-indicator: var(--uir-success);
     --uir-tab-text: var(--uir-success);
+    --uir-tab-wash: var(--uir-success-wash);
+    --uir-tab-text-selected: var(--uir-success-on-wash);
   }
 
   .uir-tab-bar__tab[data-tone="danger"] {
     --uir-tab-indicator: var(--uir-danger);
     --uir-tab-text: var(--uir-danger);
+    --uir-tab-wash: var(--uir-danger-wash);
+    --uir-tab-text-selected: var(--uir-danger-on-wash);
   }
 
   /*
@@ -211,7 +226,27 @@
    * readable as selected, and `--uir-text-muted` on a selected accent tab is a tab nobody can find.
    */
   .uir-tab-bar__tab[data-selected] {
-    color: var(--uir-text);
+    /*
+     * A fill, and the tone's own on-wash colour for the text.
+     *
+     * This used to be `color: var(--uir-text)`, which threw the tone away on the one tab where it
+     * matters most: a selected accent tab had a near-black label above an accent underline, so the tone
+     * lived in 2px of ink and the strip read as one flat row. The wash and the on-wash pair are both
+     * already defined per tone and per scheme, so the selected state follows the theme instead of
+     * carrying a hard-coded tint.
+     *
+     * A neutral tab's *indicator* is transparent by design — a neutral tab should not announce itself
+     * with a colour — so its wash is the only thing that carries its selection. Giving it a real wash is
+     * what makes that consistent with the other three tones.
+     *
+     * The rounded block-start corners are the other half: a fill with square corners reads as a
+     * misaligned rectangle rather than as a tab, and it gives the strip's own baseline something to sit
+     * against.
+     */
+    background-color: var(--uir-tab-wash);
+    border-start-end-radius: var(--uir-control-radius);
+    border-start-start-radius: var(--uir-control-radius);
+    color: var(--uir-tab-text-selected, var(--uir-text));
   }
 
   /*
@@ -317,7 +352,15 @@
     }
 
     .uir-tab-bar__tab[data-selected] {
-      color: Highlight;
+      /*
+       * The wash is an arbitrary tint no forced-colours theme knows, so the selected tab takes the
+       * system selection pair outright — `Highlight` for the fill and `HighlightText` for the label.
+       * `forced-color-adjust: none` because the default would strip both back to the page colours, and
+       * the selected tab would become indistinguishable from the rest of the strip.
+       */
+      background-color: Highlight;
+      color: HighlightText;
+      forced-color-adjust: none;
     }
 
     .uir-tab-bar__tab[data-selected]::after {

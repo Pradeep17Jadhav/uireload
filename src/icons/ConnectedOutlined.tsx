@@ -7,6 +7,7 @@
 import { outlinedIcon } from "./_create-icon";
 
 export default outlinedIcon("ConnectedOutlined", <>
-<rect x="7.6" y="3.4" width="8.8" height="17.2" rx="4.4" />
-<path d="M2.6 12h5M16.4 12h5" />
+<rect x="2.6" y="9" width="10.8" height="6" rx="3" />
+<rect x="10.6" y="9" width="10.8" height="6" rx="3" />
+<path d="M6.8 12h10.4" />
 </>);

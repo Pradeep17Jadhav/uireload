@@ -74,7 +74,7 @@ Emphasis and intent are separate axes, so every tone exists at every emphasis le
 
 ### Icons
 
-156 vector glyphs on a shared 24 unit grid, one module each. Sizing, colour and the
+285 vector glyphs on a shared 24 unit grid, one module each. Sizing, colour and the
 accessibility contract are documented in [`src/icons/README.md`](./src/icons/README.md).
 
 ```ts

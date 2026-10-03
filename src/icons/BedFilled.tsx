@@ -6,8 +6,4 @@
 
 import { filledIcon } from "./_create-icon";
 
-export default filledIcon("BedFilled", <>
-<path d="M4.4 4.4h2.4v8.4h13.8a1.4 1.4 0 0 1 1.4 1.4v2.4a1.4 1.4 0 0 1-1.4 1.4H4.4A1.4 1.4 0 0 1 3 16.6V5.8a1.4 1.4 0 0 1 1.4-1.4Z" />
-<rect x="7.6" y="6.2" width="5.6" height="3.6" rx="1.8" />
-<path d="M4.4 19h1.9v2.4H4.4V19Zm13.3 0h1.9v2.4h-1.9V19Z" />
-</>);
+export default filledIcon("BedFilled", <path d="M2.8 6.2h1.9v14.4H2.8zM4.7 8.8h5.6v3.5H4.7zM4.7 12.6h14.4v3.5H4.7zM19.1 12.6h1.9v8H19.1z" />);

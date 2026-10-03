@@ -6,4 +6,4 @@
 
 import { heavyIcon } from "./_create-icon";
 
-export default heavyIcon("AttachmentFilled", <path d="M16.9 7.4 10.1 14.2a2.6 2.6 0 0 0 3.7 3.7l6.7-6.7a4.4 4.4 0 0 0-6.2-6.2L6.6 12.7a6 6 0 0 0 8.5 8.5l6.2-6.2" />);
+export default heavyIcon("AttachmentFilled", <path d="M6.8 13.6 14.3 6.1a2.9 2.9 0 0 1 4.1 4.1l-7.9 7.9a4.5 4.5 0 0 1-6.4-6.4l7.6-7.6" />);

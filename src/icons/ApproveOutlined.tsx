@@ -8,5 +8,5 @@ import { outlinedIcon } from "./_create-icon";
 
 export default outlinedIcon("ApproveOutlined", <>
 <circle cx="12" cy="12" r="9" />
-<path d="m7.4 12 3 3 6.4-6.6" />
+<path d="m7.9 11.4 2.7 2.7 4.8-5.1" />
 </>);

@@ -1,7 +1,7 @@
 /**
  * The icon set, as a gallery.
  *
- * One story rather than 156, because the question a reviewer is answering is not "is
+ * One story rather than one per icon, because the question a reviewer is answering is not "is
  * `AddFilled` correct" - the unit tests answer that - it is "does this set look like one
  * set". That is a question about the grid, the weights and the optical sizes across a
  * whole shelf, and it can only be read by looking at the whole shelf.

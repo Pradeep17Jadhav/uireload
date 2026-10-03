@@ -207,12 +207,18 @@
      */
     inset-block-start: calc(100% - var(--uir-slider-at) * 100%);
     /*
-     * Zero, and deliberately: the vertical rail's inline size *is* the thumb's size, so the thumb
-     * already fills the rail across and any offset pushes it out. This is also why there is no
-     * horizontal counterpart to the thumb's translateX(-50%) — there is nothing to recentre.
+     * Minus, not plus — and the same sign as the horizontal rule's translateX(-50%).
+     *
+     * `inset-block-start` positions the thumb's **top edge**, so the fraction is where the top edge sits
+     * and the thumb has to be pulled back by half its height for its *centre* to land on the value. With
+     * `translateY(50%)` it went the other way: at 0% the thumb hung entirely below the rail and at 100%
+     * entirely inside it, which is why the extremes looked wrong and the middle looked right.
+     *
+     * Zero offset on the inline axis, and that one is deliberate: the vertical rail's inline size *is*
+     * the thumb's size, so the thumb already fills the rail across.
      */
     inset-inline-start: 0;
-    transform: translateY(50%);
+    transform: translateY(-50%);
   }
 
   /*
@@ -269,6 +275,40 @@
     opacity: 0;
     position: absolute;
     z-index: 1;
+
+    /*
+     * The rail is the pointer target, and this is what makes that true.
+     *
+     * A range slider draws one full-length input per thumb over a single rail, so exactly one of them is
+     * on top and receives every pointer event — the last one in the DOM. On a two-thumb slider that meant
+     * pressing the **left** thumb moved the **right** one, on every click and every drag, while the left
+     * thumb could not be touched at all.
+     *
+     * Narrowing the inputs does not fix it: a native input maps its own value across its own width, so a
+     * half-width input could only represent half the range and the drawn thumb would stop agreeing with
+     * `aria-valuenow`. So the inputs keep the whole rail and the whole range and step out of the way, and
+     * `nearestThumb` in the component decides which one a gesture means.
+     *
+     * `pointer-events: none` costs nothing else: the input is still focusable, still in the tab order,
+     * still the platform's keyboard, and still a real form control. It is invisible either way.
+     */
+    pointer-events: none;
+  }
+
+  /*
+   * RTL: the arrow keys have to agree with the drawing.
+   *
+   * A native range input increases its value on ArrowRight. That is right for a left-to-right page and
+   * wrong here, where `--uir-slider-at` is applied to `inset-inline-start` so value 0 sits on the *right*
+   * — so ArrowRight, which moves right, would move the value down while the thumb travels up the other
+   * way. `direction: rtl` on the input tells the platform the same thing the drawing says.
+   *
+   * On the input and not the root: the rail, the track and the thumbs are all positioned with logical
+   * properties and mirror on their own, so the root already renders correctly. Only the platform's key
+   * mapping needs telling, and only the input has a platform.
+   */
+  [dir="rtl"] .uir-slider__input {
+    direction: rtl;
   }
 
   /*
@@ -375,13 +415,31 @@
    * Positioned above the thumb from the same `--uir-slider-at`, so the bubble and the thumb are
    * guaranteed to be over the same value rather than two independently-computed positions.
    */
+  /*
+   * The value bubble's container.
+   *
+   * A child of the **rail**, which is what makes it work in both orientations. Absolutely positioned, it
+   * takes the nearest positioned ancestor as its containing block, and the rail is the element the bubble
+   * actually describes. It used to be a sibling of the rail, so the containing block was the slider root
+   * — which also holds the header, the readout and the helper text. A vertical bubble is placed along the
+   * block axis from its container's block start, so it tracked the *root's* height and slid sideways
+   * across a vertical slider instead of travelling with the thumb.
+   *
+   * Above the rail rather than inside it, so the bubble never sits on the line or the thumb.
+   */
   .uir-slider__labels {
-    inset-block-start: calc(-1 * var(--uir-slider-thumb-size));
+    inset-block-end: 100%;
     inset-inline: 0;
     pointer-events: none;
     position: absolute;
   }
 
+  /*
+   * The bubble, on the thumb's value.
+   *
+   * \`inset-inline-start\` plus \`translateX(-50%)\`, so it is centred on the position the drawn thumb
+   * occupies — the same \`--uir-slider-at\`, which is what makes the two unable to disagree.
+   */
   .uir-slider__value-label {
     background-color: var(--uir-slider-bubble);
     border-radius: var(--uir-control-radius);
@@ -394,6 +452,33 @@
     position: absolute;
     transform: translateX(-50%);
     white-space: nowrap;
+  }
+
+  /*
+   * A vertical slider's bubble.
+   *
+   * Beside the rail rather than above it, and positioned along the **block** axis. This is the whole of
+   * the transposition: the horizontal rule moves the bubble with \`inset-inline-start\`, which for a
+   * vertical rail is the axis the bubble should not move on, so it tracked across the control instead of
+   * up and down it.
+   *
+   * \`100% - at\` rather than \`at\`, because \`--uir-slider-at\` is the value's fraction from the minimum and
+   * a vertical rail's minimum is at the bottom — the same inversion the thumb and the pointer maths both
+   * apply. \`translateY(-50%)\` then centres it on that position rather than hanging one line-height
+   * below it.
+   */
+  .uir-slider[data-orientation="vertical"] .uir-slider__labels {
+    inset-block: 0;
+    inset-inline-end: auto;
+    inset-inline-start: 100%;
+    /* A gutter, so the bubble clears the rail rather than touching it. */
+    margin-inline-start: var(--uir-space-sm);
+  }
+
+  .uir-slider[data-orientation="vertical"] .uir-slider__value-label {
+    inset-block-start: calc(100% - var(--uir-slider-at) * 100%);
+    inset-inline-start: 0;
+    transform: translateY(-50%);
   }
 
   /* ---- Description --------------------------------------------------- */

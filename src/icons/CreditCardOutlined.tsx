@@ -7,8 +7,7 @@
 import { outlinedIcon } from "./_create-icon";
 
 export default outlinedIcon("CreditCardOutlined", <>
-<rect x="2" y="4.4" width="20" height="15.2" rx="2.4" />
-<path d="M2 8.6h20" />
-<rect x="5.4" y="14.4" width="5" height="3.4" rx="1" />
-<path d="M13.4 15.2h5.2M13.4 17.4h3.6" />
+<rect x="2.6" y="4.6" width="18.8" height="14.8" rx="2.6" />
+<path d="M2.6 8h18.8" />
+<path d="M5.6 13.4h4.6v2.8H5.6z" />
 </>);

@@ -3,7 +3,7 @@
  *
  * The `_` prefix keeps this module out of the export map, the entry-point list and the
  * published surface, which is the same signal `_template` uses in `src/components`.
- * Every icon module is one call to one of the two factories below, so all 150-odd of
+ * Every icon module is one call to one of the two factories below, so all of
  * them share one accessibility contract, one sizing contract and one class name and
  * cannot drift apart.
  */

@@ -35,3 +35,9 @@ export {
   type FocusTrapOptions,
   type RovingFocusOptions,
 } from "./focus";
+export {
+  fractionFromPointer,
+  nearestThumbIndex,
+  type TrackGeometry,
+  type TrackOrientation,
+} from "./track";

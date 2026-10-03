@@ -590,6 +590,71 @@ describe("Slider: states", () => {
   });
 });
 
+describe("Slider: the pointer target", () => {
+  /*
+   * Wiring, not behaviour.
+   *
+   * The gesture itself cannot be exercised here: `jsdom` has no `PointerEvent` and no
+   * `setPointerCapture`, and `fireEvent.pointerDown(el, { clientX })` arrives with `clientX` as `NaN`.
+   * So a DOM-level gesture test passes or fails for reasons that have nothing to do with the code — one
+   * did exactly that, "passing" because `NaN !== 25`.
+   *
+   * What is asserted instead is the shape that made the bug possible, because that *is* checkable: the
+   * pointer handlers live on the **rail**, not on the root and not on the inputs. Each input being a
+   * full-length native control over one rail is what put one of them on top and gave it every gesture, and
+   * asserting the handlers are on the rail fails the moment anyone moves them back.
+   *
+   * The geometry they call is tested exactly, in `src/internal/track.test.ts`.
+   */
+  function handlersOn(element: HTMLElement): string[] {
+    const key = Object.keys(element).find((k) => k.startsWith("__reactProps"));
+    const props = key === undefined ? {} : (element as unknown as Record<string, unknown>)[key];
+
+    return Object.keys(props as object).filter((name) => name.startsWith("onPointer"));
+  }
+
+  it("puts the pointer handlers on the rail", () => {
+    const { container } = render(<Slider label="Volume" defaultValue={[40]} />);
+
+    const rail = container.querySelector(".uir-slider__rail") as HTMLElement;
+    const root = container.querySelector(".uir-slider") as HTMLElement;
+
+    expect(handlersOn(rail).sort()).toEqual([
+      "onPointerCancel",
+      "onPointerDown",
+      "onPointerMove",
+      "onPointerUp",
+    ]);
+
+    // The root keeps the keyboard and nothing else: a pointer gesture that reaches the root has bypassed
+    // the rail, which is the whole bug.
+    expect(handlersOn(root)).toEqual([]);
+  });
+
+  it("keeps the inputs out of the pointer path", () => {
+    const { container } = render(<Slider label="Price" defaultValue={[25, 75]} />);
+
+    const inputs = [...container.querySelectorAll("input[type=range]")] as HTMLInputElement[];
+
+    expect(inputs).toHaveLength(2);
+
+    for (const input of inputs) {
+      /*
+       * No pointer handlers on the input, and one input per thumb spanning the same rail. Together those
+       * are what put a single input on top of the whole rail and gave it every gesture — so a press on the
+       * left thumb moved the right one.
+       */
+      expect(handlersOn(input)).toEqual([]);
+      expect(input.className).toContain("uir-slider__input");
+    }
+
+    // The drawn thumb is what the pointer is really aimed at, and it is decorative.
+    const thumbs = [...container.querySelectorAll(".uir-slider__thumb")];
+    expect(thumbs).toHaveLength(2);
+    for (const thumb of thumbs) expect(thumb).toHaveAttribute("aria-hidden", "true");
+  });
+});
+
 describe("Slider: development warnings", () => {
   it("reports an inverted range", () => {
     const error = vi.spyOn(console, "error").mockImplementation(() => undefined);

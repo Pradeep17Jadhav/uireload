@@ -27,9 +27,11 @@ A base name is always either `Filled` **and** `Outlined`, or bare. A lone `Fille
 `Outlined` sibling is not a thing: it reads as an unfinished pair, and nothing downstream
 can tell it apart from a decision. `tests/package-structure.test.ts` enforces both halves.
 
-Ten icons ship once, because a glyph with no solid form is not made better by inventing
-one: `At`, `BatteryLow`, `BatteryFull`, `BatteryCharging`, `Bluetooth`, `BlurOn`,
-`BlurOff`, `Moon`, `Sun`, `CalendarToday`.
+Twenty-seven icons ship once, because a glyph with no solid form is not made better by
+inventing one: `At`, `BatteryLow`, `BatteryFull`, `BatteryCharging`, `Bluetooth`,
+`BlurOn`, `BlurOff`, `Moon`, `Sun`, `CalendarToday`, `ChevronDown`, `ChevronUp`,
+`ChevronLeft`, `ChevronRight`, `DragHandle`, `Undo`, `Redo`, `Select`, `Loader`, `Play`,
+`Pause`, `Stop`, `Mic`, `ZoomIn`, `ZoomOut`, `Power`, `Wifi`.
 
 ## What the two variants mean
 
@@ -123,10 +125,16 @@ a filled background.
 ## The grid
 
 Every glyph is drawn on `viewBox="0 0 24 24"`, with about two units of optical padding, and
-paints with `currentColor` and nothing else. The grid is what makes 156 separate files
+paints with `currentColor` and nothing else. The grid is what makes 285 separate files
 look like one set, and `src/icons/icons.test.tsx` asserts it for all of them — including
 that each glyph's geometry stays inside its own viewport, which is the failure that shows
 up as a glyph clipped at the corner.
+
+Path data is written in `M`, `L`, `H`, `V`, `A` and `Z`, and nothing else. That is not
+asceticism: `src/icons/icons.test.tsx` bounds-checks every glyph by parsing its own path
+data, because jsdom has no `getBBox`, and a parser that only has to understand six
+commands is a parser that can be read. A cubic curve would be checked by different code
+from the one that drew it.
 
 There is no raster anywhere in the set, no font glyph, and no external reference, so an
 icon is infinitely scalable and costs a few hundred bytes.
@@ -146,6 +154,14 @@ icon is infinitely scalable and costs a few hundred bytes.
 2. Run `npm run sync:exports`. The icon needs no `typesVersions` line by hand, but the
    manifest is generated and `--check` fails without it.
 3. Run `npm run verify`.
+
+**Do not add a glyph that already ships under another name.** The set has no aliases: a
+`Settings` that is `Build` again, or a `Success` that is `Approve` again, is a second
+answer to a question that already has one, and the consumer ends up with two imports that
+mean the same thing. When a name is wanted and a near-equivalent exists, the gap is closed
+by documenting the existing name instead. `Expand` and `Collapse` were drawn twice and
+discarded twice for exactly this reason — the four-arrow form is `FullScreen`, and the
+box-and-arrow form is illegible at 20px.
 
 The `_`-prefixed modules beside them — `_create-icon.tsx` and `_set.ts` — are private: the
 build skips them and they are not publishable. `_set.ts` is the catalogue the Storybook

@@ -7,6 +7,6 @@
 import { outlinedIcon } from "./_create-icon";
 
 export default outlinedIcon("ContrastOutlined", <>
-<circle cx="12" cy="12" r="9" />
-<path d="M12 3.2a8.8 8.8 0 0 1 0 17.6V3.2Z" fill="currentColor" stroke="none" />
+<circle cx="12" cy="12" r="9.2" />
+<path d="M12 2.8v18.4" />
 </>);

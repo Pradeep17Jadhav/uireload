@@ -253,6 +253,19 @@ describe.each(ICONS)("%s", (name) => {
     expect(node.querySelector("image")).toBeNull();
     expect(node.outerHTML).not.toMatch(/url\(|<text|base64/);
 
+    /*
+     * Every path opens with a moveto.
+     *
+     * Found by `StarFilled`, which shipped as `12 1.8L14.59 8.44…Z`: a coordinate pair
+     * with no command in front of it is not a path, and the renderer draws nothing at all.
+     * The bounds parser above cannot catch it - it reads the bare pair as two no-op
+     * tokens, carries on from the first real command, and reports a perfectly plausible
+     * box. So the check that catches it is the one that looks at the raw string.
+     */
+    for (const path of node.querySelectorAll("path")) {
+      expect(path.getAttribute("d"), "path data must open with a moveto").toMatch(/^[Mm]/);
+    }
+
     unmount();
   });
 
@@ -271,9 +284,15 @@ describe.each(ICONS)("%s", (name) => {
     expect(box.right).toBeLessThanOrEqual(25);
     expect(box.bottom).toBeLessThanOrEqual(25);
 
-    // And a glyph that collapses to nothing is not an icon, however well it fits.
-    expect(box.right - box.x).toBeGreaterThan(6);
-    expect(box.bottom - box.y).toBeGreaterThan(6);
+    /*
+     * And a glyph that collapses to nothing is not an icon, however well it fits.
+     *
+     * The *larger* axis, not both. A vertical kebab is three dots on a 13 unit pitch: it
+     * is 3.6 wide and 16.8 tall, and it is not a collapsed glyph. Requiring both axes to
+     * clear 6 units would have had to reject `MoreVert`, `MoreHoriz` and any chevron,
+     * which is a rule about drawing a square rather than about drawing an icon.
+     */
+    expect(Math.max(box.right - box.x, box.bottom - box.y)).toBeGreaterThan(6);
 
     unmount();
   });

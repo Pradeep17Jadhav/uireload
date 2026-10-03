@@ -9,7 +9,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 
-- **An icon set: 156 vector glyphs, one module each.** Imported by name, so an
+- **An icon set: 285 vector glyphs, one module each.** Imported by name, so an
   application that uses four icons ships four icons.
 
   ```ts
@@ -19,16 +19,28 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
   - **Naming.** Every icon is `PascalCase`, because the module name *is* the
     identifier written at the call site. A base name is always either `Filled`
-    **and** `Outlined`, or bare — never a lone variant. Ten icons have only one
-    honest form and carry no postfix at all: `At`, `BatteryLow`, `BatteryFull`,
-    `BatteryCharging`, `Bluetooth`, `BlurOn`, `BlurOff`, `Moon`, `Sun`,
-    `CalendarToday`.
+    **and** `Outlined`, or bare — never a lone variant, and never a bare form
+    *and* a pair. Twenty-seven icons have only one honest form and carry no
+    postfix at all: `At`, `BatteryLow`, `BatteryFull`, `BatteryCharging`,
+    `Bluetooth`, `BlurOn`, `BlurOff`, `Moon`, `Sun`, `CalendarToday`,
+    `ChevronDown`, `ChevronUp`, `ChevronLeft`, `ChevronRight`, `DragHandle`,
+    `Undo`, `Redo`, `Select`, `Loader`, `Play`, `Pause`, `Stop`, `Mic`,
+    `ZoomIn`, `ZoomOut`, `Power`, `Wifi`.
+  - **No aliases.** A name that already ships under another name is not added
+    again: `Build` is the cog, `Automatic` is the refresh, `Create` is the
+    pencil, `Approve` is the disc-and-tick, `Cancel` is the ring-and-cross,
+    `Checklist` is the rows, `FullScreen` is the arrows. A second glyph that
+    differs only by name is a second answer to a question that already has one.
+    `Expand` and `Collapse` were drawn twice and dropped twice: the four-arrow
+    form is `FullScreen`, and at 20px an arrow leaving a box and an arrow
+    entering one are the same eight pixels.
   - **The two variants mean two different things, deliberately.** A shape with a
     solid form is filled, with the detail knocked out by `fill-rule`. A *mark* —
-    a paperclip, an arrow, a Bluetooth rune — has no solid form that is better
-    than the mark itself, so its `Filled` variant is the same construction at a
-    heavier weight. One weight per family, everywhere: an outline that is 2 in one
-    icon and 1.5 in the next reads as two sets rather than two weights.
+    a paperclip, an arrow, a Bluetooth rune, a currency sign — has no solid form
+    that is better than the mark itself, so its `Filled` variant is the same
+    construction at a heavier weight. One weight per family, everywhere: an
+    outline that is 2 in one icon and 1.5 in the next reads as two sets rather
+    than two weights.
   - **Sizing is `em` by default**, so an icon beside text is the size of that text
     at every step in the type scale — the most common way an icon set looks
     wrong. `size="sm" | "md" | "lg"` resolves the shared `--uir-icon-size-*`
@@ -41,16 +53,55 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     and cannot be set apart on purpose: `role="img"` with no name is worse than
     either alternative.
   - **Vector throughout, on one 24 unit grid.** No raster, no font glyph, no
-    external reference. The geometry is original, and the grid is what makes 156
+    external reference. The geometry is original, and the grid is what makes 285
     separate files look like one set — so the test suite asserts it for every one
     of them, including that each glyph stays inside its own viewport.
+  - **Path data is `M`/`L`/`H`/`V`/`A`/`Z` and nothing else**, because that bounds
+    check parses each glyph's own path data — jsdom has neither `getBBox` nor
+    canvas — and a six-command parser is one that can be read.
   - **One module per icon, not a registry.** `uireload/icons/*` is the single
     pattern subpath in the export map; the reason, and why components do not get
     one, is written up in `scripts/build-exports.mjs`.
   - Documented in [`src/icons/README.md`](./src/icons/README.md), with a
     Storybook gallery that renders the whole shelf at every size and in both
     colour schemes.
-
+- **129 more icons: the ones a page actually reaches for.** `Home`, `Menu`,
+  `MoreVert`, `MoreHoriz`, the four `Chevron`s, `Dashboard`, `Logout`, `Delete`,
+  `Save`, `Download`, `Upload`, `Share`, `Print`, `Link`, `ExternalLink`,
+  `Filter`, `Sort`, `Send`, `Flag`, `Search`, `ZoomIn`, `ZoomOut`, `Unlock`,
+  `Key`, `Visibility`, `VisibilityOff`, `Folder`, `File`, `Note`, `Tag`,
+  `Bookmark`, `Drafts`, `Archive`, `Layers`, `Table`, `Barcode`, `QrCode`,
+  `TextFormat`, `Cart`, `Wallet`, `Gift`, `Info`, `Help`, `Warning`, `Verified`,
+  `Hourglass`, `Timer`, `Location`, `Language`, `Block`, `Play`, `Pause`,
+  `Stop`, `Volume`, `Mute`, `Mic`, `Video`, `Music`, `Person`, `Users`,
+  `PersonAdd`, `Star`, `Favorite`, `Power`, `Wifi`. 56 shapes ship as a
+  `Filled`/`Outlined` pair and 17 as one bare module, taking the set from 156
+  glyphs to 285.
+- **48 of the original icons redrawn** (91 modules). The first 156 had been
+  proof-sheeted but never actually looked at, and a review found five distinct kinds
+  of failure. Each is now a rule rather than a one-off fix:
+  - **Wrong, not ugly** — a solid form that said something else.
+    `CalendarMonth` and `CalendarToday` were black rectangles whose day cells were
+    the only thing separating them from a black rectangle. `CreditCard` was a slab
+    with a one-pixel stripe. `CreateNew` was a black square with a white dot where
+    the `+` should be. `Cookie` had a third of itself bitten out of its forehead.
+    `BarChart` was four bars of near-identical height — a barcode, and `Barcode`
+    already exists.
+  - **Illegible** — `Attachment` read as an oval, `Cast` as scratches, `Bed` as a
+    flag on a pole, `Bug` as a table lamp, `Cake` as a chart with a rind, `System`
+    as a monitor with an unexplained disc inside it.
+  - **Asymmetric** — `Add`, the most-used glyph in any interface, had an
+    off-centre cross with unequal arms. `Contrast` split at an angle, so a
+    half-black circle read as a crescent. `Contactless` had its fan on one side
+    only. `UploadCloud` cut its arrow out of the top-left corner.
+  - **Inconsistent family** — the four `Arrow*` were four different arrows and are
+    now one construction rotated four ways. `BlurOn` was a droplet while `BlurOff`
+    was a slashed circle, which is half a pair. `CropFree` was the same four
+    corner brackets as `FullScreen`. `Chat` read as a flag. Five `Currency*`
+    glyphs each wore a circle, which turned five different problems into one.
+  - **Over-heavy** — `FullScreen`'s filled form was four disconnected blobs;
+    `PasteContent` and `CopyContent` were single solid squares that said "one
+    sheet" instead of "two".
 - **`Divider`, `Skeleton`, `Avatar`, `Alert`.** Four components with no shared theme
   beyond the token contract.
   - **`Divider`** renders identically whether or not it is in the accessibility
@@ -118,6 +169,52 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `common.firstPage`, `common.lastPage`, `common.step` and `common.of` (the last
   with a `{total}` placeholder, so "Page 3 of 12" is not concatenated — the word
   order is the translator's to choose).
+- **An icon imports `cx` from `../internal/classnames`, not from the barrel.** The
+  barrel is right for components, which need most of it. An icon needs one
+  twenty-line function, and going through the barrel dragged the focus trap, the
+  overlay positioning maths and the scroll lock into every icon's chunk — 15.6 kB a
+  consumer of a single glyph never runs. An icon now pulls three small chunks
+  instead.
+- **`./icons/*` is the one pattern subpath in the export map**, with an explicit
+  `typesVersions` line per icon because that map cannot pattern its own target.
+  The "no wildcard subpath" rule is now scoped to `./components/*`, which is where
+  it was actually about explicit per-component entries; the rationale is in
+  `scripts/build-exports.mjs`.
+- **The aggregate `icons/*` size budget goes from 120 to 200 kB gzipped**, which is
+  the cost of the whole catalogue: 285 icons at 191 kB. It is a growth tripwire
+  rather than a download size — an application imports the four glyphs its page
+  uses — so the ceiling sits just above the current figure instead of being
+  removed, and the per-icon 1 kB budget still runs on all 285.
+
+### Fixed
+
+- **An icon could render as nothing at all.** `StarFilled` shipped as
+  `12 1.8L14.59 8.44…Z` — a coordinate pair with no command in front of it, which
+  is not a path. The bounds parser read the bare pair as two no-op tokens, carried
+  on from the first real command and reported a perfectly plausible box, so the
+  suite passed a glyph that drew nothing. Every path is now asserted to open with a
+  moveto.
+- **A zero-radius arc silently truncated a path.** `A0 0 0 0` is specified to
+  degrade to a line; Chrome drops the rest of the path instead. Five filled icons
+  were solid black rectangles with their knockouts missing, because the knockout
+  that should have cut the detail out was the thing that broke it.
+- **Knockouts stopped cutting when a shape followed a `Z`.** A relative `m` after
+  `Z` is measured from where that subpath *began*, not where it ended, which threw
+  `VerifiedFilled`'s tick half a unit off the viewport and `SendOutlined`'s fold
+  eight units out of it.
+- **`M7.1 11.9 3.2 3.3` is a line, not a relative move.** The second coordinate
+  pair after a `moveto` is an implicit `lineto`, which put `Checked`'s tick in the
+  wrong place entirely.
+- **`tests/published-package.test.ts` failed as a timeout** rather than as a
+  failure. It spawned one `node` process per component per module format; resolving
+  every built component and every built icon in one process per format brings the
+  component check from 11.4s (timed out) to 420ms, and still names each failure.
+- **A base name could be a bare form *and* a pair.** `BlurOff` existed as
+  `BlurOff`, `BlurOffFilled` and `BlurOffOutlined` at once: three modules for one
+  glyph, and a breaking change to a published specifier. Nothing asserted the
+  union — the existing check reads "lone variant" and "both variants", and all
+  three at once satisfies both — so `tests/package-structure.test.ts` now rejects
+  the mixture.
 
 ## [0.3.0] - 2026-10-02
 

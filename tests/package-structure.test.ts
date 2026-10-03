@@ -282,6 +282,19 @@ describe("icon packaging", () => {
     expect(
       [...bases].filter(([, s]) => s.has("Filled") && s.has("Outlined")).length
     ).toBeGreaterThan(0);
+
+    /*
+     * And a base is not *both* bare and a pair.
+     *
+     * The first check above reads `BlurOff` as fine either way: it has a lone form and it
+     * has both variants. It had all three at once for one commit - a bare `BlurOff` next
+     * to `BlurOffFilled` and `BlurOffOutlined` - which is three modules for one glyph and
+     * the exact aliasing the icon README forbids. Found by counting, not by a test,
+     * because nothing asserted the union.
+     */
+    expect([...bases].filter(([, s]) => s.has("none") && s.size > 1).map(([base]) => base)).toEqual(
+      []
+    );
   });
 
   it("keeps the private icon machinery out of the published surface", () => {

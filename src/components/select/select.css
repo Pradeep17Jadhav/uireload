@@ -221,6 +221,20 @@
     inline-size: 0.375rem;
     margin-inline-start: auto;
     transition: transform var(--uir-duration) var(--uir-easing);
+
+    /*
+     * The rotation that makes this a chevron rather than a corner.
+     *
+     * A block-end border and an inline-end border meet in the **bottom-inline-end corner**, so with no
+     * rotation at all the closed control showed an `⌐`-shaped corner pointing south-*east* — down and to
+     * the trailing side. The open state already rotated, so only the closed one looked wrong, which is
+     * why this read as a subtle angle rather than as a missing rule.
+     *
+     * 45 degrees puts that corner at the bottom: the chevron points south, over the list. The open state
+     * is a separate absolute `rotate(225deg)` — `transform` replaces rather than composes — which puts
+     * the corner at the top, so the closed and open chevrons are 180 degrees apart as they should be.
+     */
+    transform: rotate(45deg);
   }
 
   .uir-select__trigger[aria-expanded="true"] .uir-select__chevron {
