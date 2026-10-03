@@ -1882,7 +1882,7 @@
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.20.0",
     "vite": "^6.0.7",
-    "vitest": "^3.0.2"
+    "vitest": "^5.0.2"
   },
   "engines": {
     "node": ">=20.11"
