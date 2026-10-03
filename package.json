@@ -299,6 +299,16 @@
         "types": "./dist/components/tooltip/index.d.cts",
         "default": "./dist/components/tooltip/index.cjs"
       }
+    },
+    "./icons/*": {
+      "import": {
+        "types": "./dist/icons/*.d.ts",
+        "default": "./dist/icons/*.js"
+      },
+      "require": {
+        "types": "./dist/icons/*.d.cts",
+        "default": "./dist/icons/*.cjs"
+      }
     }
   },
   "typesVersions": {
@@ -383,6 +393,474 @@
       ],
       "components/tooltip": [
         "./dist/components/tooltip/index.d.ts"
+      ],
+      "icons/AISparkleFilled": [
+        "./dist/icons/AISparkleFilled.d.ts"
+      ],
+      "icons/AISparkleOutlined": [
+        "./dist/icons/AISparkleOutlined.d.ts"
+      ],
+      "icons/AccountCircleFilled": [
+        "./dist/icons/AccountCircleFilled.d.ts"
+      ],
+      "icons/AccountCircleOutlined": [
+        "./dist/icons/AccountCircleOutlined.d.ts"
+      ],
+      "icons/AccountRectFilled": [
+        "./dist/icons/AccountRectFilled.d.ts"
+      ],
+      "icons/AccountRectOutlined": [
+        "./dist/icons/AccountRectOutlined.d.ts"
+      ],
+      "icons/AddFilled": [
+        "./dist/icons/AddFilled.d.ts"
+      ],
+      "icons/AddOutlined": [
+        "./dist/icons/AddOutlined.d.ts"
+      ],
+      "icons/AlarmFilled": [
+        "./dist/icons/AlarmFilled.d.ts"
+      ],
+      "icons/AlarmOutlined": [
+        "./dist/icons/AlarmOutlined.d.ts"
+      ],
+      "icons/AlbumFilled": [
+        "./dist/icons/AlbumFilled.d.ts"
+      ],
+      "icons/AlbumOutlined": [
+        "./dist/icons/AlbumOutlined.d.ts"
+      ],
+      "icons/AlertFilled": [
+        "./dist/icons/AlertFilled.d.ts"
+      ],
+      "icons/AlertOutlined": [
+        "./dist/icons/AlertOutlined.d.ts"
+      ],
+      "icons/AnnouncementFilled": [
+        "./dist/icons/AnnouncementFilled.d.ts"
+      ],
+      "icons/AnnouncementOutlined": [
+        "./dist/icons/AnnouncementOutlined.d.ts"
+      ],
+      "icons/ApproveFilled": [
+        "./dist/icons/ApproveFilled.d.ts"
+      ],
+      "icons/ApproveOutlined": [
+        "./dist/icons/ApproveOutlined.d.ts"
+      ],
+      "icons/ArrowDownFilled": [
+        "./dist/icons/ArrowDownFilled.d.ts"
+      ],
+      "icons/ArrowDownOutlined": [
+        "./dist/icons/ArrowDownOutlined.d.ts"
+      ],
+      "icons/ArrowLeftFilled": [
+        "./dist/icons/ArrowLeftFilled.d.ts"
+      ],
+      "icons/ArrowLeftOutlined": [
+        "./dist/icons/ArrowLeftOutlined.d.ts"
+      ],
+      "icons/ArrowRightFilled": [
+        "./dist/icons/ArrowRightFilled.d.ts"
+      ],
+      "icons/ArrowRightOutlined": [
+        "./dist/icons/ArrowRightOutlined.d.ts"
+      ],
+      "icons/ArrowUpFilled": [
+        "./dist/icons/ArrowUpFilled.d.ts"
+      ],
+      "icons/ArrowUpOutlined": [
+        "./dist/icons/ArrowUpOutlined.d.ts"
+      ],
+      "icons/At": [
+        "./dist/icons/At.d.ts"
+      ],
+      "icons/AttachmentFilled": [
+        "./dist/icons/AttachmentFilled.d.ts"
+      ],
+      "icons/AttachmentOutlined": [
+        "./dist/icons/AttachmentOutlined.d.ts"
+      ],
+      "icons/AudioFilled": [
+        "./dist/icons/AudioFilled.d.ts"
+      ],
+      "icons/AudioOutlined": [
+        "./dist/icons/AudioOutlined.d.ts"
+      ],
+      "icons/AutomaticFilled": [
+        "./dist/icons/AutomaticFilled.d.ts"
+      ],
+      "icons/AutomaticOutlined": [
+        "./dist/icons/AutomaticOutlined.d.ts"
+      ],
+      "icons/BarChartFilled": [
+        "./dist/icons/BarChartFilled.d.ts"
+      ],
+      "icons/BarChartOutlined": [
+        "./dist/icons/BarChartOutlined.d.ts"
+      ],
+      "icons/BatteryCharging": [
+        "./dist/icons/BatteryCharging.d.ts"
+      ],
+      "icons/BatteryFull": [
+        "./dist/icons/BatteryFull.d.ts"
+      ],
+      "icons/BatteryLow": [
+        "./dist/icons/BatteryLow.d.ts"
+      ],
+      "icons/BedFilled": [
+        "./dist/icons/BedFilled.d.ts"
+      ],
+      "icons/BedOutlined": [
+        "./dist/icons/BedOutlined.d.ts"
+      ],
+      "icons/BedtimeFilled": [
+        "./dist/icons/BedtimeFilled.d.ts"
+      ],
+      "icons/BedtimeOutlined": [
+        "./dist/icons/BedtimeOutlined.d.ts"
+      ],
+      "icons/Bluetooth": [
+        "./dist/icons/Bluetooth.d.ts"
+      ],
+      "icons/BlurOff": [
+        "./dist/icons/BlurOff.d.ts"
+      ],
+      "icons/BlurOn": [
+        "./dist/icons/BlurOn.d.ts"
+      ],
+      "icons/BoltFilled": [
+        "./dist/icons/BoltFilled.d.ts"
+      ],
+      "icons/BoltOutlined": [
+        "./dist/icons/BoltOutlined.d.ts"
+      ],
+      "icons/BugFilled": [
+        "./dist/icons/BugFilled.d.ts"
+      ],
+      "icons/BugOutlined": [
+        "./dist/icons/BugOutlined.d.ts"
+      ],
+      "icons/BuildFilled": [
+        "./dist/icons/BuildFilled.d.ts"
+      ],
+      "icons/BuildOutlined": [
+        "./dist/icons/BuildOutlined.d.ts"
+      ],
+      "icons/CakeFilled": [
+        "./dist/icons/CakeFilled.d.ts"
+      ],
+      "icons/CakeOutlined": [
+        "./dist/icons/CakeOutlined.d.ts"
+      ],
+      "icons/CalendarMonthFilled": [
+        "./dist/icons/CalendarMonthFilled.d.ts"
+      ],
+      "icons/CalendarMonthOutlined": [
+        "./dist/icons/CalendarMonthOutlined.d.ts"
+      ],
+      "icons/CalendarToday": [
+        "./dist/icons/CalendarToday.d.ts"
+      ],
+      "icons/CallEndFilled": [
+        "./dist/icons/CallEndFilled.d.ts"
+      ],
+      "icons/CallEndOutlined": [
+        "./dist/icons/CallEndOutlined.d.ts"
+      ],
+      "icons/CallFilled": [
+        "./dist/icons/CallFilled.d.ts"
+      ],
+      "icons/CallOutlined": [
+        "./dist/icons/CallOutlined.d.ts"
+      ],
+      "icons/CameraFilled": [
+        "./dist/icons/CameraFilled.d.ts"
+      ],
+      "icons/CameraOutlined": [
+        "./dist/icons/CameraOutlined.d.ts"
+      ],
+      "icons/CancelFilled": [
+        "./dist/icons/CancelFilled.d.ts"
+      ],
+      "icons/CancelOutlined": [
+        "./dist/icons/CancelOutlined.d.ts"
+      ],
+      "icons/CastFilled": [
+        "./dist/icons/CastFilled.d.ts"
+      ],
+      "icons/CastOutlined": [
+        "./dist/icons/CastOutlined.d.ts"
+      ],
+      "icons/CelebrateFilled": [
+        "./dist/icons/CelebrateFilled.d.ts"
+      ],
+      "icons/CelebrateOutlined": [
+        "./dist/icons/CelebrateOutlined.d.ts"
+      ],
+      "icons/CenterFocusFilled": [
+        "./dist/icons/CenterFocusFilled.d.ts"
+      ],
+      "icons/CenterFocusOutlined": [
+        "./dist/icons/CenterFocusOutlined.d.ts"
+      ],
+      "icons/ChatBubbleFilled": [
+        "./dist/icons/ChatBubbleFilled.d.ts"
+      ],
+      "icons/ChatBubbleOutlined": [
+        "./dist/icons/ChatBubbleOutlined.d.ts"
+      ],
+      "icons/ChatFilled": [
+        "./dist/icons/ChatFilled.d.ts"
+      ],
+      "icons/ChatOutlined": [
+        "./dist/icons/ChatOutlined.d.ts"
+      ],
+      "icons/CheckedFilled": [
+        "./dist/icons/CheckedFilled.d.ts"
+      ],
+      "icons/CheckedOutlined": [
+        "./dist/icons/CheckedOutlined.d.ts"
+      ],
+      "icons/ChecklistFilled": [
+        "./dist/icons/ChecklistFilled.d.ts"
+      ],
+      "icons/ChecklistOutlined": [
+        "./dist/icons/ChecklistOutlined.d.ts"
+      ],
+      "icons/CircleFilled": [
+        "./dist/icons/CircleFilled.d.ts"
+      ],
+      "icons/CircleOutlined": [
+        "./dist/icons/CircleOutlined.d.ts"
+      ],
+      "icons/ClockFilled": [
+        "./dist/icons/ClockFilled.d.ts"
+      ],
+      "icons/ClockOutlined": [
+        "./dist/icons/ClockOutlined.d.ts"
+      ],
+      "icons/CloseFilled": [
+        "./dist/icons/CloseFilled.d.ts"
+      ],
+      "icons/CloseOutlined": [
+        "./dist/icons/CloseOutlined.d.ts"
+      ],
+      "icons/ClosedFilled": [
+        "./dist/icons/ClosedFilled.d.ts"
+      ],
+      "icons/ClosedOutlined": [
+        "./dist/icons/ClosedOutlined.d.ts"
+      ],
+      "icons/CloudFilled": [
+        "./dist/icons/CloudFilled.d.ts"
+      ],
+      "icons/CloudOutlined": [
+        "./dist/icons/CloudOutlined.d.ts"
+      ],
+      "icons/CodeFilled": [
+        "./dist/icons/CodeFilled.d.ts"
+      ],
+      "icons/CodeOutlined": [
+        "./dist/icons/CodeOutlined.d.ts"
+      ],
+      "icons/CoffeeFilled": [
+        "./dist/icons/CoffeeFilled.d.ts"
+      ],
+      "icons/CoffeeOutlined": [
+        "./dist/icons/CoffeeOutlined.d.ts"
+      ],
+      "icons/ColorPaletteFilled": [
+        "./dist/icons/ColorPaletteFilled.d.ts"
+      ],
+      "icons/ColorPaletteOutlined": [
+        "./dist/icons/ColorPaletteOutlined.d.ts"
+      ],
+      "icons/CommentFilled": [
+        "./dist/icons/CommentFilled.d.ts"
+      ],
+      "icons/CommentOutlined": [
+        "./dist/icons/CommentOutlined.d.ts"
+      ],
+      "icons/ComputerFilled": [
+        "./dist/icons/ComputerFilled.d.ts"
+      ],
+      "icons/ComputerOutlined": [
+        "./dist/icons/ComputerOutlined.d.ts"
+      ],
+      "icons/ConnectedFilled": [
+        "./dist/icons/ConnectedFilled.d.ts"
+      ],
+      "icons/ConnectedOutlined": [
+        "./dist/icons/ConnectedOutlined.d.ts"
+      ],
+      "icons/ConstructionFilled": [
+        "./dist/icons/ConstructionFilled.d.ts"
+      ],
+      "icons/ConstructionOutlined": [
+        "./dist/icons/ConstructionOutlined.d.ts"
+      ],
+      "icons/ContactlessFilled": [
+        "./dist/icons/ContactlessFilled.d.ts"
+      ],
+      "icons/ContactlessOutlined": [
+        "./dist/icons/ContactlessOutlined.d.ts"
+      ],
+      "icons/ContrastFilled": [
+        "./dist/icons/ContrastFilled.d.ts"
+      ],
+      "icons/ContrastOutlined": [
+        "./dist/icons/ContrastOutlined.d.ts"
+      ],
+      "icons/CookieFilled": [
+        "./dist/icons/CookieFilled.d.ts"
+      ],
+      "icons/CookieOutlined": [
+        "./dist/icons/CookieOutlined.d.ts"
+      ],
+      "icons/CopyContentFilled": [
+        "./dist/icons/CopyContentFilled.d.ts"
+      ],
+      "icons/CopyContentOutlined": [
+        "./dist/icons/CopyContentOutlined.d.ts"
+      ],
+      "icons/CopyrightFilled": [
+        "./dist/icons/CopyrightFilled.d.ts"
+      ],
+      "icons/CopyrightOutlined": [
+        "./dist/icons/CopyrightOutlined.d.ts"
+      ],
+      "icons/CreateFilled": [
+        "./dist/icons/CreateFilled.d.ts"
+      ],
+      "icons/CreateNewFilled": [
+        "./dist/icons/CreateNewFilled.d.ts"
+      ],
+      "icons/CreateNewOutlined": [
+        "./dist/icons/CreateNewOutlined.d.ts"
+      ],
+      "icons/CreateOutlined": [
+        "./dist/icons/CreateOutlined.d.ts"
+      ],
+      "icons/CreditCardFilled": [
+        "./dist/icons/CreditCardFilled.d.ts"
+      ],
+      "icons/CreditCardOutlined": [
+        "./dist/icons/CreditCardOutlined.d.ts"
+      ],
+      "icons/CropFilled": [
+        "./dist/icons/CropFilled.d.ts"
+      ],
+      "icons/CropFreeFilled": [
+        "./dist/icons/CropFreeFilled.d.ts"
+      ],
+      "icons/CropFreeOutlined": [
+        "./dist/icons/CropFreeOutlined.d.ts"
+      ],
+      "icons/CropOutlined": [
+        "./dist/icons/CropOutlined.d.ts"
+      ],
+      "icons/CurrencyEuroFilled": [
+        "./dist/icons/CurrencyEuroFilled.d.ts"
+      ],
+      "icons/CurrencyEuroOutlined": [
+        "./dist/icons/CurrencyEuroOutlined.d.ts"
+      ],
+      "icons/CurrencyPoundFilled": [
+        "./dist/icons/CurrencyPoundFilled.d.ts"
+      ],
+      "icons/CurrencyPoundOutlined": [
+        "./dist/icons/CurrencyPoundOutlined.d.ts"
+      ],
+      "icons/CurrencyRupeeFilled": [
+        "./dist/icons/CurrencyRupeeFilled.d.ts"
+      ],
+      "icons/CurrencyRupeeOutlined": [
+        "./dist/icons/CurrencyRupeeOutlined.d.ts"
+      ],
+      "icons/CurrencyUSDFilled": [
+        "./dist/icons/CurrencyUSDFilled.d.ts"
+      ],
+      "icons/CurrencyUSDOutlined": [
+        "./dist/icons/CurrencyUSDOutlined.d.ts"
+      ],
+      "icons/CurrencyYenFilled": [
+        "./dist/icons/CurrencyYenFilled.d.ts"
+      ],
+      "icons/CurrencyYenOutlined": [
+        "./dist/icons/CurrencyYenOutlined.d.ts"
+      ],
+      "icons/CutContentFilled": [
+        "./dist/icons/CutContentFilled.d.ts"
+      ],
+      "icons/CutContentOutlined": [
+        "./dist/icons/CutContentOutlined.d.ts"
+      ],
+      "icons/DarkModeFilled": [
+        "./dist/icons/DarkModeFilled.d.ts"
+      ],
+      "icons/DarkModeOutlined": [
+        "./dist/icons/DarkModeOutlined.d.ts"
+      ],
+      "icons/FullScreenCloseFilled": [
+        "./dist/icons/FullScreenCloseFilled.d.ts"
+      ],
+      "icons/FullScreenCloseOutlined": [
+        "./dist/icons/FullScreenCloseOutlined.d.ts"
+      ],
+      "icons/FullScreenFilled": [
+        "./dist/icons/FullScreenFilled.d.ts"
+      ],
+      "icons/FullScreenOutlined": [
+        "./dist/icons/FullScreenOutlined.d.ts"
+      ],
+      "icons/ImageFilled": [
+        "./dist/icons/ImageFilled.d.ts"
+      ],
+      "icons/ImageOutlined": [
+        "./dist/icons/ImageOutlined.d.ts"
+      ],
+      "icons/LightModeFilled": [
+        "./dist/icons/LightModeFilled.d.ts"
+      ],
+      "icons/LightModeOutlined": [
+        "./dist/icons/LightModeOutlined.d.ts"
+      ],
+      "icons/Moon": [
+        "./dist/icons/Moon.d.ts"
+      ],
+      "icons/PasteContentFilled": [
+        "./dist/icons/PasteContentFilled.d.ts"
+      ],
+      "icons/PasteContentOutlined": [
+        "./dist/icons/PasteContentOutlined.d.ts"
+      ],
+      "icons/Sun": [
+        "./dist/icons/Sun.d.ts"
+      ],
+      "icons/SystemFilled": [
+        "./dist/icons/SystemFilled.d.ts"
+      ],
+      "icons/SystemOutlined": [
+        "./dist/icons/SystemOutlined.d.ts"
+      ],
+      "icons/TargetFilled": [
+        "./dist/icons/TargetFilled.d.ts"
+      ],
+      "icons/TargetOutlined": [
+        "./dist/icons/TargetOutlined.d.ts"
+      ],
+      "icons/UploadCloudFilled": [
+        "./dist/icons/UploadCloudFilled.d.ts"
+      ],
+      "icons/UploadCloudOutlined": [
+        "./dist/icons/UploadCloudOutlined.d.ts"
+      ],
+      "icons/VirusFilled": [
+        "./dist/icons/VirusFilled.d.ts"
+      ],
+      "icons/VirusOutlined": [
+        "./dist/icons/VirusOutlined.d.ts"
       ],
       "styles.css": [
         "./dist/index.css"

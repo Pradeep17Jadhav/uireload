@@ -17,6 +17,7 @@ export default defineConfig({
      */
     alias: [
       { find: /^uireload\/components\/(.+)$/, replacement: `${SRC}/components/$1` },
+      { find: /^uireload\/icons\/(.+)$/, replacement: `${SRC}/icons/$1` },
       { find: /^uireload$/, replacement: `${SRC}/index.ts` },
       {
         find: /^uireload-test$/,

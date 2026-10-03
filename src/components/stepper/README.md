@@ -9,21 +9,22 @@ is recorded in `docs/references.md`, which is not published.
 
 ## Props
 
-| Prop               | Type                         | Default        | Notes                        |
-| ------------------ | ---------------------------- | -------------- | ---------------------------- |
-| `steps`            | `StepperStep[]`              | —              | **Required.**                |
-| `active`           | `number`                     | `0`            | Zero-based. Clamped.         |
-| `onStepChange`     | `(index: number) => void`    | —              | The component never moves.   |
-| `navigation`       | `"linear" \| "non-linear"`   | `"linear"`     |                              |
-| `orientation`      | `"horizontal" \| "vertical"` | `"horizontal"` |                              |
-| `showContent`      | `boolean`                    | `false`        |                              |
-| `children`         | `ReactNode`                  | —              | Rendered when `showContent`. |
-| `announcePosition` | `boolean`                    | `true`         |                              |
-| `stepLabel`        | `string`                     | `"Step"`       |                              |
-| `label`            | `string`                     | —              | Name for the whole strip.    |
-| `disabled`         | `boolean`                    | `false`        | A flag, not an attribute.    |
-| `className`        | `string`                     | —              |                              |
-| `ref`              | `Ref<HTMLDivElement>`        | —              |                              |
+| Prop               | Type                                           | Default        | Notes                                        |
+| ------------------ | ---------------------------------------------- | -------------- | -------------------------------------------- |
+| `steps`            | `StepperStep[]`                                | —              | **Required.**                                |
+| `active`           | `number`                                       | `0`            | Zero-based. Clamped.                         |
+| `onStepChange`     | `(index: number) => void`                      | —              | The component never moves.                   |
+| `navigation`       | `"linear" \| "non-linear"`                     | `"linear"`     |                                              |
+| `orientation`      | `"horizontal" \| "vertical"`                   | `"horizontal"` |                                              |
+| `labelPlacement`   | `"inline-end" \| "block-start" \| "block-end"` | `"inline-end"` | Where the label sits relative to its marker. |
+| `showContent`      | `boolean`                                      | `false`        |                                              |
+| `children`         | `ReactNode`                                    | —              | Rendered when `showContent`.                 |
+| `announcePosition` | `boolean`                                      | `true`         |                                              |
+| `stepLabel`        | `string`                                       | `"Step"`       |                                              |
+| `label`            | `string`                                       | —              | Name for the whole strip.                    |
+| `disabled`         | `boolean`                                      | `false`        | A flag, not an attribute.                    |
+| `className`        | `string`                                       | —              |                                              |
+| `ref`              | `Ref<HTMLDivElement>`                          | —              |                                              |
 
 ### `StepperStep`
 
@@ -133,6 +134,53 @@ controlled.
 Going **back** un-completes everything after the current step — the strip describes where the user is,
 not what they have submitted.
 
+## `labelPlacement`, and the connector never crossing the label
+
+Three values, all logical:
+
+| `labelPlacement` | Layout                  | Use when                           |
+| ---------------- | ----------------------- | ---------------------------------- |
+| `"block-start"`  | label above its marker  | A horizontal strip. The default.   |
+| `"block-end"`    | label below its marker  | A strip read downward.             |
+| `"inline-end"`   | label beside its marker | A narrow column; a vertical strip. |
+
+**The default resolves per orientation**: `block-start` for horizontal, `inline-end` for vertical.
+The same resolution `TabBar` uses for `activation` — a prop whose meaning flips with the orientation is
+worse than one that resolves to the right thing.
+
+### Why a horizontal strip cannot default to a label beside its marker
+
+It is **geometry**, not taste. With the label on the inline side of its marker, the label sits
+_between_ this marker and the next one:
+
+```
+(marker)──(label)────────(next marker)
+```
+
+A continuous line from marker to marker therefore has **no route that avoids the text**. Giving the
+label a row of its own is what makes a horizontal strip able to carry a proper sequence line at all.
+
+`inline-end` is still available, and its connector is confined to the **gap between** steps — a short
+segment that joins each step to the next without touching a word. Choose it for a narrow column where a
+label beside its marker is the only shape that fits, and accept the segmented line.
+
+### The connector's vertical position is placement-specific
+
+The line has to land on the **marker's centre**, and the marker is not always the item's first row:
+
+| Placement                 | Marker's row | Connector's `inset-block-start` |
+| ------------------------- | ------------ | ------------------------------- |
+| `inline-end`, `block-end` | first        | `calc(marker / 2)`              |
+| `block-start`             | **last**     | `calc(100% - marker / 2)`       |
+
+One `marker/2` for all three is only right when the marker comes first — and with the label above it,
+the line landed in the label's row. Both values are exact for any label height, which is why they are
+expressed rather than tuned to one label.
+
+`block-start` and `block-end` differ by one `order` declaration on the **text**, not on the marker: the
+prop names the _label's_ position. The **DOM** order stays marker-then-text in all three, because that is
+the order a screen reader reads and it stays the useful one whichever way the label is drawn.
+
 ## Reconciled design
 
 | Decision         | Choice                            | Why                                                         |
@@ -170,7 +218,7 @@ find where they are.
 
 ```
 .uir-stepper            the root; data-orientation, data-navigation,
-                        data-disabled, data-has-content
+                        data-label-placement, data-disabled, data-has-content
 .uir-stepper__strip     the <ol>
 .uir-stepper__item      an <li>; draws the connector on :not(:first-child)
 .uir-stepper__step      the header, a <div> or a <button>

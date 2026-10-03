@@ -9,19 +9,19 @@ is recorded in `docs/references.md`, which is not published.
 
 ## Props
 
-| Prop          | Type                      | Default      | Notes                               |
-| ------------- | ------------------------- | ------------ | ----------------------------------- |
-| `src`         | `string`                  | —            |                                     |
-| `alt`         | `string`                  | —            | `""` is meaningful. See below.      |
-| `initials`    | `string`                  | —            | See `initialsFrom` below.           |
-| `variant`     | `"circular" \| "rounded"` | `"circular"` |                                     |
-| `size`        | `Size`                    | `"md"`       | Reads the control height ladder.    |
-| `tone`        | `Tone`                    | `"neutral"`  | The fill when there is no image.    |
-| `interactive` | `boolean`                 | `false`      | Renders a `<button>`.               |
-| `badge`       | `ReactNode`               | —            | `aria-hidden`.                      |
-| `disabled`    | `boolean`                 | `false`      | Only meaningful with `interactive`. |
-| `className`   | `string`                  | —            |                                     |
-| `ref`         | `Ref<HTMLElement>`        | —            |                                     |
+| Prop          | Type                                   | Default      | Notes                               |
+| ------------- | -------------------------------------- | ------------ | ----------------------------------- |
+| `src`         | `string`                               | —            |                                     |
+| `alt`         | `string`                               | —            | `""` is meaningful. See below.      |
+| `initials`    | `string`                               | —            | See `initialsFrom` below.           |
+| `variant`     | `"circular" \| "rounded"`              | `"circular"` |                                     |
+| `size`        | `"xs" \| "sm" \| "md" \| "lg" \| "xl"` | `"md"`       | Own ladder. See below.              |
+| `tone`        | `Tone`                                 | `"neutral"`  | The fill when there is no image.    |
+| `interactive` | `boolean`                              | `false`      | Renders a `<button>`.               |
+| `badge`       | `ReactNode`                            | —            | `aria-hidden`.                      |
+| `disabled`    | `boolean`                              | `false`      | Only meaningful with `interactive`. |
+| `className`   | `string`                               | —            |                                     |
+| `ref`         | `Ref<HTMLElement>`                     | —            |                                     |
 
 ## An image failing is normal, not exceptional
 
@@ -84,19 +84,51 @@ languages it does not know about.
 <Avatar initials={initialsFrom(user.displayName)} alt={user.displayName} />
 ```
 
+## `size` is its own five-step ladder, and `xl` goes to 4rem
+
+| `size` | `--uir-avatar-size`                      |
+| ------ | ---------------------------------------- |
+| `xs`   | `1.25rem`                                |
+| `sm`   | `var(--uir-control-height-sm)` — 1.5rem  |
+| `md`   | `var(--uir-control-height-md)` — 2.25rem |
+| `lg`   | `var(--uir-control-height-lg)` — 2.75rem |
+| `xl`   | `4rem`                                   |
+
+`sm` / `md` / `lg` read the **control height** ladder, so an avatar still lines up with the button or
+chip beside it without anyone tuning a number. `xs` and `xl` sit outside it, and that is the point.
+
+The control ladder tops out at 2.75rem because a control taller than that stops being a control and
+becomes a panel. **That ceiling is right for a button and wrong for a picture of a person.** An avatar
+is not a control: it appears beside prose at whatever size the layout needs, and the sizes that actually
+matter are the large ones — a gallery header, a comment byline, a 48px avatar in a table row. None of
+those fits inside a control height, and none of them is exotic.
+
+Sharing `Size` was the original mistake, and it is the reason an avatar at `lg` looked too small to be
+useful rather than merely small: the ladder it was borrowing had a different job.
+
+### The initials are 0.32 of the circle, not 0.4
+
+Two capitals at `0.4em` are about `1.2em` wide, so they needed a circle at least `1.2em` across to clear
+the edge — and the ratio was quietly producing initials that touched the border at **every** size. It is
+`0.32` now, which puts two capitals at about `0.96em` in a `1em` circle: a visible ring of fill on each
+side, and it scales to the top of the ladder without the letters growing into the edge.
+
+`line-height: 1` alongside it, so the line box cannot be taller than the circle and push the glyphs off
+centre.
+
 ## Reconciled design
 
-| Decision      | Choice                    | Why                                                   |
-| ------------- | ------------------------- | ----------------------------------------------------- |
-| Image failure | falls back to initials    | A revoked URL is normal, and a broken glyph is worse. |
-| Both at once  | never                     | "Ada Lovelace, AL" says the same thing twice.         |
-| `alt=""`      | no initials either        | The consumer declared the name is already visible.    |
-| `interactive` | a real `<button>`         | Tab stop and activation are the platform's, not ours. |
-| `type`        | `type="button"` always    | An avatar in a form must not submit it.               |
-| Initials      | first + **last**          | The last word is the surname; "AA" belongs to no one. |
-| `square`      | not offered               | A hard square is a logo, which is an image.           |
-| Badge         | `aria-hidden`             | A presence dot has no announcement.                   |
-| Size          | the control height ladder | An avatar lines up with the button beside it.         |
+| Decision      | Choice                            | Why                                                    |
+| ------------- | --------------------------------- | ------------------------------------------------------ |
+| Image failure | falls back to initials            | A revoked URL is normal, and a broken glyph is worse.  |
+| Both at once  | never                             | "Ada Lovelace, AL" says the same thing twice.          |
+| `alt=""`      | no initials either                | The consumer declared the name is already visible.     |
+| `interactive` | a real `<button>`                 | Tab stop and activation are the platform's, not ours.  |
+| `type`        | `type="button"` always            | An avatar in a form must not submit it.                |
+| Initials      | first + **last**                  | The last word is the surname; "AA" belongs to no one.  |
+| `square`      | not offered                       | A hard square is a logo, which is an image.            |
+| Badge         | `aria-hidden`                     | A presence dot has no announcement.                    |
+| Size          | its own five-step ladder, to 4rem | A control ladder stops at 2.75rem; an avatar need not. |
 
 ## Keyboard
 

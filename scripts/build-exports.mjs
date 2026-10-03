@@ -32,22 +32,31 @@ export function conditions(importPath, requirePath) {
 }
 
 /**
- * Build the full `exports` object for a given component list.
+ * Build the full `exports` object for a given component and icon list.
  *
  * Dual `types` per condition is required: TypeScript resolves the same package from
  * ESM and CJS graphs, and a single `.d.ts` makes `require()` consumers silently load
  * ESM-shaped types.
  *
+ * Icons get one pattern entry rather than one entry each. That is a deliberate break
+ * from the component rule, and the reason is arithmetic: the component rule exists
+ * because an unmatched wildcard is a hard error for the packaging checks, and because
+ * thirty lines are auditable. With 150-odd icons the auditable list is two thousand
+ * lines of generated JSON nobody reads, growing forever, while the pattern is
+ * guaranteed to match because the build emits a file for every module
+ * `tests/package-structure.test.ts` enumerates. The inventory is still asserted -
+ * just against `src/icons`, which is the thing that can actually drift.
+ *
  * @param {string[]} names
+ * @param {string[]} icons
  * @returns {ExportsMap}
  */
-export function buildExports(names) {
-  return {
+export function buildExports(names, icons = []) {
+  const map = {
     ".": conditions("./dist/index.js", "./dist/index.cjs"),
     "./styles.css": "./dist/index.css",
     "./tokens.css": "./dist/theme/tokens.css",
     "./package.json": "./package.json",
-
     ...Object.fromEntries(
       names.map((name) => [
         `./components/${name}`,
@@ -55,6 +64,16 @@ export function buildExports(names) {
       ])
     ),
   };
+
+  /*
+   * Omitted rather than declared empty when there are no icons: a `*` that matches
+   * nothing is exactly the case the packaging checks reject.
+   */
+  if (icons.length > 0) {
+    map["./icons/*"] = conditions("./dist/icons/*.js", "./dist/icons/*.cjs");
+  }
+
+  return map;
 }
 
 /**
@@ -64,10 +83,15 @@ export function buildExports(names) {
  * `uireload/components/button` gets no types at all, because `typesVersions` replaces
  * the `types` field lookup entirely rather than falling back to it per module.
  *
+ * Icons get one line each here even though `exports` uses a pattern, because
+ * `typesVersions` cannot wildcard the path it maps *to*. There is no pattern
+ * available on this side.
+ *
  * @param {string[]} names
+ * @param {string[]} icons
  * @returns {Record<string, TypesVersionsMap>}
  */
-export function buildTypesVersions(names) {
+export function buildTypesVersions(names, icons = []) {
   /** @type {TypesVersionsMap} */
   const map = {
     "*": ["./dist/index.d.ts"],
@@ -75,6 +99,10 @@ export function buildTypesVersions(names) {
 
   for (const name of names) {
     map[`components/${name}`] = [`./dist/components/${name}/index.d.ts`];
+  }
+
+  for (const icon of icons) {
+    map[`icons/${icon}`] = [`./dist/icons/${icon}.d.ts`];
   }
 
   map["styles.css"] = ["./dist/index.css"];

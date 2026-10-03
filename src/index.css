@@ -63,6 +63,52 @@
   :where([hidden]) {
     display: none !important;
   }
+
+  /*
+   * Icons.
+   *
+   * `1em` by default, so an icon beside text is the size of that text without the
+   * consumer having to say so. That is the single most common way an icon set looks
+   * wrong: a fixed pixel size on an inline icon puts it out of step with every
+   * element it sits beside, in every one of the three text sizes.
+   *
+   * `vertical-align` is nudged rather than left at the baseline because an SVG has no
+   * descender, so a flush baseline sits a glyph too high next to the text it labels.
+   * The nudge is a fraction of the icon's own size, which is what keeps it correct at
+   * every `size`.
+   *
+   * No `fill` here. Outlined icons carry `fill="none"` as an attribute, and a rule in
+   * this layer would beat that attribute and hand every outlined icon a filled
+   * background.
+   */
+  .uir-icon {
+    display: inline-block;
+    flex: none;
+    inline-size: 1em;
+    block-size: 1em;
+    vertical-align: -0.125em;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  /*
+   * The three token sizes. Declared rather than computed so an icon in a control lines
+   * up with that control without the control having to say anything about it.
+   */
+  .uir-icon[data-size="sm"] {
+    inline-size: var(--uir-icon-size-sm);
+    block-size: var(--uir-icon-size-sm);
+  }
+
+  .uir-icon[data-size="md"] {
+    inline-size: var(--uir-icon-size-md);
+    block-size: var(--uir-icon-size-md);
+  }
+
+  .uir-icon[data-size="lg"] {
+    inline-size: var(--uir-icon-size-lg);
+    block-size: var(--uir-icon-size-lg);
+  }
 }
 
 @layer uireload.utilities {

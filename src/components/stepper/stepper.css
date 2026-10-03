@@ -71,6 +71,21 @@
      */
     min-inline-size: 0;
     position: relative;
+
+    /*
+     * A one-cell grid, so the step fills this item in **both** axes.
+     *
+     * The item was a plain block, and that is what made the markers unevenly spaced: a `<button>` is
+     * inline-level by default, so an actionable step shrink-wrapped to `marker + its own label` while a
+     * `<div>` step — which *is* block-level — filled the column. One step's marker therefore sat at
+     * x = 84 and the next at x = 320, and the strip read as a ragged row rather than a sequence.
+     *
+     * A grid item stretches on both axes by default, which fixes the inline axis and, just as
+     * importantly, makes the item's height a definite box the block placements can position a marker
+     * against — see the `grid-template-rows` rules further down.
+     */
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   /*
@@ -108,6 +123,58 @@
    * marker and the next, not across the whole row. `inset-inline-*` becomes the cross axis here,
    * which is the whole reason the component uses logical properties throughout.
    */
+  /*
+ * The connector, for a label placed above or below its marker.
+ *
+ * Full width, because in those placements the label is on a row of its own and the marker's row has
+ * nothing else in it. This is the case that gives a continuous line from marker to marker, and it is
+ * why those placements are the default for a horizontal strip.
+ */
+  .uir-stepper[data-label-placement="block-start"] .uir-stepper__item:not(:first-child)::before,
+  .uir-stepper[data-label-placement="block-end"] .uir-stepper__item:not(:first-child)::before {
+    inset-block-start: calc(var(--uir-stepper-marker) / 2);
+    inset-inline-end: calc(-1 * var(--uir-stepper-gap));
+    inset-inline-start: 0;
+  }
+
+  /*
+   * `block-start` puts the **label** at the block start, so the marker is the item's *last* row and its
+   * centre is half a marker up from the item's bottom — not half a marker down from the top.
+   *
+   * This is why the connector needs a placement-specific block position at all: one `marker/2` for all
+   * three placements is only right when the marker comes first, so with the label above it the line
+   * landed in the label's row and crossed the text. It is exact for any label height, which is why it
+   * is expressed rather than tuned to one label.
+   */
+  .uir-stepper[data-label-placement="block-start"] .uir-stepper__item:not(:first-child)::before {
+    inset-block-start: calc(100% - var(--uir-stepper-marker) / 2);
+  }
+
+  /*
+ * The connector, for a label beside its marker.
+ *
+ * Confined to the gap **between** two steps, and this is geometry rather than taste. With the label on
+ * the inline side of its marker, the label sits between this marker and the next one, so a continuous
+ * line from marker to marker has to pass straight through it — there is no route that avoids the text.
+ *
+ * Drawing it only in the gap keeps the sequence legible (each step is joined to the next) without a
+ * line through a word. If you want the unbroken line, use `block-start` or `block-end`, which is what
+ * a horizontal strip defaults to for exactly this reason.
+ */
+  .uir-stepper[data-label-placement="inline-end"] .uir-stepper__item:not(:first-child)::before {
+    inset-block-start: calc(var(--uir-stepper-marker) / 2);
+    inset-inline-end: calc(-1 * var(--uir-stepper-gap));
+    inset-inline-start: 100%;
+  }
+
+  /*
+ * A vertical stepper's connector runs down instead.
+ *
+ * `inset-inline-*` becomes the cross axis here, so it tracks the marker's inline centre rather than
+ * the label's — which is the whole reason the component uses logical properties throughout. It can span
+ * the full item height because in a vertical strip the label is on the *cross* axis and never in the
+ * connector's way.
+ */
   .uir-stepper[data-orientation="vertical"] .uir-stepper__item:not(:first-child)::before {
     block-size: auto;
     inset-block-end: calc(-1 * var(--uir-stepper-gap));
@@ -122,13 +189,18 @@
   /*
    * A label above or below its marker.
    *
-   * Two rows rather than two columns, and that is the whole of the difference: the marker keeps its
-   * own row and the label gets the other one, so the connector's band — which is the marker's row —
-   * never has text in it.
+   * Two rows rather than two columns, which is what lets the marker own a row outright: the text row
+   * takes the slack and the marker row is pinned to one edge of the item, so every marker in the strip
+   * shares a row however much text its step carries.
    *
-   * This is what makes the strip usable in a narrow column. A label beside its marker needs at least
-   * the marker's width plus its longest word, and a stepper in a 12rem sidebar cannot hold that, which
-   * is the case `inline-end` cannot serve no matter how the text wraps.
+   * That is the whole of the difference, and it is what the connector depends on. With the marker
+   * placed by content flow, a step with no description put its marker 22px higher than one with a
+   * description, and a connector positioned against the item's bottom then ran past its own marker by
+   * exactly that much.
+   *
+   * It is also the only horizontal placement that can carry a **continuous** line: with the label on the
+   * inline side of its marker the label sits *between* two markers, so any line joining them crosses the
+   * text.
    *
    * `text-align: center` because the marker is centred on the column; a label left-aligned under a
    * centred marker reads as belonging to whatever sits nearest it.
@@ -142,16 +214,52 @@
   }
 
   /*
-   * Which side the marker goes on, by `order` rather than by a second grid.
-   *
-   * `block-start` puts the text first in the flow and the marker second, so it draws above; `block-end`
-   * is the default order, so it draws below. Two declarations, no duplicated markup.
-   *
-   * The *DOM* order stays marker-then-text in both placements, because that is the order a screen
-   * reader reads and it stays the useful one whichever way the label is drawn.
+   * Label above: the marker row is last, so it is pinned to the item's bottom edge and the text row
+   * takes the slack above it. `align-self: end` keeps each label against its own marker instead of
+   * floating in the middle of its row, so a two-line step and a one-line step both read as attached to
+   * the marker below them.
    */
-  .uir-stepper[data-label-placement="block-start"] .uir-stepper__marker {
-    order: -1;
+  .uir-stepper[data-label-placement="block-start"] .uir-stepper__step {
+    grid-template-rows: 1fr var(--uir-stepper-marker);
+  }
+
+  .uir-stepper[data-label-placement="block-start"] .uir-stepper__step .uir-stepper__marker {
+    grid-row: 2;
+  }
+
+  .uir-stepper[data-label-placement="block-start"] .uir-stepper__step .uir-stepper__text {
+    align-self: end;
+    grid-row: 1;
+  }
+
+  /* Label below: the mirror image. The marker row is first, so it is pinned to the item's top. */
+  .uir-stepper[data-label-placement="block-end"] .uir-stepper__step {
+    grid-template-rows: var(--uir-stepper-marker) 1fr;
+  }
+
+  .uir-stepper[data-label-placement="block-end"] .uir-stepper__step .uir-stepper__marker {
+    grid-row: 1;
+  }
+
+  .uir-stepper[data-label-placement="block-end"] .uir-stepper__step .uir-stepper__text {
+    align-self: start;
+    grid-row: 2;
+  }
+
+  /*
+   * A label beside its marker.
+   *
+   * One row, so the marker sits on the item's top edge and `align-items: flex-start` — inherited from
+   * the step — keeps it there whatever the text does. The text keeps the whole remaining column, so the
+   * labels all begin at the same offset from their markers.
+   *
+   * The connector for this placement is confined to the gap between steps, because the label lies
+   * between this marker and the next one and a line joining them has no route around it.
+   */
+  .uir-stepper[data-label-placement="inline-end"] .uir-stepper__item:not(:first-child)::before {
+    inset-block-start: calc(var(--uir-stepper-marker) / 2);
+    inset-inline-end: calc(-1 * var(--uir-stepper-gap));
+    inset-inline-start: 100%;
   }
 
   /*
@@ -164,7 +272,6 @@
     grid-column: 1;
     text-align: center;
   }
-
   /* ---- Step ---------------------------------------------------------- */
 
   /*

@@ -31,6 +31,19 @@
     font-family: var(--uir-font-family);
     font-size: var(--uir-control-font-size-sm);
     /*
+     * `position: fixed` here rather than in the inline style.
+     *
+     * The surface is measured to decide where to put it, and it has to be measured in the same
+     * layout mode it will be displayed in. A `position: static` block sizes to its container — so the
+     * measurement read the full width of whatever it happened to be a child of, the computed position
+     * was off by that difference, and the tooltip landed beside its trigger rather than under it. With
+     * `fixed` from the start it is already shrink-to-fit when measured, and the inline style only has
+     * to carry the two coordinates.
+     *
+     * There is no flash at the origin: the coordinates are set in a layout effect, before paint.
+     */
+    position: fixed;
+    /*
      * Tighter leading than body text.
      *
      * A tooltip is at most two or three lines, and body leading makes a short block of text look like
@@ -66,6 +79,35 @@
     transform: rotate(45deg);
   }
 
+  .uir-tooltip[data-placement="top"]::before {
+    inset-block-end: -0.25rem;
+    inset-inline-start: calc(50% - 0.25rem);
+  }
+
+  .uir-tooltip[data-placement="bottom"]::before {
+    inset-block-start: -0.25rem;
+    inset-inline-start: calc(50% - 0.25rem);
+  }
+
+  .uir-tooltip[data-placement="start"]::before,
+  .uir-tooltip[data-placement="end"]::before {
+    inset-block-start: calc(50% - 0.25rem);
+  }
+
+  .uir-tooltip[data-placement="start"]::before {
+    inset-inline-end: -0.25rem;
+  }
+
+  /*
+   * Where the arrow sits.
+   *
+   * Keyed on `data-placement`, which is **logical** — the overlay algorithm reports the side it used in
+   * the reading direction's own terms, so `start` and `end` are already direction-agnostic and need no
+   * `dir` rule to mirror.
+   *
+   * The surface went to `start`, so the arrow is on its `inline-end` edge: one edge inward, in both
+   * axes, always. Every declaration is a logical inset.
+   */
   .uir-tooltip[data-placement="top"]::before {
     inset-block-end: -0.25rem;
     inset-inline-start: calc(50% - 0.25rem);

@@ -104,22 +104,41 @@
   /* ---- Rail, track and thumbs ---------------------------------------- */
 
   /*
-   * The rail is the *box* the track and the thumbs are positioned inside, and it has to stay in
-   * flow at the thumb's height.
+   * The rail is a *positioning box* the size of the thumb, and it paints nothing.
    *
-   * This used to share a rule with the track — "they differ only in colour" — which set
-   * `position: absolute` and `block-size: var(--uir-slider-track-size)` on both. So the rail was
-   * 4px tall and out of flow, every `inset-block-start` inside it was measured against 4px instead of
-   * the thumb's 18px, and the thumb hung 14px below the rail it was supposed to be centred on. The
-   * rail is now stated separately for exactly one reason: only the track is absolutely positioned.
+   * It used to share a rule with the track — "they differ only in colour" — which set
+   * `position: absolute` and `block-size: var(--uir-slider-track-size)` on both. That made the rail a
+   * 4px out-of-flow box, so every `inset-block-start` inside it was measured against 4px instead of the
+   * thumb's height and the thumb hung 14px below the line it belonged to.
+   *
+   * Giving the rail the thumb's height instead fixed that and introduced a second bug: the rail was
+   * then an 18px tall bar in the fill colour with the 4px track drawn on top of it, so the slider read
+   * as a thick grey slab with a thin line in it. The rail is now transparent and the visible line is a
+   * `::before` on it — same thickness as the track by construction, because both are sized off
+   * `--uir-slider-track-size`.
    */
   .uir-slider__rail {
-    background-color: var(--uir-slider-fill);
     block-size: var(--uir-slider-thumb-size);
-    border-radius: calc(var(--uir-slider-track-size) / 2);
     display: block;
     inline-size: 100%;
     position: relative;
+  }
+
+  /*
+   * The unfilled line.
+   *
+   * A pseudo-element rather than the rail's own background, because the rail has to be the thumb's
+   * height and a background paints the whole box. Sized off the same token as the track, so the two
+   * can never differ — which is the property a shared rule was supposed to give and did not.
+   */
+  .uir-slider__rail::before {
+    background-color: var(--uir-slider-fill);
+    border-radius: calc(var(--uir-slider-track-size) / 2);
+    block-size: var(--uir-slider-track-size);
+    content: "";
+    inset-block-start: calc((var(--uir-slider-thumb-size) - var(--uir-slider-track-size)) / 2);
+    inset-inline: 0;
+    position: absolute;
   }
 
   .uir-slider__track {
@@ -179,8 +198,20 @@
    * orientation and right on the other. Two declarations, stated once each.
    */
   .uir-slider[data-orientation="vertical"] .uir-slider__thumb {
+    /*
+     * From the rail's top edge, by the fraction of the range still *below* the thumb.
+     *
+     * 100% - at, rather than at, because `--uir-slider-at` is the value's fraction from the minimum
+     * and the minimum is at the bottom. `translateY(50%)` then puts the thumb's own centre on that
+     * position, which is the only way a thumb lands *on* the value rather than its top edge on it.
+     */
     inset-block-start: calc(100% - var(--uir-slider-at) * 100%);
-    inset-inline-start: calc((var(--uir-slider-thumb-size) - var(--uir-slider-thumb-size)) / 2);
+    /*
+     * Zero, and deliberately: the vertical rail's inline size *is* the thumb's size, so the thumb
+     * already fills the rail across and any offset pushes it out. This is also why there is no
+     * horizontal counterpart to the thumb's translateX(-50%) — there is nothing to recentre.
+     */
+    inset-inline-start: 0;
     transform: translateY(50%);
   }
 
@@ -195,7 +226,24 @@
   /* ---- The real controls --------------------------------------------- */
 
   /*
-   * Hidden, but the pointer target.
+   * The inputs' container.
+   *
+   * `position: absolute; inset: 0` **inside the rail**, which is what makes the inputs cover it. As
+   * siblings they were separate grid rows of the root and sat 55px above the track they were meant to
+   * overlay — so nothing on the visible track was a hit target, and `pointer-events: auto` on the
+   * input changed nothing a user could feel.
+   *
+   * The rail is the positioning context rather than the root precisely because the rail is the thing
+   * being covered: `inset: 0` against the rail is exact by construction, with nothing to measure and
+   * nothing that can drift when the header, the marks or the helper text change height.
+   */
+  .uir-slider__inputs {
+    inset: 0;
+    position: absolute;
+  }
+
+  /*
+   * Transparent, and the pointer target.
    *
    * The input has to stay in the accessibility tree, in the tab order, and focusable, so this is a
    * transparent element rather than `display: none` or `visibility: hidden` — both of which take it
@@ -209,15 +257,14 @@
    * Letting the real input take it is also the only way the drawn thumb and `aria-valuenow` cannot
    * drift apart: the browser's own pointer maths moves the value, and the drawn thumb is a picture of
    * the value the browser now holds. A hand-rolled track-click calculation cannot make that promise,
-   * which is why it was removed along with this rule.
+   * which is why it went when this rule did.
    *
-   * `z-index` above the drawn rail and thumb, so the input is the hit target and the drawing stays
-   * visible through its `opacity: 0`.
+   * `z-index` above the drawn track and thumb, so the input is the hit target while the drawing stays
+   * visible through the input's `opacity: 0`.
    */
   .uir-slider__input {
-    block-size: var(--uir-slider-thumb-size);
+    block-size: 100%;
     inline-size: 100%;
-    inset-block-start: calc(var(--uir-slider-thumb-size) / 2 * -1);
     margin: 0;
     opacity: 0;
     position: absolute;
@@ -253,6 +300,20 @@
     display: grid;
     grid-template-columns: 1fr;
     inset-block-start: var(--uir-slider-thumb-size);
+    /*
+     * Spanning the rail, which this row did not do.
+     *
+     * An absolutely positioned box with `auto` inline insets shrink-wraps to its content — and this row's
+     * content is entirely out of flow: the ticks are a `::before` and each label is absolutely
+     * positioned. So the row was **zero pixels wide**, every mark was zero wide, and every label's
+     * `inset-inline-start: calc(var(--uir-slider-at) * 100%)` resolved against nothing and came out `0`.
+     * All five labels piled up at the rail's left edge in a column, which is what "the marks are in the
+     * wrong place" looked like.
+     *
+     * `inset-inline: 0` states the width instead of deriving it, and it matches `.uir-slider__labels`
+     * above, which already did this. The two rows are siblings in intent and should say the same thing.
+     */
+    inset-inline: 0;
     position: absolute;
   }
 
@@ -285,6 +346,27 @@
     position: absolute;
     transform: translateX(-50%);
     white-space: nowrap;
+  }
+
+  /*
+   * The first and last labels are aligned to the rail's edges instead of centred on their mark.
+   *
+   * Every other label is centred, which is right — a tick has no width, so a centred label sits exactly
+   * over it. But the first mark is at 0% and the last at 100%, so centring them puts half of each label
+   * *outside* the slider, and the row grows wider than the rail it belongs to.
+   *
+   * Scoped through `.uir-slider__marks >` deliberately. The label is the only element child of its own
+   * mark — the tick is a pseudo-element — so `.uir-slider__mark-label:first-child` matches **every**
+   * label, and `:last-child` matches every label too. Written without the direct-child hop, both rules
+   * hit all of them at once and every middle label ends up shifted left by half its width.
+   */
+  .uir-slider__marks > .uir-slider__mark:first-child .uir-slider__mark-label {
+    inset-inline-start: 0;
+    transform: none;
+  }
+
+  .uir-slider__marks > .uir-slider__mark:last-child .uir-slider__mark-label {
+    transform: translateX(-100%);
   }
 
   /* ---- The value bubble ---------------------------------------------- */
@@ -350,11 +432,13 @@
   /* ---- Vertical ------------------------------------------------------ */
 
   /*
-   * A vertical slider is laid out by swapping the two axes rather than by transposing every child.
+   * A vertical slider swaps the two axes on the rail, the line, the track and the thumb. It does **not**
+   * rotate the component: the header stays above the rail and the marks stay below it, because a label
+   * on its side is unreadable and a mark under a rotated rail would be upside down.
    *
-   * The header stays above the rail, and the marks stay below it: rotating the whole component would
-   * put the label on its side, which is unreadable. So the axis change is confined to the rail's and
-   * the track's dimensions.
+   * Only four elements change, and each states its own dimensions. There is deliberately no shared rule
+   * between the rail and the line, because a shared rule is what made this section wrong twice: it let a
+   * block-size intended for one element land on the other, and the rail ended up with no length at all.
    */
   .uir-slider[data-orientation="vertical"] {
     justify-items: center;
@@ -365,30 +449,48 @@
     inline-size: 100%;
   }
 
+  /*
+   * The rail is the track's length along the main axis and the thumb's size across it.
+   *
+   * Stated as a length rather than a percentage, because every child of the rail is absolutely
+   * positioned: a percentage height has nothing to resolve against and collapses to zero. That is
+   * exactly what happened — two rules set a block-size on this element, the second said 100%, and the
+   * vertical slider rendered a rail of no length at all with the thumb overflowing a 4px-wide box.
+   *
+   * A vertical slider's length is a real design decision, not something to derive from its contents.
+   */
   .uir-slider[data-orientation="vertical"] .uir-slider__rail {
     block-size: 12rem;
     inline-size: var(--uir-slider-thumb-size);
   }
 
-  .uir-slider[data-orientation="vertical"] .uir-slider__rail,
-  .uir-slider[data-orientation="vertical"] .uir-slider__track {
-    block-size: 100%;
+  /*
+   * The unfilled line, transposed.
+   *
+   * Long on the block axis and one track-size across it, centred on the thumb. The horizontal rule is
+   * inset-inline: 0 with a fixed block-size, which are the wrong two axes here, so the vertical case is
+   * stated rather than derived.
+   */
+  .uir-slider[data-orientation="vertical"] .uir-slider__rail::before {
+    block-size: auto;
     inline-size: var(--uir-slider-track-size);
-    inset-block-start: 0;
+    inset-block: 0;
     inset-inline-start: calc((var(--uir-slider-thumb-size) - var(--uir-slider-track-size)) / 2);
   }
 
+  /*
+   * The fill, growing upwards from the low end.
+   *
+   * inset-block-end is the low end in a vertical slider, so the fill's length is (to - from) * 100%
+   * measured from the bottom. inset-block-start: auto is stated because the horizontal rule sets it to
+   * the track's centring offset — and a fill with both a top and a bottom inset is over-constrained, so
+   * it would run past the rail's top end instead of starting there.
+   */
   .uir-slider[data-orientation="vertical"] .uir-slider__track {
-    /*
-     * The bottom is the low end, so the fill grows upwards from it.
-     *
-     * `inset-block-end` is the low end in a vertical slider; `inline-size` becomes the *height* of
-     * the fill only if it is written against the cross axis, which for the main-axis dimension here
-     * means using `block-size` for the fill length instead.
-     */
     block-size: calc((var(--uir-slider-to) - var(--uir-slider-from)) * 100%);
     inline-size: var(--uir-slider-track-size);
     inset-block-end: calc(var(--uir-slider-from) * 100%);
+    inset-block-start: auto;
     inset-inline-start: calc((var(--uir-slider-thumb-size) - var(--uir-slider-track-size)) / 2);
   }
 

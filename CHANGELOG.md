@@ -9,6 +9,48 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 
+- **An icon set: 156 vector glyphs, one module each.** Imported by name, so an
+  application that uses four icons ships four icons.
+
+  ```ts
+  import AddFilled from "uireload/icons/AddFilled";
+  import AddOutlined from "uireload/icons/AddOutlined";
+  ```
+
+  - **Naming.** Every icon is `PascalCase`, because the module name *is* the
+    identifier written at the call site. A base name is always either `Filled`
+    **and** `Outlined`, or bare — never a lone variant. Ten icons have only one
+    honest form and carry no postfix at all: `At`, `BatteryLow`, `BatteryFull`,
+    `BatteryCharging`, `Bluetooth`, `BlurOn`, `BlurOff`, `Moon`, `Sun`,
+    `CalendarToday`.
+  - **The two variants mean two different things, deliberately.** A shape with a
+    solid form is filled, with the detail knocked out by `fill-rule`. A *mark* —
+    a paperclip, an arrow, a Bluetooth rune — has no solid form that is better
+    than the mark itself, so its `Filled` variant is the same construction at a
+    heavier weight. One weight per family, everywhere: an outline that is 2 in one
+    icon and 1.5 in the next reads as two sets rather than two weights.
+  - **Sizing is `em` by default**, so an icon beside text is the size of that text
+    at every step in the type scale — the most common way an icon set looks
+    wrong. `size="sm" | "md" | "lg"` resolves the shared `--uir-icon-size-*`
+    tokens through a `data-*` hook, and any other string is applied as a CSS
+    length for icons outside a control.
+  - **Decorative by default.** With no `title`, an icon is `aria-hidden` and out
+    of the accessibility tree entirely, which is correct beside a visible label.
+    Supplying `title` makes it `role="img"` with a `<title>`, for the case where
+    the icon is the only content of a control. The two halves are set together
+    and cannot be set apart on purpose: `role="img"` with no name is worse than
+    either alternative.
+  - **Vector throughout, on one 24 unit grid.** No raster, no font glyph, no
+    external reference. The geometry is original, and the grid is what makes 156
+    separate files look like one set — so the test suite asserts it for every one
+    of them, including that each glyph stays inside its own viewport.
+  - **One module per icon, not a registry.** `uireload/icons/*` is the single
+    pattern subpath in the export map; the reason, and why components do not get
+    one, is written up in `scripts/build-exports.mjs`.
+  - Documented in [`src/icons/README.md`](./src/icons/README.md), with a
+    Storybook gallery that renders the whole shelf at every size and in both
+    colour schemes.
+
 - **`Divider`, `Skeleton`, `Avatar`, `Alert`.** Four components with no shared theme
   beyond the token contract.
   - **`Divider`** renders identically whether or not it is in the accessibility

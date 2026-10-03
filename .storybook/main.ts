@@ -22,6 +22,7 @@ const SRC = fileURLToPath(new URL("../src", import.meta.url));
 /** Mirrors the `exports` map in package.json, resolved against source. */
 const aliases = [
   { find: /^uireload\/components\/(.+)$/, replacement: `${SRC}/components/$1` },
+  { find: /^uireload\/icons\/(.+)$/, replacement: `${SRC}/icons/$1` },
   { find: /^uireload$/, replacement: `${SRC}/index.ts` },
 ];
 

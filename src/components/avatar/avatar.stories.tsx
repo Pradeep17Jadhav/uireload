@@ -11,13 +11,34 @@ import type { Meta, StoryObj } from "@storybook/react";
 
 import { Avatar, initialsFrom } from "uireload/components/avatar";
 
+/**
+ * An illustrated portrait, inline.
+ *
+ * Three shapes — a wash, a head, shoulders — on the same 1:1 frame the avatar crops to, so it reads as a
+ * picture of a person rather than as initials in a box. Two tints, because the point of the story is
+ * that the image is `object-fit: cover` inside a circle: the corners are cropped away and the head and
+ * shoulders survive it.
+ *
+ * Inline SVG, for three reasons. A raster file would be a binary in a package that ships none. A remote
+ * URL makes the gallery depend on a third party being up and makes the story wrong whenever it is not.
+ * And a data URI is `currentColor`-free and script-free, so it renders identically in every colour
+ * scheme and needs no sanitising.
+ */
+const PORTRAIT = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img">' +
+    '<rect width="96" height="96" fill="#c7d2fe"/>' +
+    '<circle cx="48" cy="37" r="16" fill="#4f46e5"/>' +
+    '<path d="M14 96a34 34 0 0 1 68 0z" fill="#4f46e5"/>' +
+    "</svg>"
+)}`;
+
 const meta = {
   title: "Components/Avatar",
   component: Avatar,
   parameters: { layout: "fullWidth" },
   argTypes: {
     variant: { control: "inline-radio", options: ["circular", "rounded"] },
-    size: { control: "inline-radio", options: ["sm", "md", "lg"] },
+    size: { control: "inline-radio", options: ["xs", "sm", "md", "lg", "xl"] },
     tone: { control: "inline-radio", options: ["neutral", "accent", "positive", "danger"] },
     interactive: { control: "boolean" },
     disabled: { control: "boolean" },
@@ -48,7 +69,7 @@ export const Default: Story = {
 export const WithImage: Story = {
   args: {
     initials: initialsFrom("Ada Lovelace"),
-    src: "https://placehold.co/96x96/1e293b/f8fafc?text=AL",
+    src: PORTRAIT,
     alt: "Ada Lovelace",
   },
 };
@@ -77,7 +98,7 @@ export const FailedImage: Story = {
 export const Decorative: Story = {
   args: {
     initials: initialsFrom("Ada Lovelace"),
-    src: "https://placehold.co/96x96/475569/f8fafc?text=AL",
+    src: PORTRAIT,
     alt: "",
   },
 };
@@ -85,14 +106,31 @@ export const Decorative: Story = {
 /** Neither image nor initials: an empty glyph, for a record with no person behind it yet. */
 export const Empty: Story = {};
 
-/** Every size. `size` reads the control height ladder, so an avatar lines up with the button beside it. */
+/**
+ * Every size in the ladder.
+ *
+ * `xs` and `xl` sit outside the shared control heights, because a control ladder tops out at 2.75rem
+ * and an avatar is a picture of a person rather than a control. `xl` is the case that makes the point:
+ * 4rem heads a section without ceasing to look like the same component as an `lg`.
+ */
 export const Sizes: Story = {
   render: (args) => (
     <div
-      style={{ display: "flex", alignItems: "center", gap: "var(--uir-space)", padding: "2rem" }}
+      style={{
+        display: "flex",
+        alignItems: "flex-end",
+        gap: "var(--uir-space)",
+        padding: "2rem",
+      }}
     >
-      {(["sm", "md", "lg"] as const).map((size) => (
-        <Avatar key={size} {...args} size={size} initials={initialsFrom("Ada Lovelace")} />
+      {(["xs", "sm", "md", "lg", "xl"] as const).map((size) => (
+        <div
+          key={size}
+          style={{ display: "grid", gap: "var(--uir-space-xs)", justifyItems: "center" }}
+        >
+          <Avatar {...args} initials={initialsFrom("Ada Lovelace")} size={size} />
+          <code style={{ fontSize: "0.75rem" }}>{size}</code>
+        </div>
       ))}
     </div>
   ),

@@ -24,6 +24,8 @@ import { resolveMessage, BASE_MESSAGES } from "../../i18n";
  * Component CSS is assembled into `uireload/styles.css` by `scripts/bundle-css.mjs`.
  */
 
+import { IconButton } from "../icon-button";
+
 import type { SnackbarProps, SnackbarCloseReason } from "./snackbar.types";
 
 /** Whether a slot has anything to render. */
@@ -303,8 +305,18 @@ export function Snackbar(props: SnackbarProps) {
         {isRenderable(action) ? <div className="uir-snackbar__action">{action}</div> : null}
 
         {showClose ? (
-          <button
-            type="button"
+          /*
+           * An `IconButton`, not a bare `<button>`.
+           *
+           * The close control is the same object as every other icon-only control in the library —
+           * square, one control height, the library's hover fill and focus ring — and hand-rolling it
+           * here is how it came to carry its own glyph and its own state rules. Composing the shared
+           * component makes them impossible to get wrong rather than merely fixed.
+           *
+           * `stopPropagation` stays: the snackbar also closes on a click outside, and this click is
+           * inside, so without it the close would fire twice.
+           */
+          <IconButton
             className="uir-snackbar__close"
             aria-label={closeName}
             onClick={composeHandlers<React.MouseEvent<HTMLButtonElement>>((event) => {
@@ -312,8 +324,9 @@ export function Snackbar(props: SnackbarProps) {
               requestClose("dismiss");
             }, undefined)}
           >
+            {/* Two crossed bars, so the cross is `currentColor` in every scheme. */}
             <span className="uir-snackbar__close-glyph" aria-hidden="true" />
-          </button>
+          </IconButton>
         ) : null}
       </div>
     </Portal>

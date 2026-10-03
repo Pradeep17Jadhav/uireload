@@ -459,8 +459,9 @@ export function Slider(props: SliderProps) {
         it depicts is on the inputs below, and announcing the geometry as well would restate the
         thumb's own value in a second role.
       */}
-      <div className="uir-slider__rail" aria-hidden="true">
+      <div className="uir-slider__rail">
         <div
+          aria-hidden="true"
           className="uir-slider__track"
           style={
             {
@@ -472,59 +473,60 @@ export function Slider(props: SliderProps) {
         {thumbs.map((thumb, index) => (
           <span
             key={`thumb-${index}`}
+            aria-hidden="true"
             className="uir-slider__thumb"
             style={{ "--uir-slider-at": thumb.at } as React.CSSProperties}
           />
         ))}
-      </div>
 
-      {/*
-        The real controls. Visually hidden but present and focusable, so the pointer maths, the
-        step snapping, the platform keyboard and the form submission are all the browser's — and so
-        `aria-valuenow` cannot drift from the drawn position.
-      */}
-      <div className="uir-slider__inputs">
-        {thumbs.map((thumb, index) => (
-          <input
-            key={`input-${index}`}
-            ref={
-              index === 0
-                ? composeRefs<HTMLInputElement>(ref)
-                : /* Later thumbs get no consumer ref: one ref has to mean one thing. */ undefined
-            }
-            id={`${baseId}-${index}`}
-            type="range"
-            className="uir-slider__input"
-            aria-labelledby={labelId}
-            aria-describedby={hasHelper ? helperId : undefined}
-            min={min}
-            max={max}
-            step={effectiveStep ?? "any"}
-            value={thumb.value}
-            disabled={disabled}
-            name={name === undefined ? undefined : thumbCount > 1 ? `${name}[${index}]` : name}
-            aria-valuetext={getAriaValueText?.(thumb.value, index)}
-            /*
-             * The pointer-driven path.
-             *
-             * A native range input reports the value it has settled on in `change`, so this is
-             * where a drag is reported. `beginInteraction` runs on `pointerdown` rather than here
-             * so that `Escape` has a value from before the *gesture*, not from before the last
-             * pixel of it — cancelling at the last pixel would cancel to a value the user has
-             * already watched slide past.
-             */
-            onChange={composeHandlers<React.ChangeEvent<HTMLInputElement>>((event) => {
+        {/*
+          The real controls. Visually hidden but present and focusable, so the pointer maths, the
+          step snapping, the platform keyboard and the form submission are all the browser's — and so
+          `aria-valuenow` cannot drift from the drawn position.
+        */}
+        <div className="uir-slider__inputs">
+          {thumbs.map((thumb, index) => (
+            <input
+              key={`input-${index}`}
+              ref={
+                index === 0
+                  ? composeRefs<HTMLInputElement>(ref)
+                  : /* Later thumbs get no consumer ref: one ref has to mean one thing. */ undefined
+              }
+              id={`${baseId}-${index}`}
+              type="range"
+              className="uir-slider__input"
+              aria-labelledby={labelId}
+              aria-describedby={hasHelper ? helperId : undefined}
+              min={min}
+              max={max}
+              step={effectiveStep ?? "any"}
+              value={thumb.value}
+              disabled={disabled}
+              name={name === undefined ? undefined : thumbCount > 1 ? `${name}[${index}]` : name}
+              aria-valuetext={getAriaValueText?.(thumb.value, index)}
               /*
-               * A change with no button held down is already a finished decision — one arrow press,
-               * one step, no drag in progress — so it commits as well as changing. A change during a
-               * drag does not: it is mid-gesture, and its commit belongs to `pointerup`.
+               * The pointer-driven path.
+               *
+               * A native range input reports the value it has settled on in `change`, so this is
+               * where a drag is reported. `beginInteraction` runs on `pointerdown` rather than here
+               * so that `Escape` has a value from before the *gesture*, not from before the last
+               * pixel of it — cancelling at the last pixel would cancel to a value the user has
+               * already watched slide past.
                */
-              const phase = dragging.current ? "change" : "commit";
+              onChange={composeHandlers<React.ChangeEvent<HTMLInputElement>>((event) => {
+                /*
+                 * A change with no button held down is already a finished decision — one arrow press,
+                 * one step, no drag in progress — so it commits as well as changing. A change during a
+                 * drag does not: it is mid-gesture, and its commit belongs to `pointerup`.
+                 */
+                const phase = dragging.current ? "change" : "commit";
 
-              move(index, Number(event.target.value), phase);
-            }, onChange)}
-          />
-        ))}
+                move(index, Number(event.target.value), phase);
+              }, onChange)}
+            />
+          ))}
+        </div>
       </div>
 
       {marks && marks.length > 0 ? (

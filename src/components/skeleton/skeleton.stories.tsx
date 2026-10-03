@@ -117,13 +117,26 @@ export const Table: Story = {
           style={{
             display: "grid",
             gap: "var(--uir-space)",
-            gridTemplateColumns: "1fr 1fr 80px",
+            /*
+             * Three columns, one narrower — a name, a value, an action.
+             *
+             * The third column used to be a fixed `80px` holding an `80x24` rounded pill while the other
+             * two were `1fr` holding bars at the default line height. So the row was one element taller
+             * than the other four, and a table's whole job is that its rows are the same height. The
+             * column is still narrower, and the **height** is now identical across all three because
+             * nothing overrides it: the grid column sets the width and the placeholder sets only the
+             * height, once.
+             *
+             * The bars fill their columns rather than carrying an explicit `width`, so a column's size
+             * is decided in one place — the template — instead of twice.
+             */
+            gridTemplateColumns: "1fr 1fr 6rem",
             alignItems: "center",
           }}
         >
           <Skeleton {...args} lines={1} />
           <Skeleton {...args} lines={1} />
-          <Skeleton {...args} variant="rounded" width={80} height={24} />
+          <Skeleton {...args} lines={1} />
         </div>
       ))}
     </div>

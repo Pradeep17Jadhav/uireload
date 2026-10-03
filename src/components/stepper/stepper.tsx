@@ -34,7 +34,7 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(function Stepper
     onStepChange,
     navigation = "linear",
     orientation = "horizontal",
-    labelPlacement = "inline-end",
+    labelPlacement: labelPlacementProp,
     showContent = false,
     children,
     announcePosition = true,
@@ -47,6 +47,23 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(function Stepper
   } = props;
 
   const noun = stepLabel ?? resolveMessage(undefined, BASE_MESSAGES, "common.step");
+
+  /*
+   * Where the label goes, resolved per orientation when the consumer does not say.
+   *
+   * Horizontal: above the marker. It is the only horizontal placement that can carry a continuous
+   * connector — with the label beside its marker, the label sits *between* two markers and any line
+   * joining them crosses the text. So the default is the placement that draws a proper sequence.
+   *
+   * Vertical: beside the marker, which is the convention there and costs nothing, because in a
+   * vertical strip the label is on the cross axis and the connector runs down the marker's inline
+   * centre without meeting it.
+   *
+   * The same resolution `TabBar` uses for `activation`: a boolean-ish prop that flips meaning with the
+   * orientation is worse than one that resolves to the right thing.
+   */
+  const labelPlacement =
+    labelPlacementProp ?? (orientation === "vertical" ? "inline-end" : "block-start");
 
   /*
    * Per-instance, so two steppers on one page cannot collide on an error description's id — and a

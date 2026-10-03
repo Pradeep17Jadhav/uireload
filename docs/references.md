@@ -561,6 +561,31 @@ reader the position and the count; the explicit attributes would say it twice.
 | Focus ring metrics    | `@ui5/webcomponents/dist/css/themes/Button.css` — `--_ui5_button_focused_border`                         |
 | Unfilled variant wash | `@ui5/webcomponents/dist/css/themes/Button.css` — `Transparent` design tokens                            |
 
+### Icons - `src/icons/`
+
+| Concern                       | Source                                                                                                                                          |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Decorative by default         | `@mui/material/SvgIcon/SvgIcon.js` - `aria-hidden: true` unless `titleAccess` is set; `focusable: "false"` unconditionally                      |
+| Named form                    | `@mui/material/SvgIcon/SvgIcon.js` - `role: "img"` plus a `<title>` child when `titleAccess` is set                                             |
+| Naming of the accessible name | `@ui5/webcomponents/dist/Icon.d.ts` - `accessibleName`; "Every icon should have a text alternative in order to calculate its accessible name"   |
+| Decorative / image / role     | `@ui5/webcomponents/dist/types/IconMode.d.ts` - `Decorative` (`role="presentation"` + `aria-hidden`) vs `Image` (`role="img"`) vs `Interactive` |
+| One module per icon           | `@ui5/webcomponents-icons/dist/<name>.js` - the published shape of a large SVG set: a module per glyph, not one barrel                          |
+| Grid and sizing               | `@ui5/webcomponents/dist/Icon.d.ts` - "set `font-size` on the `ui5-icon` host element" to control glyph size; `em` adopted for the same reason  |
+| Default export per icon       | `@mui/icons-material/<Name>.js` - `exports.default = createSvgIcon(...)`, one named glyph per module                                            |
+
+Rejected: `variant` / `filled` / `outlined` as a runtime prop
+(`@mui/icons-material/utils/createSvgIcon.js`) - it is a build-time choice baked into which module
+you import, so a prop would mean shipping both variants of every icon to offer one.
+Rejected: `fontSize` as an enumerated ladder (`@mui/material/SvgIcon/SvgIcon.js`) - the icon
+vocabulary here is the three control tokens plus any CSS length, not a closed scale.
+Rejected: an `Icon` component wrapper (`@ui5/webcomponents/dist/Icon.d.ts`) - that element
+exists to select a glyph from a registry by name at runtime; a module-per-icon API does not
+need a runtime registry, and adding one would put the whole set in every bundle.
+
+The geometry is original. Every glyph is drawn on a shared 24 unit grid from a small set of
+primitives, and none of it is traced from either library. What both libraries were read for is
+the _API_ above.
+
 ## Versions
 
 Read from `../referenceUILibraries/package.json` and the installed `package.json` before citing a

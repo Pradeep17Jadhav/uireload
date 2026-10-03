@@ -29,6 +29,22 @@ const DIST = "dist";
 const BUDGETS = {
   index: 4,
   "components/*": 5,
+  "icons/*": 1,
+};
+
+/**
+ * Aggregate budgets, in kB gzipped, applied to the sum of a whole directory.
+ *
+ * The icon set is reported as one row rather than 156, because 156 rows of the same
+ * number is not a report. The per-icon budget above still runs on every one of them.
+ *
+ * This number is a growth tripwire, not a download size. A consumer imports the four
+ * glyphs their page uses - well under a kilobyte - and never fetches the set. What the
+ * aggregate catches is path data accumulating without anyone noticing, which is the one
+ * way an icon set gets expensive.
+ */
+const TOTALS = {
+  "icons/*": 120,
 };
 
 const KIB = 1024;
@@ -59,7 +75,15 @@ function* entries(dir) {
 }
 
 const rows = [];
+const groups = new Map();
 let failures = 0;
+
+/** Which budget key a built entry falls under. */
+function budgetFor(rel) {
+  if (!rel.includes("/")) return "index";
+  if (rel.startsWith("icons/")) return "icons/*";
+  return "components/*";
+}
 
 for (const file of entries(DIST)) {
   const rel = relative(DIST, file).replace(/\\/g, "/");
@@ -72,25 +96,59 @@ for (const file of entries(DIST)) {
     continue;
   }
 
-  const isRoot = !rel.includes("/");
-  const budget = isRoot ? BUDGETS.index : BUDGETS["components/*"];
+  const key = budgetFor(rel);
+  const budget = BUDGETS[key];
   const over = budget !== null && gzip / KIB > budget;
   if (over) failures += 1;
 
-  rows.push({ entry: rel, raw, gzip, budget, note: over ? "OVER BUDGET" : "" });
+  const group = groups.get(key) ?? { count: 0, raw: 0, gzip: 0 };
+  group.count += 1;
+  group.raw += raw;
+  group.gzip += gzip;
+  groups.set(key, group);
+
+  rows.push({ entry: rel, raw, gzip, budget, note: over ? "OVER BUDGET" : "", group: key });
 }
 
 rows.sort((a, b) => b.gzip - a.gzip);
 
 const pad = (value, width) => String(value).padEnd(width);
+
+/*
+ * Only the largest entries are listed. Everything is still measured and budgeted;
+ * printing 156 identical icons would bury the three numbers worth reading.
+ */
+const LISTED = 12;
+const shown = rows.slice(0, LISTED);
+
 console.log("");
 console.log(`${pad("entry", 46)} ${pad("raw kB", 10)} ${pad("gzip kB", 10)} budget`);
 console.log("-".repeat(80));
-for (const row of rows) {
+for (const row of shown) {
   console.log(
     `${pad(row.entry, 46)} ${pad(kib(row.raw), 10)} ${pad(kib(row.gzip), 10)} ${row.budget ?? "-"} ${
       row.note
     }`.trimEnd()
+  );
+}
+if (rows.length > shown.length) {
+  console.log(`... and ${rows.length - shown.length} more entries, all within budget.`);
+}
+
+console.log("");
+console.log(
+  `${pad("group", 46)} ${pad("entries", 10)} ${pad("raw kB", 10)} ${pad("gzip kB", 10)} budget`
+);
+console.log("-".repeat(80));
+for (const [key, group] of [...groups].sort((a, b) => b[1].gzip - a[1].gzip)) {
+  const total = TOTALS[key];
+  const over = total !== undefined && group.gzip / KIB > total;
+  if (over) failures += 1;
+
+  console.log(
+    `${pad(key, 46)} ${pad(group.count, 10)} ${pad(kib(group.raw), 10)} ${pad(kib(group.gzip), 10)} ${
+      total ?? "-"
+    } ${over ? "OVER BUDGET" : ""}`.trimEnd()
   );
 }
 

@@ -136,7 +136,8 @@ describe("Stepper: rendering", () => {
     const root = container.querySelector(".uir-stepper") as HTMLElement;
     expect(root).toHaveAttribute("data-orientation", "horizontal");
     expect(root).toHaveAttribute("data-navigation", "linear");
-    expect(root.className).not.toMatch(/horizontal|linear/);
+    expect(root).toHaveAttribute("data-label-placement", "block-start");
+    expect(root.className).not.toMatch(/horizontal|linear|block-start/);
 
     const step = document.querySelector(".uir-stepper__step") as HTMLElement;
     expect(step).toHaveAttribute("data-state", "current");
@@ -485,6 +486,91 @@ describe("Stepper: errors", () => {
     expect(screen.getByRole("button", { name: "Step 1: Account" })).not.toHaveAttribute(
       "aria-describedby"
     );
+  });
+});
+
+describe("Stepper: label placement", () => {
+  it("resolves the label placement per orientation when the consumer does not say", () => {
+    /*
+     * Horizontal defaults to `block-start` and vertical to `inline-end`.
+     *
+     * A horizontal stepper is the only case where the placement is load-bearing: with the label beside
+     * its marker, the label sits between two markers, so a line joining them crosses the text. The
+     * vertical default costs nothing because the label is on the cross axis there.
+     */
+    const horizontal = render(<Stepper steps={STEPS} active={1} />);
+    expect(document.querySelector(".uir-stepper")).toHaveAttribute(
+      "data-label-placement",
+      "block-start"
+    );
+    horizontal.unmount();
+
+    render(<Stepper orientation="vertical" steps={STEPS} active={1} />);
+    expect(document.querySelector(".uir-stepper")).toHaveAttribute(
+      "data-label-placement",
+      "inline-end"
+    );
+  });
+
+  it("lets an explicit placement win over the orientation default", () => {
+    render(<Stepper labelPlacement="inline-end" steps={STEPS} active={1} />);
+
+    expect(document.querySelector(".uir-stepper")).toHaveAttribute(
+      "data-label-placement",
+      "inline-end"
+    );
+  });
+
+  it("accepts a label above or below its marker", () => {
+    for (const labelPlacement of ["block-start", "block-end"] as const) {
+      const { unmount } = render(
+        <Stepper labelPlacement={labelPlacement} steps={STEPS} active={1} />
+      );
+
+      // Two rows rather than two columns: the marker keeps its own row, so the connector's band is
+      // never a row that has text in it.
+      expect(document.querySelector(".uir-stepper"), labelPlacement).toHaveAttribute(
+        "data-label-placement",
+        labelPlacement
+      );
+      unmount();
+    }
+  });
+
+  it("keeps the marker before the text in the DOM in every placement", () => {
+    /*
+     * `block-start` is drawn label-above-marker, but read marker-then-label.
+     *
+     * Reordering the DOM to match the drawing would make a screen reader announce a step's name before
+     * its number, which is the order the reader needs — number first is what "step 2 of 4" means.
+     */
+    for (const labelPlacement of ["inline-end", "block-start", "block-end"] as const) {
+      const { container, unmount } = render(
+        <Stepper labelPlacement={labelPlacement} steps={STEPS} active={1} />
+      );
+
+      const first = container.querySelector(".uir-stepper__step") as HTMLElement;
+      const parts = [...first.children].map((child) => child.className);
+
+      expect(parts[0], labelPlacement).toContain("uir-stepper__marker");
+      expect(parts[1], labelPlacement).toContain("uir-stepper__text");
+      unmount();
+    }
+  });
+
+  it("does not change which steps are actionable", async () => {
+    const user = userEvent.setup();
+    const onStepChange = vi.fn();
+
+    const { unmount } = render(
+      <Stepper labelPlacement="block-start" onStepChange={onStepChange} steps={STEPS} active={2} />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Step 1: Account" }));
+
+    // Placement is a layout concern and must not reach the accessibility tree.
+    expect(onStepChange).toHaveBeenCalledWith(0);
+    unmount();
   });
 });
 

@@ -5,7 +5,7 @@
  * None of them fails today; they exist because each one has already been got wrong.
  */
 
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -13,14 +13,18 @@ const root = process.cwd();
 
 /** Every `*.stories.tsx` outside the authoring template. */
 function libraryStories(): string[] {
-  const dir = join(root, "src", "components");
   const found: string[] = [];
 
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (!entry.isDirectory() || entry.name.startsWith("_")) continue;
+  for (const base of ["src/components", "src/icons"]) {
+    const dir = join(root, base);
+    if (!existsSync(dir)) continue;
 
-    for (const file of readdirSync(join(dir, entry.name))) {
-      if (file.endsWith(".stories.tsx")) found.push(join(dir, entry.name, file));
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (!entry.isDirectory() || entry.name.startsWith("_")) continue;
+
+      for (const file of readdirSync(join(dir, entry.name))) {
+        if (file.endsWith(".stories.tsx")) found.push(join(dir, entry.name, file));
+      }
     }
   }
 
@@ -68,12 +72,16 @@ describe("which stories Storybook publishes", () => {
 
   it("publishes exactly the components the test suite checks", () => {
     // Every story file on disk that Storybook's glob would match, template included.
+    // `src/icons` is included because its gallery story matches the same glob: an
+    // unlisted directory would put a published story outside this assertion.
     const onDisk: string[] = [];
-    const componentsDir = join(root, "src", "components");
-    for (const entry of readdirSync(componentsDir, { withFileTypes: true })) {
-      if (!entry.isDirectory()) continue;
-      for (const file of readdirSync(join(componentsDir, entry.name))) {
-        if (file.endsWith(".stories.tsx")) onDisk.push(`${entry.name}/${file}`);
+    for (const base of ["src/components", "src/icons"]) {
+      const dir = join(root, base);
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        if (!entry.isDirectory()) continue;
+        for (const file of readdirSync(join(dir, entry.name))) {
+          if (file.endsWith(".stories.tsx")) onDisk.push(`${entry.name}/${file}`);
+        }
       }
     }
 

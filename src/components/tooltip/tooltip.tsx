@@ -83,7 +83,7 @@ export function Tooltip(props: TooltipProps) {
   const openTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [position, setPosition] = useState<{ top: number; left: number; placement: string } | null>(
+  const [position, setPosition] = useState<{ top: number; left: number; side: string } | null>(
     null
   );
 
@@ -144,12 +144,20 @@ export function Tooltip(props: TooltipProps) {
 
   /* ---- Position ------------------------------------------------------ */
 
-  useIsomorphicLayoutEffect(() => {
-    if (!open) {
-      setPosition(null);
-      return;
-    }
-
+  /**
+   * Measure and place the surface against the trigger.
+   *
+   * A function rather than an effect body, because it has to run from **two** places and an effect can
+   * only be keyed on one set of dependencies.
+   *
+   * The reason it is not enough to key on `open`: `Portal` renders `null` on its first pass so the
+   * server and the client produce the same markup. On a tooltip that is open from the first render —
+   * which is what `open` and the "always described" story both do — the positioning effect ran while
+   * `surfaceRef.current` was still `null`, returned at its first line, and never ran again because
+   * none of `open`, `offset` or `placement` had changed. The surface kept no `style` at all and
+   * rendered as a static block at the end of `<body>`: correct role, correct content, wrong place.
+   */
+  const measure = useCallback((): void => {
     const trigger = triggerRef.current;
     const surface = surfaceRef.current;
     if (trigger === null || surface === null) return;
@@ -161,10 +169,12 @@ export function Tooltip(props: TooltipProps) {
      * The *owning* window, not the global one.
      *
      * A component rendered inside an iframe measures against that iframe's viewport; `window` would
-     * be the host's, and a tooltip positioned against the wrong viewport lands outside the frame.
-     * The same reasoning as `Popover`, which is why both do it the same way.
+     * be the host's, and a tooltip positioned against the wrong viewport lands outside the frame. The
+     * same reasoning as `Popover`, which is why both do it the same way.
      */
     const view = surface.ownerDocument.defaultView ?? window;
+
+    const direction = readDirection(trigger);
 
     const next = computeOverlayPosition({
       anchorRect,
@@ -176,11 +186,40 @@ export function Tooltip(props: TooltipProps) {
       offset,
       viewportPadding: 8,
       align: "center",
-      direction: readDirection(trigger),
+      direction,
     });
 
-    setPosition({ top: next.top, left: next.left, placement: next.placement });
-  }, [open, offset, placement]);
+    setPosition({ top: next.top, left: next.left, side: next.placement });
+  }, [offset, placement]);
+
+  /**
+   * Place the surface as soon as it exists.
+   *
+   * A callback ref, because that is the only moment at which the surface is guaranteed to be in the
+   * document. It also covers the ordinary case — opening a tooltip that starts closed — where the
+   * effect below would have done.
+   */
+  const attachSurface = useCallback(
+    (node: HTMLDivElement | null): void => {
+      surfaceRef.current = node;
+      if (node !== null && open) measure();
+    },
+    [measure, open]
+  );
+
+  /*
+   * And again whenever the inputs to the calculation change, including on close — where the position
+   * is dropped so a re-opened tooltip is re-measured rather than flashed at its previous coordinates
+   * for a frame.
+   */
+  useIsomorphicLayoutEffect(() => {
+    if (!open) {
+      setPosition(null);
+      return;
+    }
+
+    measure();
+  }, [measure, open]);
 
   /*
    * Re-measure when the page scrolls or resizes.
@@ -192,42 +231,16 @@ export function Tooltip(props: TooltipProps) {
   useEffect(() => {
     if (!open) return;
 
-    const reposition = (): void => {
-      const trigger = triggerRef.current;
-      const surface = surfaceRef.current;
-      if (trigger === null || surface === null) return;
-
-      const anchorRect = trigger.getBoundingClientRect();
-      const box = surface.getBoundingClientRect();
-
-      const view = surface.ownerDocument.defaultView ?? window;
-
-      const next = computeOverlayPosition({
-        anchorRect,
-        surfaceWidth: box.width,
-        surfaceHeight: box.height,
-        viewportWidth: view.innerWidth,
-        viewportHeight: view.innerHeight,
-        placement: toOverlay(placement),
-        offset,
-        viewportPadding: 8,
-        align: "center",
-        direction: readDirection(trigger),
-      });
-
-      setPosition({ top: next.top, left: next.left, placement: next.placement });
-    };
-
     const view = surfaceRef.current?.ownerDocument.defaultView ?? window;
 
-    view.addEventListener("scroll", reposition, true);
-    view.addEventListener("resize", reposition);
+    view.addEventListener("scroll", measure, true);
+    view.addEventListener("resize", measure);
 
     return () => {
-      view.removeEventListener("scroll", reposition, true);
-      view.removeEventListener("resize", reposition);
+      view.removeEventListener("scroll", measure, true);
+      view.removeEventListener("resize", measure);
     };
-  }, [open, offset, placement]);
+  }, [measure, open]);
 
   const hasLabel = isRenderable(label);
   const tooltipId = `${baseId}-tooltip`;
@@ -286,18 +299,19 @@ export function Tooltip(props: TooltipProps) {
       {hasLabel ? (
         <Portal>
           <div
-            ref={surfaceRef}
+            ref={attachSurface}
             id={tooltipId}
             role="tooltip"
             className="uir-tooltip"
-            data-placement={position?.placement ?? placement}
+            data-placement={position?.side ?? placement}
             hidden={!open}
             style={
-              position === null
-                ? undefined
-                : // `position: fixed`, so the coordinates the overlay algorithm returns are viewport
-                  // coordinates and need no scroll offset added.
-                  { position: "fixed", top: position.top, left: position.left }
+              /*
+               * Coordinates only. `position: fixed` is in the stylesheet, so the surface is already
+               * shrink-to-fit at the moment it is measured — measuring a static block read its
+               * container's width instead of its own and put the tooltip beside its trigger.
+               */
+              position === null ? undefined : { top: position.top, left: position.left }
             }
           >
             {label}

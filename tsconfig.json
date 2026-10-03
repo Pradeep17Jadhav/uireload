@@ -46,6 +46,7 @@
     "paths": {
       "uireload": ["./src/index.ts"],
       "uireload/components/*": ["./src/components/*/index.ts"],
+      "uireload/icons/*": ["./src/icons/*.tsx"],
       "uireload-test": ["./tests/helpers.tsx"]
     }
   },

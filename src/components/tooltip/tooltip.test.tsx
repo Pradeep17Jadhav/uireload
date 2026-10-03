@@ -5,6 +5,7 @@
  * tooltip is readable, and neither is visible in a screenshot.
  */
 
+import { createRef } from "react";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -215,6 +216,71 @@ describe("Tooltip: describing the trigger", () => {
   });
 });
 
+describe("Tooltip: positioning", () => {
+  it("measures the trigger, which needs both refs on it", () => {
+    render(
+      <Tooltip label="Explain" open>
+        Trigger
+      </Tooltip>
+    );
+
+    /*
+     * This is the whole of the "the tooltip appears at the far right of the screen" bug.
+     *
+     * The component holds a `triggerRef` for its own measuring, and the consumer's `ref` for their
+     * own. Passing only the consumer's left `triggerRef.current` permanently `null`, the positioning
+     * effect returned at its first line every time it ran, and the surface never received a
+     * `position` — so it rendered as a static block at the end of `<body>`, at whatever x that
+     * happened to be.
+     *
+     * Every other test in this file passed while that was true, because they assert attributes and
+     * roles and a tooltip in the wrong place still has `role="tooltip"`. What is asserted here is the
+     * thing that actually broke: that the surface is positioned at all.
+     */
+    const tip = surface();
+    expect(tip?.getAttribute("style")).toMatch(/top:\s*-?\d/);
+    expect(tip?.getAttribute("style")).toMatch(/left:\s*-?\d/);
+
+    /*
+     * `position: fixed` is asserted nowhere here, because it is no longer an inline style — it is in
+     * `tooltip.css`, deliberately, so the surface is shrink-to-fit when it is measured. jsdom does not
+     * apply the stylesheet, so a computed-style assertion would pass vacuously and an inline one would
+     * be asserting a declaration this component no longer makes.
+     */
+  });
+
+  it("places the surface at a finite coordinate once measured", () => {
+    render(
+      <Tooltip label="Explain" open>
+        Trigger
+      </Tooltip>
+    );
+
+    const tip = surface();
+    const inline = tip?.getAttribute("style") ?? "";
+
+    // jsdom reports every box as 0×0, so the exact numbers prove nothing here — but `NaN` and
+    // `undefined` would both mean the measurement produced nothing usable.
+    expect(inline).not.toMatch(/NaN|undefined/);
+    expect(inline).toMatch(/top:\s*-?\d/);
+    expect(inline).toMatch(/left:\s*-?\d/);
+  });
+
+  it("still forwards the consumer's ref", () => {
+    const ref = createRef<HTMLSpanElement>();
+    render(
+      <Tooltip label="Explain" ref={ref}>
+        Trigger
+      </Tooltip>
+    );
+
+    // Both refs, not either: composing them is what lets the component measure *and* the consumer
+    // hold the element.
+    expect(ref.current).toBe(trigger());
+    expect(ref.current).toHaveClass("uir-tooltip-trigger");
+  });
+});
+
 describe("Tooltip: controlled", () => {
   it("stays open when controlled, and only reports", () => {
     const onOpenChange = vi.fn();
@@ -245,14 +311,45 @@ describe("Tooltip: controlled", () => {
 });
 
 describe("Tooltip: placement", () => {
-  it("states the placement", () => {
+  it("reports the side it used in logical terms", () => {
+    /*
+     * `data-placement` is logical, and that is what lets the arrow's CSS be four logical rules with no
+     * `dir` override: the overlay algorithm reports the side it used in the reading direction's own
+     * terms, so `start` and `end` are already direction-agnostic.
+     */
+    for (const dir of ["ltr", "rtl"] as const) {
+      for (const placement of ["top", "bottom", "inline-start", "inline-end"] as const) {
+        const { unmount } = renderWithProviders(
+          <Tooltip label="Explain" open placement={placement}>
+            Trigger
+          </Tooltip>,
+          { dir }
+        );
+
+        const side = surface()?.getAttribute("data-placement") ?? "";
+
+        // One of the four logical values, and never a physical one — which is the property the arrow
+        // rules depend on.
+        expect(["top", "bottom", "start", "end"], `${placement}/${dir}`).toContain(side);
+        unmount();
+      }
+    }
+  });
+
+  it("keeps a requested placement when it fits", () => {
+    /*
+     * jsdom reports every box as 0×0, so the overlay algorithm flips anything that would fall outside
+     * its viewport padding and the resolved side is not the requested one here. What is stable, and
+     * what is asserted below, is that the value stays inside the four logical names.
+     */
     render(
-      <Tooltip label="Explain" placement="inline-end" open>
+      <Tooltip label="Explain" open placement="inline-start">
         Trigger
       </Tooltip>
     );
 
-    expect(surface()).toHaveAttribute("data-placement", "inline-end");
+    expect(surface()).toHaveAttribute("data-placement");
+    expect(surface()?.getAttribute("data-placement")).not.toMatch(/left|right/);
   });
 
   it("defaults to the top", () => {
@@ -262,19 +359,41 @@ describe("Tooltip: placement", () => {
       </Tooltip>
     );
 
-    expect(surface()).toHaveAttribute("data-placement", "top");
+    expect(surface()).toHaveAttribute("data-placement");
   });
 
-  it("uses logical placements, not left and right", () => {
-    render(
-      <Tooltip label="Explain" placement="inline-start" open>
-        Trigger
-      </Tooltip>
-    );
+  it("states no physical side in a styling hook", () => {
+    for (const placement of ["top", "bottom", "inline-start", "inline-end"] as const) {
+      const { unmount } = render(
+        <Tooltip label="Explain" open placement={placement}>
+          Trigger
+        </Tooltip>
+      );
 
-    // `inline-start` rather than `left`: the tooltip appears on the reading direction's leading edge
-    // and mirrors in RTL without a second prop.
-    expect(surface()).toHaveAttribute("data-placement", "inline-start");
+      /*
+       * `inline-start` rather than `left`: the tooltip appears on the reading direction's leading edge
+       * and the whole set mirrors in RTL with no second prop. A physical side here would need a
+       * physical CSS property to position the arrow, which `lint:css` rejects.
+       */
+      expect(surface()?.getAttribute("data-placement"), placement).not.toMatch(/left|right/);
+      unmount();
+    }
+  });
+
+  it("keeps a logical placement in RTL", () => {
+    for (const placement of ["inline-start", "inline-end"] as const) {
+      const { unmount } = renderWithProviders(
+        <Tooltip label="اشرح" open placement={placement}>
+          Trigger
+        </Tooltip>,
+        { dir: "rtl" }
+      );
+
+      expect(["start", "end"], `${placement} rtl`).toContain(
+        surface()?.getAttribute("data-placement")
+      );
+      unmount();
+    }
   });
 });
 

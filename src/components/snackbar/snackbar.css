@@ -106,8 +106,6 @@
     --uir-snackbar-text: var(--uir-snackbar-surface-text);
     --uir-snackbar-border: transparent;
     --uir-snackbar-accent: transparent;
-    --uir-snackbar-close-hover: rgb(255 255 255 / 12%);
-    --uir-snackbar-close-active: rgb(255 255 255 / 22%);
   }
 
   .uir-snackbar[data-tone="accent"] {
@@ -209,36 +207,62 @@
 
   /* ---- Close control ------------------------------------------------- */
 
+  /*
+   * The close control.
+   *
+   * Two declarations, and that is the point: the control is an `IconButton`, so its box, its 24px
+   * target, its hover fill, its pressed fill and its focus ring are the library's shared ones.
+   *
+   * `flex-shrink: 0` so a long message cannot squeeze it out of the row, and `margin-inline-start:
+   * auto` is deliberately **not** here — a snackbar's message takes the width it needs and the close
+   * sits after it, so pushing the control to the far edge would put it a whole row away from the text
+   * it closes.
+   */
   .uir-snackbar__close {
-    align-items: center;
-    background: none;
-    border: 0;
-    border-radius: 50%;
-    color: currentcolor;
-    cursor: pointer;
-    display: inline-flex;
     flex-shrink: 0;
-    justify-content: center;
-    /*
-     * A 24px target.
-     *
-     * The snackbar's own padding is not a hit area — a close control sized to its glyph is about 12px
-     * and fails the target minimum on a control users aim at in a hurry.
-     */
-    block-size: var(--uir-control-height-sm);
-    inline-size: var(--uir-control-height-sm);
-    margin: 0;
-    padding: 0;
   }
 
-  /* Two rotated bars, so the cross is `currentcolor` and needs nothing in forced colours. */
+  /*
+   * The cross.
+   *
+   * Two bars crossing, each a single `border-block-start` on a pseudo-element rotated about its own
+   * inline-start edge — so four arms come from two declarations, with no SVG to import and no request
+   * to make.
+   *
+   * This replaces a square with a block-start and an inline-start border rotated 45 degrees. That drew
+   * **one** arm of a cross, not two, which is why the control read as an up-arrow: the other arm was
+   * never there. A box with all four borders and a background-coloured patch over the middle would draw
+   * a cross too, but the patch is the *page's* colour, which is what makes it wrong over the
+   * snackbar's own surface.
+   *
+   * `transform-origin: left center` is load-bearing — without it the rotation is about the element's
+   * own centre and the two bars do not meet in the middle.
+   */
   .uir-snackbar__close-glyph {
-    block-size: 0.6em;
-    border-block-start: 1.5px solid currentcolor;
-    border-inline-start: 1.5px solid currentcolor;
+    block-size: 0.75em;
     display: block;
-    inline-size: 0.6em;
-    transform: rotate(45deg) translateY(-1px);
+    inline-size: 0.75em;
+    position: relative;
+  }
+
+  .uir-snackbar__close-glyph::before,
+  .uir-snackbar__close-glyph::after {
+    border-block-start: 1.5px solid currentcolor;
+    content: "";
+    display: block;
+    inline-size: 100%;
+    inset-block-start: 50%;
+    inset-inline-start: 0;
+    position: absolute;
+    transform-origin: left center;
+  }
+
+  .uir-snackbar__close-glyph::before {
+    transform: rotate(45deg);
+  }
+
+  .uir-snackbar__close-glyph::after {
+    transform: rotate(-45deg);
   }
 
   /* ---- States -------------------------------------------------------- */
@@ -249,20 +273,13 @@
    * Applied to the close control only. Hovering the *message* must not change it: the message is text,
    * and a surface that shifts under text while the pointer crosses it is text the user cannot read.
    */
-  @media (hover: hover) and (pointer: fine) {
-    .uir-snackbar__close:hover {
-      background-color: var(--uir-snackbar-close-hover);
-    }
-  }
-
-  .uir-snackbar__close:active {
-    background-color: var(--uir-snackbar-close-active);
-  }
-
-  .uir-snackbar__close:focus-visible {
-    outline: var(--uir-focus-ring-width) solid var(--uir-focus-ring-color);
-    outline-offset: 1px;
-  }
+  /*
+   * The close control's hover, pressed and focus states are **not** restated here.
+   *
+   * They belong to `IconButton`, which is what the control now is. Keeping local copies would mean
+   * two places to change them and a close button that disagreed with every other icon button in the
+   * app the first time either was edited.
+   */
 
   /* ---- Reduced motion ------------------------------------------------ */
 

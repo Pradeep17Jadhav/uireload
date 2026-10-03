@@ -24,6 +24,10 @@ const meta = {
   argTypes: {
     navigation: { control: "inline-radio", options: ["linear", "non-linear"] },
     orientation: { control: "inline-radio", options: ["horizontal", "vertical"] },
+    labelPlacement: {
+      control: "inline-radio",
+      options: ["block-start", "block-end", "inline-end"],
+    },
     announcePosition: { control: "boolean" },
     showContent: { control: "boolean" },
     disabled: { control: "boolean" },
@@ -86,7 +90,7 @@ export const NonLinear: Story = {
   },
 };
 
-/** Vertical, where the connector runs down between markers rather than across. */
+/** Vertical, where the connector runs down beside the labels. `labelPlacement` defaults per orientation. */
 export const Vertical: Story = {
   args: { orientation: "vertical" },
   render: function Render(args) {
@@ -98,6 +102,23 @@ export const Vertical: Story = {
       </div>
     );
   },
+};
+
+/**
+ * A label beside its marker.
+ *
+ * The connector is confined to the gap between steps here, and that is geometry rather than taste:
+ * with the label on the inline side of its marker, the label sits *between* two markers, so a line
+ * joining them has no route that avoids the text. The gap segments keep the sequence legible without a
+ * line through a word. Use `block-start` when you want the unbroken line.
+ */
+export const LabelBesideMarker: Story = {
+  args: { labelPlacement: "inline-end", navigation: "non-linear" },
+};
+
+/** A label below its marker, for a strip read downward. */
+export const LabelBelowMarker: Story = {
+  args: { labelPlacement: "block-end", navigation: "non-linear" },
 };
 
 /**

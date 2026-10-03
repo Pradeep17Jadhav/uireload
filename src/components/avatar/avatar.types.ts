@@ -28,8 +28,8 @@ export type AvatarShape = "circular" | "rounded";
  * them fits inside a control height.
  *
  * So `xs` and `xl` are added either side of the shared three. `sm` / `md` / `lg` keep the control
- * heights so an avatar still lines up with the button beside it, and `xl` goes to 8rem, which is
- * large enough to be the subject of a page rather than a decoration on it.
+ * heights so an avatar still lines up with the button beside it, and `xl` goes to 4rem, which is
+ * large enough to head a section without ceasing to read as the same component as an `lg`.
  */
 export type AvatarSize = "xs" | "sm" | "md" | "lg" | "xl";
 

@@ -20,6 +20,15 @@ const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as {
   files: string[];
   peerDependencies: Record<string, string>;
   dependencies?: Record<string, string>;
+  /**
+   * Present because the icon suite reads it, and it has to be declared rather than inferred.
+   *
+   * `exports` can pattern both the key and the value; `typesVersions` can pattern only its *target*,
+   * so every icon needs a literal entry there and the whole map is asserted below. A type that omitted
+   * the field would not have caught a rename that dropped it — the field simply was not on the type
+   * the assertion was reading.
+   */
+  typesVersions: Record<string, Record<string, string[]>>;
 };
 
 /** One conditional export entry, with `types` ordered before `default`. */
@@ -40,6 +49,26 @@ function componentDirs(): string[] {
   return readdirSync(dir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && !entry.name.startsWith("_"))
     .map((entry) => entry.name);
+}
+
+/** Public icon modules, sorted, with the `.tsx` extension removed. */
+function iconNames(): string[] {
+  const dir = join(root, "src", "icons");
+  return (
+    readdirSync(dir, { withFileTypes: true })
+      .filter((entry) => entry.isFile() && entry.name.endsWith(".tsx"))
+      /*
+       * `*.test.tsx` and `*.stories.tsx` live alongside the icons and are not one.
+       *
+       * An icon's module name *is* its public identifier, so anything swept into this list is treated as
+       * one — and a test file called `icons.test` fails both the PascalCase assertion and the
+       * `typesVersions` one, with an error that points at the icon set rather than at the filter.
+       */
+      .filter((entry) => !/\.(test|stories)\./.test(entry.name))
+      .map((entry) => entry.name.slice(0, -".tsx".length))
+      .filter((name) => !name.startsWith("_"))
+      .sort()
+  );
 }
 
 function walk(dir: string): string[] {
@@ -162,9 +191,25 @@ describe("component packaging", () => {
     expect(subpaths).toEqual(componentDirs().map((name) => `./components/${name}`));
   });
 
-  it("never exposes a wildcard subpath", () => {
+  it("never exposes a wildcard component subpath", () => {
+    /*
+     * Scoped to `./components/*` on purpose. Icons do ship one pattern entry, for the
+     * reason set out in `scripts/build-exports.mjs`: the icon list is long enough that
+     * an explicit entry per icon is thousands of lines of generated JSON. The pattern
+     * is not allowed to spread to components, where the list is short enough to read.
+     */
     for (const key of Object.keys(pkg.exports)) {
-      expect(key.includes("*"), `${key} is a wildcard export`).toBe(false);
+      if (key.startsWith("./components/")) {
+        expect(key.includes("*"), `${key} is a wildcard export`).toBe(false);
+      }
+    }
+  });
+
+  it("exposes no other wildcard subpath than the icon pattern", () => {
+    for (const key of Object.keys(pkg.exports)) {
+      if (key.includes("*")) {
+        expect(key, `${key} is an unexpected wildcard export`).toBe("./icons/*");
+      }
     }
   });
 
@@ -183,6 +228,92 @@ describe("component packaging", () => {
     // `src/components` and is type-checked, linted and tested.
     expect(componentDirs().every((name) => !name.startsWith("_"))).toBe(true);
     expect(pkg.exports["./components/_template"]).toBeUndefined();
+  });
+});
+
+describe("icon packaging", () => {
+  const icons = iconNames();
+
+  it("has icons, so the icon packaging conventions are load-bearing", () => {
+    // A vacuous glob assertion is worse than none: it would pass with zero icons.
+    expect(icons.length).toBeGreaterThan(0);
+  });
+
+  it("names every icon in PascalCase with no separators", () => {
+    /*
+     * The module name *is* the public identifier:
+     *
+     *   import AddFilled from "uireload/icons/AddFilled";
+     *
+     * A kebab-case or lowercase name would make every call site reach for a rename
+     * alias, which is the one thing an icon set should never need.
+     */
+    expect(icons.filter((name) => !/^[A-Z][A-Za-z0-9]*$/.test(name))).toEqual([]);
+  });
+
+  it("gives every base name either both variants or no postfix at all", () => {
+    const bases = new Map<string, Set<string>>();
+
+    for (const name of icons) {
+      const suffix = name.endsWith("Filled")
+        ? "Filled"
+        : name.endsWith("Outlined")
+          ? "Outlined"
+          : null;
+
+      const base = suffix === null ? name : name.slice(0, -suffix.length);
+
+      if (!bases.has(base)) bases.set(base, new Set());
+      bases.get(base)?.add(suffix ?? "none");
+    }
+
+    /*
+     * Three states are legal: `Filled` + `Outlined`, or a bare name. A lone `Filled`
+     * or a lone `Outlined` is not, because it reads as a half-finished pair and
+     * nothing downstream can tell it apart from a deliberate choice.
+     */
+    const broken = [...bases].filter(
+      ([, suffixes]) =>
+        (suffixes.has("Filled") || suffixes.has("Outlined")) &&
+        !(suffixes.has("Filled") && suffixes.has("Outlined"))
+    );
+
+    expect(broken.map(([base]) => base)).toEqual([]);
+    expect(
+      [...bases].filter(([, s]) => s.has("Filled") && s.has("Outlined")).length
+    ).toBeGreaterThan(0);
+  });
+
+  it("keeps the private icon machinery out of the published surface", () => {
+    // `_create-icon.tsx` is shared code, not an icon. The `_` prefix is the same
+    // signal `_template` uses in `src/components`, and it is what keeps the factory
+    // out of the entry list and out of the inventory asserted above.
+    expect(icons.every((name) => !name.startsWith("_"))).toBe(true);
+    expect(icons).not.toContain("_create-icon");
+  });
+
+  it("maps the icon pattern at the paths the build actually writes", () => {
+    const entry = pkg.exports["./icons/*"] as ExportEntry;
+
+    expect(entry.import.types).toBe("./dist/icons/*.d.ts");
+    expect(entry.import.default).toBe("./dist/icons/*.js");
+    expect(entry.require.types).toBe("./dist/icons/*.d.cts");
+    expect(entry.require.default).toBe("./dist/icons/*.cjs");
+  });
+
+  it("lists every icon in typesVersions, because that map cannot pattern its target", () => {
+    // `exports` can pattern both the key and the value; `typesVersions` can pattern
+    // only the key, so legacy `moduleResolution: node` consumers need one line each.
+    const map = pkg.typesVersions["*"] as Record<string, string[]>;
+
+    for (const name of icons) {
+      expect(map[`icons/${name}`], `icons/${name} is missing from typesVersions`).toEqual([
+        `./dist/icons/${name}.d.ts`,
+      ]);
+    }
+
+    const declared = Object.keys(map).filter((key) => key.startsWith("icons/"));
+    expect(declared.sort()).toEqual(icons.map((name) => `icons/${name}`).sort());
   });
 });
 

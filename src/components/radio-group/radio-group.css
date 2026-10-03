@@ -38,21 +38,29 @@
   }
 
   /*
-   * The two radio-specific dimensions, declared once on the root so nothing downstream repeats
-   * them. The dot is sized off the control height, so `sm` / `md` / `lg` scale dot, label and row
-   * height together — the same derivation `checkbox.css` uses.
+   * The two radio-specific dimensions, declared once on the root so nothing downstream repeats them.
+   *
+   * The dot is its own ladder and **not** the control height ladder. Sizing it off
+   * `--uir-control-height-*` made the dot 24 / 36 / 44px, which is a *button* at every size and two to
+   * three times a radio's conventional 16–20px: a 44px circle with a 22px dot inside it reads as a
+   * toggle, and a group of them takes a column of its own on the page. The control heights are right
+   * for a checkbox and a switch, which are boxes a finger has to hit; a radio is a small mark inside a
+   * large hit area — and the hit area is already the whole row, because the input covers it.
+   *
+   * So the dot is 16 / 18 / 20px and the *row* keeps the control height, which is what `sm` / `md` / `lg`
+   * still scale. `checkbox.css` derives its box from the control height and is not changed here.
    */
   .uir-radio-group {
-    --uir-radio-dot: var(--uir-control-height-sm);
+    --uir-radio-dot: 1rem;
     --uir-radio-mark: calc(var(--uir-radio-dot) * 0.5);
   }
 
   .uir-radio-group[data-size="md"] {
-    --uir-radio-dot: var(--uir-control-height-md);
+    --uir-radio-dot: 1.125rem;
   }
 
   .uir-radio-group[data-size="lg"] {
-    --uir-radio-dot: var(--uir-control-height-lg);
+    --uir-radio-dot: 1.25rem;
   }
 
   /* ---- Legend and description ----------------------------------------- */

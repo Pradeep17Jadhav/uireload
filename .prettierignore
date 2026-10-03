@@ -6,3 +6,17 @@ node_modules
 package-lock.json
 *.tgz
 CHANGELOG.md
+
+# src/icons is excluded because it cannot be formatted.
+#
+# Every icon is `factory("Name", <shapes/>)` with the shapes as bare siblings, so a composite icon is
+# not parseable JSX — `JSX expressions must have one parent element` — and prettier's behaviour on a
+# file it cannot parse is to leave it alone rather than fail loudly. Running `prettier --write` over
+# the directory therefore produced a confusing half-applied result: files that had been repaired were
+# rewritten back to their unparseable form while the errors went unreported, because `lint` and
+# `typecheck` were not part of that command.
+#
+# The icons are wrapped in a `<g>` now, which parses. They stay out of prettier's path regardless, so
+# that a future formatting run cannot silently undo it — a formatter that rewrites files it cannot
+# read is worse than one that skips them.
+src/icons

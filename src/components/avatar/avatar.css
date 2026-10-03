@@ -28,12 +28,25 @@
      * beside it without anyone tuning a number. `xs` and `xl` are outside that ladder because the
      * control ladder's ceiling is the wrong one here: `--uir-control-height-lg` is 2.75rem because a
      * control taller than that stops being a control, and an avatar is not a control — it is a picture
-     * of a person, which appears beside prose at whatever size the layout needs. 8rem is large enough
-     * to be the subject of a page rather than a decoration on it.
+     * of a person, which appears beside prose at whatever size the layout needs.
      */
     --uir-avatar-size: var(--uir-control-height-md);
 
     align-items: center;
+    /*
+     * The box is the token, not the content.
+     *
+     * This was the reason "even `lg` is too small": `--uir-avatar-size` sized the *font* and nothing
+     * else, and the root is an `inline-flex` that shrink-wrapped to its initials. An avatar was
+     * therefore exactly as wide as two letters — 11px at `sm`, 19px at `lg` — and the ladder did
+     * nothing except make the letters bigger inside a box that followed them.
+     *
+     * A fixed `inline-size` / `block-size` also makes the ladder meaningful for an avatar with a
+     * one-letter initial or a long two-letter one, and keeps a row of avatars on one baseline when
+     * their labels differ.
+     */
+    block-size: var(--uir-avatar-size);
+    inline-size: var(--uir-avatar-size);
     background-color: var(--uir-avatar-fill);
     border: var(--uir-control-border-width) solid var(--uir-avatar-border);
     border-radius: 50%;
@@ -67,7 +80,18 @@
   }
 
   .uir-avatar[data-size="xl"] {
-    --uir-avatar-size: 8rem;
+    /*
+     * 4rem — 64px, and about 1.45x `lg`.
+     *
+     * This was 8rem, and 128px is a nearly threefold jump from `lg`'s 44px: large enough that an `xl`
+     * avatar beside an `lg` one stopped reading as the same component at two sizes and started reading
+     * as a portrait and an icon. 64px keeps the step clearly visible while staying in the range where a
+     * row of avatars still reads as a set, and it matches the largest avatar most design systems ship.
+     *
+     * The step is deliberately close to `md`'s 1.5x over `sm`, so the top of the ladder has the same
+     * rhythm as the middle of it.
+     */
+    --uir-avatar-size: 4rem;
   }
 
   .uir-avatar[data-variant="rounded"] {
@@ -84,7 +108,7 @@
    * 0.4em are about 1.2em wide, so they needed a circle at least 1.2em across to clear the edge, and
    * the ratio was quietly producing initials that touched the border at every size. 0.32 gives two
    * capitals about 0.96em of width in a 1em circle, which leaves a visible ring of fill on each side
-   * and scales to 8rem without the letters growing into the edge.
+   * and scales to the top of the ladder without the letters growing into the edge.
    *
    * `line-height: 1` as well, so the line box cannot be taller than the circle and push the glyphs
    * off the centre.

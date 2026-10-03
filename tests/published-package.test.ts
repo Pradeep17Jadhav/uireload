@@ -38,6 +38,19 @@ function builtComponents(): string[] {
     .sort();
 }
 
+/** Public icon modules present in the build, sorted, extension removed. */
+function builtIcons(): string[] {
+  const dir = join(ROOT, "dist", "icons");
+  if (!existsSync(dir)) return [];
+
+  return readdirSync(dir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".js"))
+    .map((entry) => entry.name.slice(0, -".js".length))
+    .filter((name) => !name.startsWith("_") && !name.startsWith("chunk-"))
+    .filter((name) => !/\.(test|stories)\./.test(name))
+    .sort();
+}
+
 /*
  * `module` and `moduleResolution` must agree. TypeScript rejects the pair otherwise,
  * which is its way of saying the combination is meaningless rather than unusual.
@@ -171,6 +184,47 @@ function resolve(specifier: string, kind: "esm" | "cjs"): boolean {
   return runConsumer(file) === "true";
 }
 
+/**
+ * Resolve many specifiers in one process per format, and report which ones failed.
+ *
+ * The previous shape spawned a process per specifier, so checking every built component
+ * and every built icon in both formats cost several hundred subprocesses. That is not a
+ * slow test by design; it is a slow test by accident, and it fails as a *timeout*, which
+ * reads as "your package is too slow" about a test that is simply doing more subprocess
+ * work than it needs to.
+ *
+ * Every specifier still resolves through the real `exports` map; only the process count
+ * changed. Failures are returned by name so the assertion message names what broke.
+ */
+function resolveAll(specifiers: string[], kind: "esm" | "cjs"): string[] {
+  const extension = kind === "esm" ? "mjs" : "cjs";
+  const file = join(CONSUMER, `probe-all-${kind}.${extension}`);
+
+  // A static `import` cannot be guarded, so each specifier is imported dynamically and
+  // reported by name on failure. The two probes differ only in the load expression:
+  // `await import` needs top-level await, which `.mjs` has and `.cjs` does not, and
+  // `require` is synchronous, so it does not. Neither file defers its `console.log`,
+  // because an un-awaited async body would print before its own imports had settled.
+  const load = kind === "esm" ? "await import" : "require";
+  const probe = (specifier: string): string =>
+    `try { const mod = ${load}(${JSON.stringify(specifier)});\n` +
+    `if (Object.keys(mod).length === 0) throw new Error("no exports");\n` +
+    `} catch { failed.push(${JSON.stringify(specifier)}); }`;
+
+  writeFileSync(
+    file,
+    [
+      "const failed = [];",
+      ...specifiers.map(probe),
+      "console.log(JSON.stringify(failed));",
+      "",
+    ].join("\n")
+  );
+
+  const output = runConsumer(file);
+  return JSON.parse(output) as string[];
+}
+
 const describeIfBuilt = HAS_DIST ? describe : describe.skip;
 
 describeIfBuilt("export map", () => {
@@ -222,23 +276,12 @@ describeIfBuilt("export map", () => {
     expect(existsSync(cssPath)).toBe(true);
   });
 
-  it(
-    "resolves every built component subpath from ESM and CommonJS",
-    () => {
-      for (const name of builtComponents()) {
-        const specifier = `uireload/components/${name}`;
-        expect(resolve(specifier, "esm"), `${specifier} (esm)`).toBe(true);
-        expect(resolve(specifier, "cjs"), `${specifier} (cjs)`).toBe(true);
-      }
-      /*
-       * Scaled to the component count, because the cost is one `node` spawn per component per format
-       * and nothing else. The default 5s was enough for nine components and not for fourteen, which
-       * made the failure a timeout — a reading that says "your package is too slow" about a test that is
-       * simply doing more subprocess work.
-       */
-    },
-    1000 + builtComponents().length * 400
-  );
+  it("resolves every built component subpath from ESM and CommonJS", () => {
+    const specifiers = builtComponents().map((name) => `uireload/components/${name}`);
+
+    expect(resolveAll(specifiers, "esm"), "did not resolve from ESM").toEqual([]);
+    expect(resolveAll(specifiers, "cjs"), "did not resolve from CommonJS").toEqual([]);
+  });
 
   it("ships a declaration file for every built component", () => {
     for (const name of builtComponents()) {
@@ -276,6 +319,61 @@ describeIfBuilt("export map", () => {
     expect(runConsumer(file)).toBe("true");
   });
 
+  /*
+   * Every icon, not a sample, and through the same probe as the components.
+   *
+   * The icon export is one wildcard rather than one entry per icon, so the only
+   * way that is safe is if the pattern resolves for every built name. One static import
+   * per icon would prove as much, but a link error does not say which of a hundred and
+   * fifty specifiers was missing; the guarded probe collects the failures instead.
+   */
+  it.each(["esm", "cjs"] as const)("resolves every built icon from %s", (kind) => {
+    const icons = builtIcons();
+    expect(icons.length, "no icons were built").toBeGreaterThan(0);
+
+    expect(
+      resolveAll(
+        icons.map((name) => `uireload/icons/${name}`),
+        kind
+      )
+    ).toEqual([]);
+  });
+
+  it("ships a declaration file for every built icon", () => {
+    for (const name of builtIcons()) {
+      const base = join(CONSUMER, "node_modules", "uireload", "dist", "icons", name);
+
+      expect(existsSync(`${base}.d.ts`), `${name}.d.ts`).toBe(true);
+      expect(existsSync(`${base}.d.cts`), `${name}.d.cts`).toBe(true);
+      expect(existsSync(`${base}.js`), `${name}.js`).toBe(true);
+      expect(existsSync(`${base}.cjs`), `${name}.cjs`).toBe(true);
+    }
+  });
+
+  it("does not expose the private icon factory", () => {
+    // `_create-icon` is shared machinery. The entry list skips `_`-prefixed modules, so
+    // there is no file to resolve; the assertion is that a consumer who guesses the name
+    // gets a clean module-not-found rather than a published implementation detail.
+    const icons = builtIcons();
+    expect(icons).not.toContain("_create-icon");
+
+    const file = join(CONSUMER, "probe-icon-internal.cjs");
+    writeFileSync(
+      file,
+      [
+        "try {",
+        '  require("uireload/icons/_create-icon");',
+        '  console.log("leaked");',
+        "} catch {",
+        '  console.log("blocked");',
+        "}",
+        "",
+      ].join("\n")
+    );
+
+    expect(runConsumer(file)).toBe("blocked");
+  });
+
   it("does not leak internal modules through the root entry", () => {
     const file = join(CONSUMER, "probe-internal.cjs");
     writeFileSync(
@@ -304,6 +402,12 @@ describeIfBuilt("export map", () => {
     (mode) => {
       it("type-checks imports written against the package specifiers", () => {
         const components = builtComponents();
+        /*
+         * Every icon, not a sample. The icon export is one wildcard rather than one entry
+         * per icon, and the only way that is safe is if the wildcard resolves for all of
+         * them under all three resolvers - so the probe enumerates what was built.
+         */
+        const icons = builtIcons();
         const dir = join(CONSUMER, `ts-${mode}`);
         mkdirSync(dir, { recursive: true });
 
@@ -337,6 +441,7 @@ describeIfBuilt("export map", () => {
             ...components.map(
               (name) => `import * as ${identifier(name)} from "uireload/components/${name}";`
             ),
+            ...icons.map((name) => `import icon_${name} from "uireload/icons/${name}";`),
             "",
             `const accent: string = TOKENS.accent;`,
             `const text: string = formatMessage("{n} left", { n: 1 });`,
@@ -344,6 +449,12 @@ describeIfBuilt("export map", () => {
               (name) =>
                 `const keys_${identifier(name)}: string[] = Object.keys(${identifier(name)});`
             ),
+            /*
+             * Icons are called rather than rendered: the point is that the default export
+             * is a component with a callable signature and a props type, under every
+             * resolver. Rendering would additionally require a JSX runtime in the probe.
+             */
+            ...icons.map((name) => `const rendered_${name}: unknown = icon_${name}({});`),
             "",
             `export { accent, text };`,
             ...components.map((name) => `export { keys_${identifier(name)} };`),

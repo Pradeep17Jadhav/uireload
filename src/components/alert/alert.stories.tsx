@@ -206,7 +206,7 @@ export const CustomIcon: Story = {
           blockSize: "1.25rem",
           borderRadius: "50%",
           background: "currentcolor",
-          color: "var(--uir-positive)",
+          color: "var(--uir-success)",
           fontSize: "0.7rem",
           fontWeight: 700,
         }}

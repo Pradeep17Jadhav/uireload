@@ -72,6 +72,28 @@ Emphasis and intent are separate axes, so every tone exists at every emphasis le
 | `outline` |           | Secondary      |            | Destructive secondary |
 | `ghost`   | Tertiary  | Quiet accent   |            | Quiet destructive     |
 
+### Icons
+
+156 vector glyphs on a shared 24 unit grid, one module each. Sizing, colour and the
+accessibility contract are documented in [`src/icons/README.md`](./src/icons/README.md).
+
+```ts
+import AddFilled from "uireload/icons/AddFilled";
+import AddOutlined from "uireload/icons/AddOutlined";
+```
+
+```tsx
+// 1em, so it matches the text beside it.
+<AddFilled />
+
+// A named icon, for one that is the only content of a control.
+<AddFilled size="sm" title="Add item" />
+```
+
+An icon is decorative unless you give it a `title`: with no name it is removed from the
+accessibility tree entirely, which is right for an icon beside a visible label and wrong for
+an icon-only button.
+
 ## Theming
 
 Override CSS custom properties at any scope you choose. No provider to mount.
@@ -102,6 +124,7 @@ src/
   theme/               token contract, control tokens, interaction colours
   i18n/                message catalog and interpolation
   internal/            private utilities: focus, state, refs, events, RTL
+  icons/               one module per glyph, plus the shared icon factory
   components/
     button/            Button
     icon-button/       IconButton
@@ -117,7 +140,7 @@ tests/
 docs/                  architecture, theming, i18n, RTL, accessibility, testing, roadmap
 scripts/
   build-exports.mjs        pure export-map construction (unit tested)
-  sync-exports.mjs         regenerates package.json exports from src/components
+  sync-exports.mjs         regenerates package.json exports from src/components and src/icons
   bundle-css.mjs           assembles the published stylesheet
   check-css.mjs            build gate: namespaced classes, logical properties
   css-rules.mjs            the rules themselves (unit tested)
